@@ -1,67 +1,68 @@
-window.requestAnimFrame = (function() {
-    return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        function(callback) {
-            window.setTimeout(callback, 1000 / 60);
-        };
-})();
+'use strict'
+
+var Factory = require('../utils/factory');
+
+var Utils = function() {
+
+    /* loading HTML5 rendering API */
+    this.getNextFrame = (function() {
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            function(callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+    }());
+
+    /*
+     *  Fetch: this class load all the maps async.
+     */
+    this.Fetch = function(images, callback) {
+        var imgObjects = [];
+        images.forEach(function(image) {
+            var img = new Image();
+            img.onload = function() {
+                imgObjects.push(img);
+                if (imgObjects.length === images.length)
+                    callback(imgObjects);
+            }
+            img.src = image;
+        });
+    };
+
+    this.getCode = function(EL, from) {
+        return EL.querySelector(from).innerHTML;
+    };
 
 
+    this.loadShader = function(tmpl) {
+        var el = document.createElement('div');
+        el.innerHTML = tmpl;
+        return el;
+    };
 
-function getMousePos(canvas, evt, viewport) {
-    var rect = canvas.getBoundingClientRect();
-    var x = evt.clientX - rect.left;
-    var y = evt.clientY - rect.top;
+    this.getshaderUsingTemplate = function(tmpl) {
+        var EL = this.loadShader(tmpl);
+        var shader = {};
 
-    x = viewport.x * x / rect.right;
-    y = viewport.y * y / rect.bottom;
-    return {
-        x: x,
-        y: y
+        shader.vertex = this.getCode(EL, '#vertex-shader');
+        shader.fragment = this.getCode(EL, '#fragment-shader');
+
+        shader.init = function(shader) {
+            shader.use();
+            shader
+                .attribute('position')
+                .attribute('texture')
+                .attribute('colors')
+                .uniform('MV')
+                .uniform('uSampler')
+                .uniform('P');
+        }
+
+        return shader;
     };
 }
 
-function randomN(val) {
-
-    return Math.floor(Math.random() * val) + 1
-}
-
-function randomF(val) {
-
-    return (Math.random() * (0.000120 - val) + val);
-}
 
 
-VR8.Utils = {};
-VR8.Utils.requestAnimationFrame = (function() {
-    return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        function(callback) {
-            window.setTimeout(callback, 1000 / 60);
-        };
-})();
-
-
-
-/*
- *  Fetch: this class load all the maps async.
- */
-var Fetch = function(images, callback) {
-    var imgObjects = [];
-    images.forEach(function(image){
-      var img = new Image();
-      img.onload = function() {
-        imgObjects.push(img);
-        if(imgObjects.length === images.length)
-            callback(imgObjects);
-      }   
-      img.src = image;
-    });
-}
-
-
-
-VR8.Utils.Assets = {}; 
-VR8.Utils.Assets.Fetch = Fetch;
+module.exports = new Factory(Utils);
