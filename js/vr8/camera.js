@@ -45,7 +45,7 @@ Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
 
   var negEye = v3Eye.inverse();
 
-  return Transform.Apply(M).translate(negEye.getX(), negEye.getY(), negEye.getZ(),1);
+  return Transform.Apply(M).translate(negEye.getX(), negEye.getY(), negEye.getZ(),1).getMatrixObject();
 };
 
 /*

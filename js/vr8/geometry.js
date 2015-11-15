@@ -3,8 +3,8 @@
 var Factory = require('../utils/factory');
 var Vec3 = require('../mathv2/vector').Vec3;
 var Vec4 = require('../mathv2/vector').Vec4;
-var Mat4 =  require('../mathv2/matrix');
-var Transform =  require('../mathv2/transform');
+var Mat4 = require('../mathv2/matrix');
+var Transform = require('../mathv2/transform');
 
 var Renderable = function(geometry, color, texture) {
     this.geometry = geometry || Vec3.New();
@@ -16,13 +16,19 @@ var Renderable = function(geometry, color, texture) {
 };
 
 
-var setUV = function(vec2){
-    var texture = {u:0, v:0};
+var setUV = function(vec2) {
+    var texture = {
+        u: 0,
+        v: 0
+    };
 
 
     var tmp = vec2.normalize();
 
-    return {u: Math.ceil(tmp.x) , v: Math.ceil(tmp.y)};
+    return {
+        u: Math.ceil(tmp.x),
+        v: Math.ceil(tmp.y)
+    };
 };
 
 var Polygon = function(Core, that) {
@@ -31,36 +37,54 @@ var Polygon = function(Core, that) {
 
     that.getModel = function() {
 
-            var tmp = []; 
+        var tmp = [];
         that.geometry.forEach(function(renderable) {
-              tmp.push(
-            renderable.geometry.x,
-            renderable.geometry.y,
-            renderable.geometry.z,
+            tmp.push(
+                renderable.geometry.x,
+                renderable.geometry.y,
+                renderable.geometry.z,
 
-            renderable.color.x,
-            renderable.color.y,
-            renderable.color.z,
-            renderable.color.w,
+                renderable.color.x,
+                renderable.color.y,
+                renderable.color.z,
+                renderable.color.w,
 
-            renderable.texture.u,
-            renderable.texture.v
-                             );
+                renderable.texture.u,
+                renderable.texture.v
+            );
         });
 
         return new Float32Array(tmp);
     };
 
 
-    that.plane = function(width, height){
-        that.geometry.push( new Renderable( Vec3.New(-width, -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-        that.geometry.push( new Renderable( Vec3.New(width,  -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-        that.geometry.push( new Renderable( Vec3.New(-width,  height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-        that.geometry.push( new Renderable( Vec3.New(width,   height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+    that.plane = function(width, height) {
+        that.geometry.push(new Renderable(Vec3.New(-width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(-width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         return that;
     };
 
-    that.circle = function( _sides, radius) {
+
+    that.plane3d = function(x, y, z) {
+        that.geometry.push(new Renderable(Vec3.New(-x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(-x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        that.geometry.push(new Renderable(Vec3.New(x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+        return that;
+    }
+
+
+    that.cube = function(x, y){
+       
+
+       that.plane3d(x, y, 15);
+       that.plane3d(x, y, -15);
+       return that;
+    }
+
+    that.circle = function(_sides, radius) {
 
         var cos = Math.cos;
         var sin = Math.sin;
@@ -73,9 +97,9 @@ var Polygon = function(Core, that) {
         for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
             var vertex = Vec3.New(radius * cos(x), radius * sin(x));
             console.log('->', vertex);
-            that.geometry.push( new Renderable( vertex, Vec4.New(0.8, 0.8, 0.8, 1.0 ), setUV(vertex) ) );
-            
-           // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
+            that.geometry.push(new Renderable(vertex, Vec4.New(0.8, 0.8, 0.8, 1.0), setUV(vertex)));
+
+            // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
         }
 
         return that;

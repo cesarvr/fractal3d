@@ -12852,7 +12852,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\r\n\r\n     attribute vec3 position;\r\n     attribute vec2 texture;  \r\n     attribute vec4 colors;  \r\n\r\n     uniform mat4 MV;\r\n     uniform mat4 P;\r\n     \r\n     varying vec2 oTexture;\r\n     varying vec4 oColors;\r\n\r\n    void main(void) { \r\n      gl_Position = MV * P * vec4(position, 1.0);\r\n      oTexture = texture;\r\n      oColors  = colors;\r\n     }\r\n\r\n</script>\r\n\r\n\r\n<script id="fragment-shader" type="fragment">\r\n    \r\n    precision mediump float;\r\n    varying vec2 oTexture;\r\n    varying vec4 oColors;\r\n    uniform sampler2D uSampler;\r\n\r\n    void main(void) {\r\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\r\n    }\r\n\r\n</script>\r\n\r\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;  \n     attribute vec4 colors;  \n\n     uniform mat4 MV;\n     uniform mat4 P;\n     \n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) { \n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n    \n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n\n';
 	return __p
 	}
 
@@ -12871,8 +12871,8 @@
 	    this.Shader = __webpack_require__(14);
 	    this.Texture = __webpack_require__(15);
 	    this.Camera = __webpack_require__(16);
-	    this.Scene = __webpack_require__(19);
-	    this.Geometry = __webpack_require__(20);
+	    this.Scene = __webpack_require__(20);
+	    this.Geometry = __webpack_require__(21);
 
 	    var core = new CanvasGL(options.fullscreen, options.element);
 	    var webGL = core.getWebGL();
@@ -12911,7 +12911,7 @@
 	        Vec3: __webpack_require__(17).Vec3,
 	        Vec4: __webpack_require__(17).Vec4,
 	        Mat4: __webpack_require__(18),
-	        Transform: __webpack_require__(21),
+	        Transform: __webpack_require__(19),
 	    };
 	};
 
@@ -13102,13 +13102,12 @@
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
+	/* WEBPACK VAR INJECTION */(function(Buffer) {/*!
 	 * The buffer module from node.js, for the browser.
 	 *
 	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
 	 * @license  MIT
 	 */
-	/* eslint-disable no-proto */
 
 	var base64 = __webpack_require__(10)
 	var ieee754 = __webpack_require__(11)
@@ -13148,11 +13147,7 @@
 	 * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
 	 * get the Object implementation, which is slower but behaves correctly.
 	 */
-	Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
-	  ? global.TYPED_ARRAY_SUPPORT
-	  : typedArraySupport()
-
-	function typedArraySupport () {
+	Buffer.TYPED_ARRAY_SUPPORT = (function () {
 	  function Bar () {}
 	  try {
 	    var arr = new Uint8Array(1)
@@ -13165,7 +13160,7 @@
 	  } catch (e) {
 	    return false
 	  }
-	}
+	})()
 
 	function kMaxLength () {
 	  return Buffer.TYPED_ARRAY_SUPPORT
@@ -13321,16 +13316,10 @@
 	  return that
 	}
 
-	if (Buffer.TYPED_ARRAY_SUPPORT) {
-	  Buffer.prototype.__proto__ = Uint8Array.prototype
-	  Buffer.__proto__ = Uint8Array
-	}
-
 	function allocate (that, length) {
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    // Return an augmented `Uint8Array` instance, for best performance
 	    that = Buffer._augment(new Uint8Array(length))
-	    that.__proto__ = Buffer.prototype
 	  } else {
 	    // Fallback: Return an object instance of the Buffer class
 	    that.length = length
@@ -14119,7 +14108,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14136,7 +14125,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14150,7 +14139,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14172,7 +14161,7 @@
 	    this[offset + 3] = (value >>> 24)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 1] = (value >>> 8)
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, true)
 	  }
@@ -14187,7 +14176,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14240,7 +14229,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
 	  if (value < 0) value = 0xff + value + 1
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14249,7 +14238,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14263,7 +14252,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14275,7 +14264,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 3] = (value >>> 24)
@@ -14294,7 +14283,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14647,7 +14636,7 @@
 	  return i
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
 
 /***/ },
 /* 10 */
@@ -15102,6 +15091,7 @@
 	var Factory = __webpack_require__(13);
 	var Vec4  = __webpack_require__(17).Vec4;
 	var Matrix  = __webpack_require__(18);
+	var Transform = __webpack_require__(19);
 
 
 	var Camera = function(){
@@ -15135,22 +15125,39 @@
 	  var F = v3Center.sub(v3Eye).normalize();
 	  var U = v3Up.normalize();
 	  var S = F.cross(U).normalize();
+
 	  U = S.cross(F);
 
-	  var M = Matrix.Set(S,  U, F.inverse());
+	  var M = Matrix.Identity().set(S,  U, F.inverse());
 
 
 	  var negEye = v3Eye.inverse();
-	  var T = Matrix
-	          .Identity()
-	          .set(
-	            Vec4.New(1,0,0,negEye.getX()),
-	            Vec4.New(0,1,0,negEye.getY()),
-	            Vec4.New(0,0,1,negEye.getZ())
-	          );
 
-	  return M.multiply(T);
+	  return Transform.Apply(M).translate(negEye.getX(), negEye.getY(), negEye.getZ(),1).getMatrixObject();
 	};
+
+	/*
+	  Perspective
+	*/
+
+	Camera.prototype.MakePerspective = function(fieldOfView, aspectRatio, nearZ, farZ){
+	  var M = Matrix.Identity();
+	  var cotan = 1.0 / Math.tan(fieldOfView / 2.0);
+	  return M.set(
+	    Vec4.New(cotan/aspectRatio),
+	    Vec4.New(0.0, cotan),
+	    Vec4.New(0.0,0.0,( (farZ + nearZ) / (nearZ - farZ)), ( (2.0 * farZ * nearZ) / (nearZ - farZ)) ),
+	    Vec4.New(0.0,0.0,-1.0,0.0)
+	   );
+	};
+
+
+
+
+
+
+
+
 
 	module.exports = new Factory(Camera);
 
@@ -15559,6 +15566,91 @@
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 = __webpack_require__(18);
+
+	/*
+	 * Degree to radian.
+	 */
+	function dgToRad(angle){
+	    return (angle*Math.PI) / 180;
+	};
+
+	var Transform = function(m) {
+	    var _m = m;
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+
+	    this.translate = function(x, y, z) {
+	        _m.row1.w = x || 0.0;
+	        _m.row2.w = y || 0.0;
+	        _m.row3.w = z || 0.0;
+	        return this;
+	    };
+
+	    this.scale = function(x, y, z) {
+	        _m.row1.x = x || 0.0;
+	        _m.row2.y = y || 0.0;
+	        _m.row3.z = z || 0.0;
+	        return this;
+	    };
+
+	    this.rotateX = function(angle) {
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row2.y =  _cos || 0.0;
+	        _m.row2.z = -_sin || 0.0; 
+
+	        _m.row3.y = _sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+	    
+	    this.rotateY = function(angle){
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row1.x =  _cos || 0.0;
+	        _m.row1.z =  _sin || 0.0; 
+
+	        _m.row3.x = -_sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+
+
+
+	    this.getMatrix = function(){
+	      return _m.getMatrix();
+	    };
+
+	    this.getMatrixObject = function(){
+	        return _m;
+	    }; 
+
+	};
+
+	module.exports = {
+	    Apply: function(m) {
+	        return new Transform(m);
+	    },
+	    New: function(){
+	      return new Transform( Mat4.Identity() );
+	    },
+	};
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict'
 
 	var Factory = __webpack_require__(13);
@@ -15573,6 +15665,7 @@
 
 	    
 	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	    gl.enable(gl.DEPTH_TEST);
 
 	    /* this method can be override for custom functionality. */
 
@@ -15585,7 +15678,7 @@
 	    }
 
 	    that.clean = function() {
-	        gl.clear(gl.COLOR_BUFFER_BIT);
+	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	    }
 
 	    that.prepare = function(entity) {
@@ -15623,7 +15716,7 @@
 
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
@@ -15631,8 +15724,8 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 =  __webpack_require__(18);
-	var Transform =  __webpack_require__(21);
+	var Mat4 = __webpack_require__(18);
+	var Transform = __webpack_require__(19);
 
 	var Renderable = function(geometry, color, texture) {
 	    this.geometry = geometry || Vec3.New();
@@ -15644,13 +15737,19 @@
 	};
 
 
-	var setUV = function(vec2){
-	    var texture = {u:0, v:0};
+	var setUV = function(vec2) {
+	    var texture = {
+	        u: 0,
+	        v: 0
+	    };
 
 
 	    var tmp = vec2.normalize();
 
-	    return {u: Math.ceil(tmp.x) , v: Math.ceil(tmp.y)};
+	    return {
+	        u: Math.ceil(tmp.x),
+	        v: Math.ceil(tmp.y)
+	    };
 	};
 
 	var Polygon = function(Core, that) {
@@ -15659,36 +15758,54 @@
 
 	    that.getModel = function() {
 
-	            var tmp = []; 
+	        var tmp = [];
 	        that.geometry.forEach(function(renderable) {
-	              tmp.push(
-	            renderable.geometry.x,
-	            renderable.geometry.y,
-	            renderable.geometry.z,
+	            tmp.push(
+	                renderable.geometry.x,
+	                renderable.geometry.y,
+	                renderable.geometry.z,
 
-	            renderable.color.x,
-	            renderable.color.y,
-	            renderable.color.z,
-	            renderable.color.w,
+	                renderable.color.x,
+	                renderable.color.y,
+	                renderable.color.z,
+	                renderable.color.w,
 
-	            renderable.texture.u,
-	            renderable.texture.v
-	                             );
+	                renderable.texture.u,
+	                renderable.texture.v
+	            );
 	        });
 
 	        return new Float32Array(tmp);
 	    };
 
 
-	    that.plane = function(width, height){
-	        that.geometry.push( new Renderable( Vec3.New(-width, -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(width,  -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(-width,  height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(width,   height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+	    that.plane = function(width, height) {
+	        that.geometry.push(new Renderable(Vec3.New(-width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(-width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
 	        return that;
 	    };
 
-	    that.circle = function( _sides, radius) {
+
+	    that.plane3d = function(x, y, z) {
+	        that.geometry.push(new Renderable(Vec3.New(-x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(-x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        that.geometry.push(new Renderable(Vec3.New(x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
+	        return that;
+	    }
+
+
+	    that.cube = function(x, y){
+	       
+
+	       that.plane3d(x, y, 15);
+	       that.plane3d(x, y, -15);
+	       return that;
+	    }
+
+	    that.circle = function(_sides, radius) {
 
 	        var cos = Math.cos;
 	        var sin = Math.sin;
@@ -15701,9 +15818,9 @@
 	        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
 	            var vertex = Vec3.New(radius * cos(x), radius * sin(x));
 	            console.log('->', vertex);
-	            that.geometry.push( new Renderable( vertex, Vec4.New(0.8, 0.8, 0.8, 1.0 ), setUV(vertex) ) );
-	            
-	           // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
+	            that.geometry.push(new Renderable(vertex, Vec4.New(0.8, 0.8, 0.8, 1.0), setUV(vertex)));
+
+	            // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
 	        }
 
 	        return that;
@@ -15714,47 +15831,6 @@
 
 
 	module.exports = new Factory(Polygon);
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-
-
-	var Transform = function(m) {
-	    var _m = m;
-
-	    this.translate = function(x, y, z) {
-	        _m.row1.w = x || 0.0;
-	        _m.row2.w = y || 0.0;
-	        _m.row3.w = z || 0.0;
-	        return this;
-	    };
-
-	    this.scale = function(x, y, z) {
-	        _m.row1.x = x || 0.0;
-	        _m.row2.y = y || 0.0;
-	        _m.row3.z = z || 0.0;
-	        return this;
-	    };
-
-	    this.getMatrix = function(){
-	      return _m.getMatrix();
-	    }; 
-
-	};
-
-	module.exports = {
-	    Apply: function(m) {
-	        return new Transform(m);
-	    },
-	    New: function(){
-	      return new Transform( Mat4.Identity() );
-	    },
-	};
 
 
 /***/ },
@@ -16114,7 +16190,7 @@
 	module.exports = {
 
 	    init: function() {
-	        var tmpl = __webpack_require__(5);
+	        var tmpl = __webpack_require__(27);
 	        var Core = __webpack_require__(6);
 	        var Noise = __webpack_require__(23);
 
@@ -16137,9 +16213,10 @@
 	        /* config */
 	        scene.setViewPort(core.canvas.x, core.canvas.y);
 	        scene.shader = shader;
-	        scene.camera = Utils.camera.MakeLookAt( Vec3.New(2,5,23), Vec3.New(0,0,0), Vec3.New(0,1,0) );
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-	        debugger;
+	        scene.camera = perspective.multiply(camera).getMatrix(); 
 
 	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
 	        /*         */
@@ -16147,7 +16224,7 @@
 	        var geometry = core.createGeometry();
 
 	        buffer.geometry({
-	            points: geometry.plane(10, 15).getModel(),
+	            points: geometry.cube(10, 15).getModel(),
 	            size: 9
 	        });
 
@@ -16189,14 +16266,27 @@
 	        var Transform = core.MLib.Transform.New();
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.translate(25, 25).getMatrix(),
+	            model: Transform.translate(5, 5, -60).getMatrix(),
 	            drawType: 'TRIANGLE_STRIP',
 	            texture: texture,
 	        };
 
+
+	        var dx = 1;
+
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
-	            //window.requestAnimationFrame(render);
+	            window.requestAnimationFrame(render);
+	        dx+= 0.5;
+
+	        var entity = {
+	            buffer: buffer,
+	            model: Transform.rotateY(dx).getMatrix(),
+	            drawType: 'TRIANGLE_STRIP',
+	            texture: texture,
+	        };
+
+
 	            scene.clean();
 	            scene.render(entity);
 	        };
@@ -16207,6 +16297,16 @@
 
 	};
 
+
+/***/ },
+/* 27 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n';
+	return __p
+	}
 
 /***/ }
 /******/ ]);

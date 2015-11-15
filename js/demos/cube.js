@@ -26,10 +26,10 @@ module.exports = {
         /* config */
         scene.setViewPort(core.canvas.x, core.canvas.y);
         scene.shader = shader;
-        scene.camera = Utils.camera.MakeLookAt(Vec3.New(2, 2, 23), Vec3.New(0, 0, 0), Vec3.New(0, 1, 0));
+        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-        debugger;
+        scene.camera = perspective.multiply(camera).getMatrix(); 
 
         shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
         /*         */
@@ -37,7 +37,7 @@ module.exports = {
         var geometry = core.createGeometry();
 
         buffer.geometry({
-            points: geometry.plane(10, 15).getModel(),
+            points: geometry.cube(10, 15).getModel(),
             size: 9
         });
 
@@ -79,14 +79,27 @@ module.exports = {
         var Transform = core.MLib.Transform.New();
         var entity = {
             buffer: buffer,
-            model: Transform.translate(25, 25).getMatrix(),
+            model: Transform.translate(5, 5, -60).getMatrix(),
             drawType: 'TRIANGLE_STRIP',
             texture: texture,
         };
 
+
+        var dx = 1;
+
         function render() {
             //Utils.getNextFrame.call(this, render);
-            //window.requestAnimationFrame(render);
+            window.requestAnimationFrame(render);
+        dx+= 0.5;
+
+        var entity = {
+            buffer: buffer,
+            model: Transform.rotateY(dx).getMatrix(),
+            drawType: 'TRIANGLE_STRIP',
+            texture: texture,
+        };
+
+
             scene.clean();
             scene.render(entity);
         };
