@@ -3,6 +3,7 @@
 var Factory = require('../utils/factory');
 var Vec4  = require('../mathv2/vector').Vec4;
 var Matrix  = require('../mathv2/matrix');
+var Transform = require('../mathv2/transform');
 
 
 var Camera = function(){
@@ -36,21 +37,38 @@ Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
   var F = v3Center.sub(v3Eye).normalize();
   var U = v3Up.normalize();
   var S = F.cross(U).normalize();
+
   U = S.cross(F);
 
-  var M = Matrix.Set(S,  U, F.inverse());
+  var M = Matrix.Identity().set(S,  U, F.inverse());
 
 
   var negEye = v3Eye.inverse();
-  var T = Matrix
-          .Identity()
-          .set(
-            Vec4.New(1,0,0,negEye.getX()),
-            Vec4.New(0,1,0,negEye.getY()),
-            Vec4.New(0,0,1,negEye.getZ())
-          );
 
-  return M.multiply(T);
+  return Transform.Apply(M).translate(negEye.getX(), negEye.getY(), negEye.getZ(),1);
 };
+
+/*
+  Perspective
+*/
+
+Camera.prototype.MakePerspective = function(fieldOfView, aspectRatio, nearZ, farZ){
+  var M = Matrix.Identity();
+  var cotan = 1.0 / Math.tan(fieldOfView / 2.0);
+  return M.set(
+    Vec4.New(cotan/aspectRatio),
+    Vec4.New(0.0, cotan),
+    Vec4.New(0.0,0.0,( (farZ + nearZ) / (nearZ - farZ)), ( (2.0 * farZ * nearZ) / (nearZ - farZ)) ),
+    Vec4.New(0.0,0.0,-1.0,0.0)
+   );
+};
+
+
+
+
+
+
+
+
 
 module.exports = new Factory(Camera);

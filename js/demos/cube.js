@@ -3,7 +3,7 @@
 module.exports = {
 
     init: function() {
-        var tmpl = require('../template/xor.html');
+        var tmpl = require('../template/cube.html');
         var Core = require('../vr8/core');
         var Noise = require('./noise');
 
@@ -26,7 +26,8 @@ module.exports = {
         /* config */
         scene.setViewPort(core.canvas.x, core.canvas.y);
         scene.shader = shader;
-        scene.camera = Utils.camera.MakeLookAt( Vec3.New(2,5,23), Vec3.New(0,0,0), Vec3.New(0,1,0) );
+        scene.camera = Utils.camera.MakeLookAt(Vec3.New(2, 2, 23), Vec3.New(0, 0, 0), Vec3.New(0, 1, 0));
+        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
         debugger;
 
