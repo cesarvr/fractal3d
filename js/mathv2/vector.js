@@ -57,7 +57,7 @@ var Vector3 = function(x, y, z) {
         return (this.x * v.x) + (this.y * v.y) + (this.z * v.z);
     };
 
-    this.invert = function() {
+    this.inverse = function() {
         this.x = -this.x;
         this.y = -this.y;
         this.z = -this.z;

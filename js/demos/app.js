@@ -7,6 +7,7 @@ var DemoRouter = Backbone.Router.extend({
     routes: {
         'xor': 'xorDemo',
         'prime': 'primeDemo',
+        'cube' : 'cube',
     },
 
     xorDemo: function(){
@@ -15,12 +16,14 @@ var DemoRouter = Backbone.Router.extend({
     },
 
     primeDemo: function(){
-
         require('./thread/prime/prime').init();
+    },
+
+    cube: function(){
+      require('./cube').init();
     },
 
 });
 
 new DemoRouter();
 Backbone.history.start();
-

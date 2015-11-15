@@ -38,10 +38,10 @@ var Matrix4 = function() {
     this.row4 = Vec4.New();
 
     /*
-     * [ 0 4  8 12 ] 
+     * [ 0 4  8 12 ]
      * [ 1 5  9 13 ]
-     * [ 2 6 10 14 ]  
-     * [ 3 7 11 15 ] 
+     * [ 2 6 10 14 ]
+     * [ 3 7 11 15 ]
      *
      * */
 
@@ -58,6 +58,8 @@ var Matrix4 = function() {
         this.row2 = Vec4.New(0.0, 1.0, 0.0, 0.0);
         this.row3 = Vec4.New(0.0, 0.0, 1.0, 0.0);
         this.row4 = Vec4.New(0.0, 0.0, 0.0, 1.0);
+
+        return this;
     };
 
     this.setMatrix = function(m) {
@@ -65,13 +67,16 @@ var Matrix4 = function() {
         this.row2 = m.row2;
         this.row3 = m.row3;
         this.row4 = m.row4;
+
+        return this;
     };
 
     this.set = function(r1, r2, r3, r4) {
-        this.row1 = r1;
-        this.row2 = r2;
-        this.row3 = r3;
-        this.row4 = r4;
+        this.row1 = r1 || this.row1;
+        this.row2 = r2 || this.row2;
+        this.row3 = r3 || this.row3;
+        this.row4 = r4 || this.row4;
+        return this;
     };
 
     this.getTransponse = function() {
@@ -110,8 +115,8 @@ var Matrix4 = function() {
             this.row4.dot(rhs.row2),
             this.row4.dot(rhs.row3),
             this.row4.dot(rhs.row4));
-
-        this.setMatrix(mtx);
+            
+        return this.setMatrix(mtx);
     };
 };
 
@@ -127,6 +132,11 @@ var MatrixFactory = {
         o.setIdentity();
         return o;
     },
+
+    Set: function(r1,r2,r3,r4){
+      var o = new Matrix4();
+      return o.set(r1,r2,r3,r4);
+    }
 };
 
 module.exports = MatrixFactory;

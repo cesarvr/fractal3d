@@ -53,6 +53,7 @@
 	    routes: {
 	        'xor': 'xorDemo',
 	        'prime': 'primeDemo',
+	        'cube' : 'cube',
 	    },
 
 	    xorDemo: function(){
@@ -61,15 +62,17 @@
 	    },
 
 	    primeDemo: function(){
-
 	        __webpack_require__(24).init();
+	    },
+
+	    cube: function(){
+	      __webpack_require__(26).init();
 	    },
 
 	});
 
 	new DemoRouter();
 	Backbone.history.start();
-
 
 
 /***/ },
@@ -12849,7 +12852,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;  \n     attribute vec4 colors;  \n\n     uniform mat4 MV;\n     uniform mat4 P;\n     \n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) { \n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n    \n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n\n';
+	__p += '<script id="vertex-shader" type="vertex">\r\n\r\n     attribute vec3 position;\r\n     attribute vec2 texture;  \r\n     attribute vec4 colors;  \r\n\r\n     uniform mat4 MV;\r\n     uniform mat4 P;\r\n     \r\n     varying vec2 oTexture;\r\n     varying vec4 oColors;\r\n\r\n    void main(void) { \r\n      gl_Position = MV * P * vec4(position, 1.0);\r\n      oTexture = texture;\r\n      oColors  = colors;\r\n     }\r\n\r\n</script>\r\n\r\n\r\n<script id="fragment-shader" type="fragment">\r\n    \r\n    precision mediump float;\r\n    varying vec2 oTexture;\r\n    varying vec4 oColors;\r\n    uniform sampler2D uSampler;\r\n\r\n    void main(void) {\r\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\r\n    }\r\n\r\n</script>\r\n\r\n';
 	return __p
 	}
 
@@ -12868,8 +12871,8 @@
 	    this.Shader = __webpack_require__(14);
 	    this.Texture = __webpack_require__(15);
 	    this.Camera = __webpack_require__(16);
-	    this.Scene = __webpack_require__(17);
-	    this.Geometry = __webpack_require__(18);
+	    this.Scene = __webpack_require__(19);
+	    this.Geometry = __webpack_require__(20);
 
 	    var core = new CanvasGL(options.fullscreen, options.element);
 	    var webGL = core.getWebGL();
@@ -12905,9 +12908,9 @@
 
 
 	    this.MLib = {
-	        Vec3: __webpack_require__(19).Vec3,
-	        Vec4: __webpack_require__(19).Vec4,
-	        Mat4: __webpack_require__(20),
+	        Vec3: __webpack_require__(17).Vec3,
+	        Vec4: __webpack_require__(17).Vec4,
+	        Mat4: __webpack_require__(18),
 	        Transform: __webpack_require__(21),
 	    };
 	};
@@ -15097,6 +15100,9 @@
 	'use strict'
 
 	var Factory = __webpack_require__(13);
+	var Vec4  = __webpack_require__(17).Vec4;
+	var Matrix  = __webpack_require__(18);
+
 
 	var Camera = function(){
 	};
@@ -15114,172 +15120,43 @@
 	    return m;
 	}
 
+
+
+	/*
+
+	  Make a LookAt Matrix.
+
+	  Inspirated by
+	  http://www.cs.virginia.edu/~gfx/Courses/1999/intro.fall99.html/lookat.html
+
+	*/
+	Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
+
+	  var F = v3Center.sub(v3Eye).normalize();
+	  var U = v3Up.normalize();
+	  var S = F.cross(U).normalize();
+	  U = S.cross(F);
+
+	  var M = Matrix.Set(S,  U, F.inverse());
+
+
+	  var negEye = v3Eye.inverse();
+	  var T = Matrix
+	          .Identity()
+	          .set(
+	            Vec4.New(1,0,0,negEye.getX()),
+	            Vec4.New(0,1,0,negEye.getY()),
+	            Vec4.New(0,0,1,negEye.getZ())
+	          );
+
+	  return M.multiply(T);
+	};
+
 	module.exports = new Factory(Camera);
 
 
 /***/ },
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(13);
-
-	var Scene = function(Core, that) {
-
-	    var that = that || {};
-	    var gl = Core;
-
-	    var shader = null;
-	    var camera = null;
-
-	    
-	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-	    /* this method can be override for custom functionality. */
-
-	    that.setViewPort = function(Width, Height){
-	      gl.viewport(0, 0, Width, Height);
-	    }
-
-	    that.setClearColor = function(clear){
-	        gl.clearColor(clear.r , clear.g , clear.b, 1.0);
-	    }
-
-	    that.clean = function() {
-	        gl.clear(gl.COLOR_BUFFER_BIT);
-	    }
-
-	    that.prepare = function(entity) {
-	        this.shader.prepare({
-	            'MV': this.camera,
-	            'P': entity.model
-	        });
-
-	        entity.buffer.prepare();
-	        entity.buffer.upload_vertex(this.shader.vars.position);
-	        entity.buffer.upload_colors(this.shader.vars.colors);
-	        entity.buffer.upload_texture(this.shader.vars.texture);
-
-	        if (entity.texture)
-	            entity.texture.prepare(this.shader.vars);
-	    };
-
-	    that.draw = function(entity) {
-	        if (typeof gl[entity.drawType] === 'number')
-	            gl.drawArrays(gl[entity.drawType], 0, entity.buffer.sides);
-	        else
-	            gl.drawArrays(gl.TRIANGLE_STRIP, 0, entity.buffer.sides);
-	    }
-
-	    that.render = function(e) {
-	        that.prepare(e);
-	        that.draw(e);
-	    }
-
-	    return that;
-	}
-
-
-	module.exports = new Factory(Scene);
-
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(13);
-	var Vec3 = __webpack_require__(19).Vec3;
-	var Vec4 = __webpack_require__(19).Vec4;
-	var Mat4 =  __webpack_require__(20);
-	var Transform =  __webpack_require__(21);
-
-	var Renderable = function(geometry, color, texture) {
-	    this.geometry = geometry || Vec3.New();
-	    this.color = color || Vec4.New(0.9, 0.9, 0.9, 1.0);
-	    this.texture = setUV(this.geometry) || {
-	        u: 0,
-	        v: 0
-	    };
-	};
-
-
-	var setUV = function(vec2){
-	    var texture = {u:0, v:0};
-
-
-	    var tmp = vec2.normalize();
-
-	    return {u: Math.ceil(tmp.x) , v: Math.ceil(tmp.y)};
-	};
-
-	var Polygon = function(Core, that) {
-
-	    that.geometry = [];
-
-	    that.getModel = function() {
-
-	            var tmp = []; 
-	        that.geometry.forEach(function(renderable) {
-	              tmp.push(
-	            renderable.geometry.x,
-	            renderable.geometry.y,
-	            renderable.geometry.z,
-
-	            renderable.color.x,
-	            renderable.color.y,
-	            renderable.color.z,
-	            renderable.color.w,
-
-	            renderable.texture.u,
-	            renderable.texture.v
-	                             );
-	        });
-
-	        return new Float32Array(tmp);
-	    };
-
-
-	    that.plane = function(width, height){
-	        that.geometry.push( new Renderable( Vec3.New(-width, -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(width,  -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(-width,  height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        that.geometry.push( new Renderable( Vec3.New(width,   height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
-	        return that;
-	    };
-
-	    that.circle = function( _sides, radius) {
-
-	        var cos = Math.cos;
-	        var sin = Math.sin;
-	        var PI = Math.PI;
-
-	        var sides = _sides || 5;
-	        var ucircle = (2 * PI);
-	        that.geometry = [];
-
-	        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
-	            var vertex = Vec3.New(radius * cos(x), radius * sin(x));
-	            console.log('->', vertex);
-	            that.geometry.push( new Renderable( vertex, Vec4.New(0.8, 0.8, 0.8, 1.0 ), setUV(vertex) ) );
-	            
-	           // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
-	        }
-
-	        return that;
-	    };
-
-	    return that;
-	};
-
-
-	module.exports = new Factory(Polygon);
-
-
-/***/ },
-/* 19 */
 /***/ function(module, exports) {
 
 	var Vector3 = function(x, y, z) {
@@ -15341,7 +15218,7 @@
 	        return (this.x * v.x) + (this.y * v.y) + (this.z * v.z);
 	    };
 
-	    this.invert = function() {
+	    this.inverse = function() {
 	        this.x = -this.x;
 	        this.y = -this.y;
 	        this.z = -this.z;
@@ -15531,10 +15408,10 @@
 
 
 /***/ },
-/* 20 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(19).Vec4;
+	var Vec4 = __webpack_require__(17).Vec4;
 
 
 	/*
@@ -15574,10 +15451,10 @@
 	    this.row4 = Vec4.New();
 
 	    /*
-	     * [ 0 4  8 12 ] 
+	     * [ 0 4  8 12 ]
 	     * [ 1 5  9 13 ]
-	     * [ 2 6 10 14 ]  
-	     * [ 3 7 11 15 ] 
+	     * [ 2 6 10 14 ]
+	     * [ 3 7 11 15 ]
 	     *
 	     * */
 
@@ -15594,6 +15471,8 @@
 	        this.row2 = Vec4.New(0.0, 1.0, 0.0, 0.0);
 	        this.row3 = Vec4.New(0.0, 0.0, 1.0, 0.0);
 	        this.row4 = Vec4.New(0.0, 0.0, 0.0, 1.0);
+
+	        return this;
 	    };
 
 	    this.setMatrix = function(m) {
@@ -15601,13 +15480,16 @@
 	        this.row2 = m.row2;
 	        this.row3 = m.row3;
 	        this.row4 = m.row4;
+
+	        return this;
 	    };
 
 	    this.set = function(r1, r2, r3, r4) {
-	        this.row1 = r1;
-	        this.row2 = r2;
-	        this.row3 = r3;
-	        this.row4 = r4;
+	        this.row1 = r1 || this.row1;
+	        this.row2 = r2 || this.row2;
+	        this.row3 = r3 || this.row3;
+	        this.row4 = r4 || this.row4;
+	        return this;
 	    };
 
 	    this.getTransponse = function() {
@@ -15646,8 +15528,8 @@
 	            this.row4.dot(rhs.row2),
 	            this.row4.dot(rhs.row3),
 	            this.row4.dot(rhs.row4));
-
-	        this.setMatrix(mtx);
+	            
+	        return this.setMatrix(mtx);
 	    };
 	};
 
@@ -15663,17 +15545,183 @@
 	        o.setIdentity();
 	        return o;
 	    },
+
+	    Set: function(r1,r2,r3,r4){
+	      var o = new Matrix4();
+	      return o.set(r1,r2,r3,r4);
+	    }
 	};
 
 	module.exports = MatrixFactory;
 
 
 /***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var Factory = __webpack_require__(13);
+
+	var Scene = function(Core, that) {
+
+	    var that = that || {};
+	    var gl = Core;
+
+	    var shader = null;
+	    var camera = null;
+
+	    
+	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+	    /* this method can be override for custom functionality. */
+
+	    that.setViewPort = function(Width, Height){
+	      gl.viewport(0, 0, Width, Height);
+	    }
+
+	    that.setClearColor = function(clear){
+	        gl.clearColor(clear.r , clear.g , clear.b, 1.0);
+	    }
+
+	    that.clean = function() {
+	        gl.clear(gl.COLOR_BUFFER_BIT);
+	    }
+
+	    that.prepare = function(entity) {
+	        this.shader.prepare({
+	            'MV': this.camera,
+	            'P': entity.model
+	        });
+
+	        entity.buffer.prepare();
+	        entity.buffer.upload_vertex(this.shader.vars.position);
+	        entity.buffer.upload_colors(this.shader.vars.colors);
+	        entity.buffer.upload_texture(this.shader.vars.texture);
+
+	        if (entity.texture)
+	            entity.texture.prepare(this.shader.vars);
+	    };
+
+	    that.draw = function(entity) {
+	        if (typeof gl[entity.drawType] === 'number')
+	            gl.drawArrays(gl[entity.drawType], 0, entity.buffer.sides);
+	        else
+	            gl.drawArrays(gl.TRIANGLE_STRIP, 0, entity.buffer.sides);
+	    }
+
+	    that.render = function(e) {
+	        that.prepare(e);
+	        that.draw(e);
+	    }
+
+	    return that;
+	}
+
+
+	module.exports = new Factory(Scene);
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var Factory = __webpack_require__(13);
+	var Vec3 = __webpack_require__(17).Vec3;
+	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 =  __webpack_require__(18);
+	var Transform =  __webpack_require__(21);
+
+	var Renderable = function(geometry, color, texture) {
+	    this.geometry = geometry || Vec3.New();
+	    this.color = color || Vec4.New(0.9, 0.9, 0.9, 1.0);
+	    this.texture = setUV(this.geometry) || {
+	        u: 0,
+	        v: 0
+	    };
+	};
+
+
+	var setUV = function(vec2){
+	    var texture = {u:0, v:0};
+
+
+	    var tmp = vec2.normalize();
+
+	    return {u: Math.ceil(tmp.x) , v: Math.ceil(tmp.y)};
+	};
+
+	var Polygon = function(Core, that) {
+
+	    that.geometry = [];
+
+	    that.getModel = function() {
+
+	            var tmp = []; 
+	        that.geometry.forEach(function(renderable) {
+	              tmp.push(
+	            renderable.geometry.x,
+	            renderable.geometry.y,
+	            renderable.geometry.z,
+
+	            renderable.color.x,
+	            renderable.color.y,
+	            renderable.color.z,
+	            renderable.color.w,
+
+	            renderable.texture.u,
+	            renderable.texture.v
+	                             );
+	        });
+
+	        return new Float32Array(tmp);
+	    };
+
+
+	    that.plane = function(width, height){
+	        that.geometry.push( new Renderable( Vec3.New(-width, -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+	        that.geometry.push( new Renderable( Vec3.New(width,  -height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+	        that.geometry.push( new Renderable( Vec3.New(-width,  height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+	        that.geometry.push( new Renderable( Vec3.New(width,   height ), Vec4.New(0.8, 0.8, 0.8, 1.0 )));
+	        return that;
+	    };
+
+	    that.circle = function( _sides, radius) {
+
+	        var cos = Math.cos;
+	        var sin = Math.sin;
+	        var PI = Math.PI;
+
+	        var sides = _sides || 5;
+	        var ucircle = (2 * PI);
+	        that.geometry = [];
+
+	        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
+	            var vertex = Vec3.New(radius * cos(x), radius * sin(x));
+	            console.log('->', vertex);
+	            that.geometry.push( new Renderable( vertex, Vec4.New(0.8, 0.8, 0.8, 1.0 ), setUV(vertex) ) );
+	            
+	           // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
+	        }
+
+	        return that;
+	    };
+
+	    return that;
+	};
+
+
+	module.exports = new Factory(Polygon);
+
+
+/***/ },
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(19).Vec4;
-	var Mat4 = __webpack_require__(20);
+	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 = __webpack_require__(18);
 
 
 	var Transform = function(m) {
@@ -16055,6 +16103,109 @@
 	       
 	        module.exports = SWorker;
 	    }
+
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(5);
+	        var Core = __webpack_require__(6);
+	        var Noise = __webpack_require__(23);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+	        scene.setViewPort(core.canvas.x, core.canvas.y);
+	        scene.shader = shader;
+	        scene.camera = Utils.camera.MakeLookAt( Vec3.New(2,5,23), Vec3.New(0,0,0), Vec3.New(0,1,0) );
+
+	        debugger;
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = core.createGeometry();
+
+	        buffer.geometry({
+	            points: geometry.plane(10, 15).getModel(),
+	            size: 9
+	        });
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+	        /*
+	        var noise = new Noise();
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                 noi.push(  noise.perlin(x,y,4)  )*8;
+	            }
+	        }
+
+
+	        console.log(noi);
+	        noi.forEach(function(noise){
+	            pix.push(noise); //r
+	            pix.push(noise); //g
+	            pix.push(noise); //b
+	        });
+	        */
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+
+	        /* */
+
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+	        var Transform = core.MLib.Transform.New();
+	        var entity = {
+	            buffer: buffer,
+	            model: Transform.translate(25, 25).getMatrix(),
+	            drawType: 'TRIANGLE_STRIP',
+	            texture: texture,
+	        };
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            //window.requestAnimationFrame(render);
+	            scene.clean();
+	            scene.render(entity);
+	        };
+
+	        render();
+
+	    }
+
+	};
 
 
 /***/ }
