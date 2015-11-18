@@ -2,7 +2,7 @@
 
 var Factory = require('../utils/factory');
 var Vec4  = require('../mathv2/vector').Vec4;
-var Matrix  = require('../mathv2/matrix');
+var Matrix  = require('../mathv2/matrix4');
 var Transform = require('../mathv2/transform');
 
 

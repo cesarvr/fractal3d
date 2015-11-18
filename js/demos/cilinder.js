@@ -6,6 +6,7 @@ module.exports = {
         var tmpl = require('../template/cube.html');
         var Core = require('../vr8/core');
         var Noise = require('./noise');
+        var Polygon = require('./blinn/polygon');
 
 
         var core = new Core({
@@ -34,10 +35,10 @@ module.exports = {
         shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
         /*         */
 
-        var geometry = core.createGeometry();
+        var geometry = Polygon.New();
 
         buffer.geometry({
-            points: geometry.cube(5, 5).getModel(),
+            points: geometry.plane(5,5).getModel(),
             size: 9
         });
 
@@ -96,7 +97,7 @@ module.exports = {
         var entity = {
             buffer: buffer,
             model: Transform.rotateY(dx).getMatrix(),
-            drawType: 'TRIANGLE_STRIPS',
+            drawType: geometry.getDrawType(),
             texture: texture,
         };
 

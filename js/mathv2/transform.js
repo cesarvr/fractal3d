@@ -1,5 +1,5 @@
 var Vec4 = require('./vector').Vec4;
-var Mat4 = require('./matrix');
+var Mat4 = require('./matrix4');
 
 /*
  * Degree to radian.

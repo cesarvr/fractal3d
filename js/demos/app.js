@@ -8,6 +8,7 @@ var DemoRouter = Backbone.Router.extend({
         'xor': 'xorDemo',
         'prime': 'primeDemo',
         'cube' : 'cube',
+        'tunel' : 'tunel',
     },
 
     xorDemo: function(){
@@ -21,6 +22,10 @@ var DemoRouter = Backbone.Router.extend({
 
     cube: function(){
       require('./cube').init();
+    },
+
+    tunel: function(){
+      require('./cilinder').init();
     },
 
 });

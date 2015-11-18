@@ -3,7 +3,7 @@
 var Factory = require('../utils/factory');
 var Vec3 = require('../mathv2/vector').Vec3;
 var Vec4 = require('../mathv2/vector').Vec4;
-var Mat4 = require('../mathv2/matrix');
+var Mat4 = require('../mathv2/matrix4');
 var Transform = require('../mathv2/transform');
 
 var Renderable = function(geometry, color, texture) {
@@ -21,7 +21,6 @@ var setUV = function(vec2) {
         u: 0,
         v: 0
     };
-
 
     var tmp = vec2.normalize();
 
@@ -58,6 +57,10 @@ var Polygon = function(Core, that) {
     };
 
 
+    that.getDrawType = function(){
+        return this.drawType;
+    };
+
     that.plane = function(width, height) {
         that.geometry.push(new Renderable(Vec3.New(-width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         that.geometry.push(new Renderable(Vec3.New(width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
@@ -66,23 +69,52 @@ var Polygon = function(Core, that) {
         return that;
     };
 
-
-    that.plane3d = function(x, y, z) {
+ that.plane3d = function(y, x, z) {
         that.geometry.push(new Renderable(Vec3.New(-x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         that.geometry.push(new Renderable(Vec3.New(x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         that.geometry.push(new Renderable(Vec3.New(-x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         that.geometry.push(new Renderable(Vec3.New(x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
         return that;
+    };
+
+
+    that.cube = function(x, y) {
+
+
+        that.plane3d(x, y, 5);
+        that.plane3d(x, y, -5);
+        return that;
     }
 
+    that.cilinder = function() {
+        this.drawType = 'TRIANGLE_STRIP';
+        that.plane3d(15, 5, 5);
+        that.circle3d(5, 5, function(x, y) {
 
-    that.cube = function(x, y){
-       
+            that.plane3d(x, y, 5);
 
-       that.plane3d(x, y, 15);
-       that.plane3d(x, y, -15);
-       return that;
+        });
+        return that;
     }
+
+    that.circle3d = function(_sides, radius, cb) {
+
+        var cos = Math.cos;
+        var sin = Math.sin;
+        var PI = Math.PI;
+
+        var sides = _sides || 5;
+        var ucircle = (2 * PI);
+        that.geometry = [];
+
+        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
+            cb(radius * cos(x), radius * sin(x));
+        }
+
+        return that;
+    };
+
+
 
     that.circle = function(_sides, radius) {
 

@@ -1,7 +1,6 @@
 'use strict';
 
 
-
 var Core = function(options) {
     var CanvasGL = require('./canvas');
 
@@ -48,7 +47,8 @@ var Core = function(options) {
     this.MLib = {
         Vec3: require('../mathv2/vector').Vec3,
         Vec4: require('../mathv2/vector').Vec4,
-        Mat4: require('../mathv2/matrix'),
+        Mat4: require('../mathv2/matrix4'),
+        Mat3: require('../mathv2/matrix3'),
         Transform: require('../mathv2/transform'),
     };
 };
