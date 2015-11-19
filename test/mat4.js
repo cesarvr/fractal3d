@@ -1,5 +1,5 @@
 var assert = require('assert');
-var Matrix = require('../matrix');
+var Matrix = require('../js/mathv2/matrix4');
 var assert = require('chai').assert;
 
 describe('Matrix4', function() {

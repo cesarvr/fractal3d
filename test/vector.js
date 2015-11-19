@@ -1,6 +1,5 @@
-var DIR = './js/mathv2/';
 var assert = require('assert');
-var vector = require('../vector');
+var vector = require('../js/mathv2/vector');
 var assert = require('chai').assert;
 
 function pv(o) {
@@ -16,6 +15,17 @@ describe('Vector', function() {
         assert.isFunction(vector.Vec3Fn, 'Vec3Fn is an function');
         assert.isObject(vector.Lerp, 'Linear interpolation function is an object');
     });
+
+   it('Vector # Without arguments', function() {
+        var Vec3 = vector.Vec3;
+        var a = Vec3.New();
+
+        assert.strictEqual(a.x, 0, 'equal 0');
+        assert.strictEqual(a.y, 0, 'equal 0');
+        assert.strictEqual(a.z, 0, 'equal 0');
+    });
+
+
 
 
     it('Vector # Add function', function() {
@@ -76,7 +86,7 @@ describe('Vector', function() {
         var a = Vec3.New(2, 3, 4);
         var b = Vec3.New(5, 6, 7);
 
-        var z = a.cross(b).invert();
+        var z = a.cross(b).inverse();
         assert.strictEqual(z.x, 3, 'equal 3');
         assert.strictEqual(z.y, -6, 'equal -6');
         assert.strictEqual(z.z, 3, 'equal 3');
@@ -99,7 +109,7 @@ describe('Vector', function() {
         var a = Vec3.New(2, 3, 4);
         var b = Vec3.New(5, 6, 7);
 
-        var z = a.cross(b).invert().scalarMult(2);
+        var z = a.cross(b).inverse().scalarMult(2);
         assert.strictEqual(z.x, 6, 'equal 6');
         assert.strictEqual(z.y, -12, 'equal -12');
         assert.strictEqual(z.z, 6, 'equal 6');

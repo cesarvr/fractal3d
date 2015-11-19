@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/cesarvr/fractal3d/issues"
   },
-  "homepage": "https://github.com/cesarvr/fractal3d#readme"
+  "homepage": "https://github.com/cesarvr/fractal3d#readme",
+  "devDependencies": {
+    "chai": "^3.4.1"
+  }
 }
