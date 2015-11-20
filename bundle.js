@@ -15203,13 +15203,23 @@
 	        return this.z;
 	    };
 
-	    this.set = function(v) {
+	    this.copy = function(v) {
 	        this.x = v.x;
 	        this.y = v.y;
 	        this.z = v.z;
 
 	        return this;
 	    };
+
+	    this.setValues = function(x,y,z) {
+	        this.x = x;
+	        this.y = y;
+	        this.z = z;
+
+	        return this;
+	    };
+
+
 
 	    this.add = function(v) {
 	        this.x += v.x;
@@ -15265,8 +15275,8 @@
 
 	        return tmp;
 	    };
-
-	    this.scalarMult = function(e) {
+	    
+	    this.scalarMultiply = function(e) {
 	        this.x *= e;
 	        this.y *= e;
 	        this.z *= e;
@@ -16064,36 +16074,7 @@
 	var Vec4 = __webpack_require__(17).Vec4;
 	var Vec3 = __webpack_require__(17).Vec3;
 
-
-	/*
-	 * [ 0 4  8 12 ]   [ 0 4  8 12 ]
-	 * [ 1 5  9 13 ] x [ 1 5  9 13 ]
-	 * [ 2 6 10 14 ]   [ 2 6 10 14 ]
-	 * [ 3 7 11 15 ]   [ 3 7 11 15 ]
-	 *
-	 *
-	 * */
-
-
-	function p(m) {
-
-	    console.log('Matrix4:Debug');
-
-	    var a = m.row1;
-	    console.log(a.x, a.y, a.z, a.w);
-
-	    var a = m.row2;
-	    console.log(a.x, a.y, a.z, a.w);
-
-	    var a = m.row3;
-	    console.log(a.x, a.y, a.z, a.w);
-
-	    var a = m.row4;
-	    console.log(a.x, a.y, a.z, a.w);
-	}
-
 	function p3(m) {
-
 	    console.log('Matrix3:Debug');
 
 	    var a = m.row1;
@@ -16104,105 +16085,7 @@
 
 	    var a = m.row3;
 	    console.log(a.x, a.y, a.z);
-
 	}
-
-
-
-
-
-	var Matrix4 = function() {
-
-	    this.row1 = Vec4.New();
-	    this.row2 = Vec4.New();
-	    this.row3 = Vec4.New();
-	    this.row4 = Vec4.New();
-
-	    /*
-	     * [ 0 4  8 12 ]
-	     * [ 1 5  9 13 ]
-	     * [ 2 6 10 14 ]
-	     * [ 3 7 11 15 ]
-	     *
-	     * */
-
-	    this.getMatrix = function() {
-	        return new Float32Array(
-	            [this.row1.x, this.row2.x, this.row3.x, this.row4.x,
-	                this.row1.y, this.row2.y, this.row3.y, this.row4.y,
-	                this.row1.z, this.row2.z, this.row3.z, this.row4.z,
-	                this.row1.w, this.row2.w, this.row3.w, this.row4.w
-	            ]);
-	    };
-
-	    this.setIdentity = function() {
-	        this.row1 = Vec4.New(1.0, 0.0, 0.0, 0.0);
-	        this.row2 = Vec4.New(0.0, 1.0, 0.0, 0.0);
-	        this.row3 = Vec4.New(0.0, 0.0, 1.0, 0.0);
-	        this.row4 = Vec4.New(0.0, 0.0, 0.0, 1.0);
-
-	        return this;
-	    };
-
-	    this.setMatrix = function(m) {
-	        this.row1 = m.row1;
-	        this.row2 = m.row2;
-	        this.row3 = m.row3;
-	        this.row4 = m.row4;
-
-	        return this;
-	    };
-
-	    this.set = function(r1, r2, r3, r4) {
-	        this.row1 = r1 || this.row1;
-	        this.row2 = r2 || this.row2;
-	        this.row3 = r3 || this.row3;
-	        this.row4 = r4 || this.row4;
-	        return this;
-	    };
-
-	    this.getTransponse = function() {
-	        var mtx = MatrixFactory.New();
-	        mtx.row1.set(this.row1.x, this.row2.x, this.row3.x, this.row4.x);
-	        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y, this.row4.y);
-	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);
-	        mtx.row4.set(this.row1.w, this.row2.w, this.row3.w, this.row4.w);
-	        return mtx;
-	    };
-
-	    this.multiply = function(m) {
-	        var mtx = MatrixFactory.New();
-	        var rhs = m.getTransponse();
-
-	        mtx.row1.set(
-	            this.row1.dot(rhs.row1),
-	            this.row1.dot(rhs.row2),
-	            this.row1.dot(rhs.row3),
-	            this.row1.dot(rhs.row4));
-
-	        mtx.row2.set(
-	            this.row2.dot(rhs.row1),
-	            this.row2.dot(rhs.row2),
-	            this.row2.dot(rhs.row3),
-	            this.row2.dot(rhs.row4));
-
-	        mtx.row3.set(
-	            this.row3.dot(rhs.row1),
-	            this.row3.dot(rhs.row2),
-	            this.row3.dot(rhs.row3),
-	            this.row3.dot(rhs.row4));
-
-	        mtx.row4.set(
-	            this.row4.dot(rhs.row1),
-	            this.row4.dot(rhs.row2),
-	            this.row4.dot(rhs.row3),
-	            this.row4.dot(rhs.row4));
-
-	        return this.setMatrix(mtx);
-	    };
-	};
-
-
 
 	var Matrix3 = function() {
 
@@ -16215,7 +16098,7 @@
 	     * [ 1 4  7 ]
 	     * [ 2 5  8 ]
 	     *
-	     * */
+	     */
 
 	    this.getMatrix = function() {
 	        return new Float32Array(
@@ -16249,11 +16132,17 @@
 	        return this;
 	    };
 
+	    this.multiplyByScalar = function(s){
+	       this.row1.scalarMultiply(s);
+	       this.row2.scalarMultiply(s);
+	       this.row3.scalarMultiply(s);
+	    };
+
 	    this.getTransponse = function() {
 	        var mtx = new Matrix3();
-	        mtx.row1.set(this.row1.x, this.row2.x, this.row3.x);
-	        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y);
-	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z);
+	        mtx.row1.setValues(this.row1.x, this.row2.x, this.row3.x);
+	        mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
+	        mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
 	        return mtx;
 	    };
 
@@ -16261,57 +16150,40 @@
 	        var mtx = MatrixFactory.New();
 	        var rhs = m.getTransponse();
 
-	        mtx.row1.set(
+	        mtx.row1.setValues(
 	            this.row1.dot(rhs.row1),
 	            this.row1.dot(rhs.row2),
-	            this.row1.dot(rhs.row3),
-	            this.row1.dot(rhs.row4));
+	            this.row1.dot(rhs.row3));
 
-	        mtx.row2.set(
+	        mtx.row2.setValues(
 	            this.row2.dot(rhs.row1),
 	            this.row2.dot(rhs.row2),
-	            this.row2.dot(rhs.row3),
-	            this.row2.dot(rhs.row4));
+	            this.row2.dot(rhs.row3));
 
-	        mtx.row3.set(
+	        mtx.row3.setValues(
 	            this.row3.dot(rhs.row1),
 	            this.row3.dot(rhs.row2),
-	            this.row3.dot(rhs.row3),
-	            this.row3.dot(rhs.row4));
-
-	        mtx.row4.set(
-	            this.row4.dot(rhs.row1),
-	            this.row4.dot(rhs.row2),
-	            this.row4.dot(rhs.row3),
-	            this.row4.dot(rhs.row4));
+	            this.row3.dot(rhs.row3));
 
 	        return this.setMatrix(mtx);
 	    };
 	};
 
-
-
-
-
-
-
-
-
 	var MatrixFactory = {
 
 	    New: function() {
-	        return new Matrix4();
+	        return new Matrix3();
 	    },
 
 	    Identity: function() {
-	        var o = new Matrix4();
+	        var o = new Matrix3();
 	        o.setIdentity();
 	        return o;
 	    },
 
-	    Set: function(r1, r2, r3, r4) {
-	        var o = new Matrix4();
-	        return o.set(r1, r2, r3, r4);
+	    Set: function(r1, r2, r3) {
+	        var o = new Matrix3();
+	        return o.set(r1, r2, r3);
 	    }
 	};
 
@@ -16806,8 +16678,8 @@
 	        var Transform = core.MLib.Transform.New();
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.translate(5, 5, -30).getMatrix(),
-	            drawType: 'TRIANGLE_STRIP',
+	            model: Transform.translate(0, 0, -30).getMatrix(),
+	            drawType: geometry.getDrawType(),
 	            texture: texture,
 	        };
 
@@ -16847,6 +16719,7 @@
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
 	var Mat4 = __webpack_require__(19);
+	var Mat3 = __webpack_require__(23);
 	var Transform = __webpack_require__(18);
 
 
@@ -16861,7 +16734,7 @@
 
 	var Poly = function(Core, that) {
 
-	    that.drawType = 'TRIANGLE_STRIP';
+	    that.drawType = 'TRIANGLE_STRIPS';
 	    that.geometry = [];    
 
 	    that.getModel = function() {
@@ -16885,36 +16758,75 @@
 	        return new Float32Array(tmp);
 	    };
 
-	    that.rotateX = function(geometry){
-	        geometry.forEach(function(point){
-	           point.vertex.dot( ) 
+	    that.setGeometry = function(m){
+	        var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
 
-	        });       
+	        that.geometry.push(new Point(m.row1, color, {u:0,v:1}));
+	        that.geometry.push(new Point(m.row2, color, {u:1,v:1}));
+	        that.geometry.push(new Point(m.row3, color, {u:1,v:0}));
 
 	    };
 
 
+	    that.rotx = function(m){
+	    
+	        return m 
+	    };
+
+
+
 	    that.plane = function(width, height) {
-	        var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
+	        
+	      that.drawType = 'TRIANGLES';
+	      var m1 = Mat3.New();
 
-	        that.geometry.push(new Point(Vec3.New(-width, -height), color, {
-	            u:0, v:0
-	        }));
+	      var rotx = Mat3.Identity();
+	      rotx.row2.setValues(0,0,-1);
+	      rotx.row3.setValues(0,1,0);
+	        
 
-	        that.geometry.push(new Point(Vec3.New(width, -height), color, {
-	            u:1, v:0
-	        }));
+	      var rfl = Mat3.Identity();
+	      rfl.row2.setValues(0,1,0);
+	      rfl.row3.setValues(0,0,-1);
+	     
 
-	        that.geometry.push(new Point(Vec3.New(-width, height), color, {
-	            u:0, v:1
-	        }));
+	      var roty = Mat3.Identity();
+	      roty.row1.setValues(0,0,1);
+	      roty.row3.setValues(-1,1,0);
 
-	        that.geometry.push(new Point(Vec3.New(width, height), color, {
-	            u:1, v:1
-	        }));
-	            
-	        that.rotateX(that.geometry); 
 
+	      m1.row1.setValues(-1,1,0);
+	      m1.row2.setValues(0.0,1,0);
+	      m1.row3.setValues(0,0,0);
+
+
+	      m1.multiplyByScalar(5);      
+
+	      that.setGeometry(m1);
+
+
+	      that.setGeometry(m1.multiply(rfl));
+	      that.setGeometry(m1.multiply(rfl));
+	      //that.setGeometry(roty.multiply(m1));
+	      //that.setGeometry(m1.multiply(roty));
+	     // that.setGeometry(m1.multiply(rotx));
+	/*
+	       m1.multiply(roty); 
+	    
+	        that.setGeometry(m1);
+
+	        m1.multiply(roty); 
+	    
+	        that.setGeometry(m1);
+	 
+	        
+	        m1.multiply(roty); 
+
+
+	    
+	        that.setGeometry(m1);
+
+	*/
 
 	        return that;
 	    };

@@ -80,8 +80,8 @@ module.exports = {
         var Transform = core.MLib.Transform.New();
         var entity = {
             buffer: buffer,
-            model: Transform.translate(5, 5, -30).getMatrix(),
-            drawType: 'TRIANGLE_STRIP',
+            model: Transform.translate(0, 0, -30).getMatrix(),
+            drawType: geometry.getDrawType(),
             texture: texture,
         };
 

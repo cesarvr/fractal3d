@@ -30,13 +30,23 @@ var Vector3 = function(x, y, z) {
         return this.z;
     };
 
-    this.set = function(v) {
+    this.copy = function(v) {
         this.x = v.x;
         this.y = v.y;
         this.z = v.z;
 
         return this;
     };
+
+    this.setValues = function(x,y,z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+
+        return this;
+    };
+
+
 
     this.add = function(v) {
         this.x += v.x;
@@ -92,8 +102,8 @@ var Vector3 = function(x, y, z) {
 
         return tmp;
     };
-
-    this.scalarMult = function(e) {
+    
+    this.scalarMultiply = function(e) {
         this.x *= e;
         this.y *= e;
         this.z *= e;

@@ -59,11 +59,17 @@ var Matrix3 = function() {
         return this;
     };
 
+    this.multiplyByScalar = function(s){
+       this.row1.scalarMultiply(s);
+       this.row2.scalarMultiply(s);
+       this.row3.scalarMultiply(s);
+    };
+
     this.getTransponse = function() {
         var mtx = new Matrix3();
-        mtx.row1.set(this.row1.x, this.row2.x, this.row3.x);
-        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y);
-        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z);
+        mtx.row1.setValues(this.row1.x, this.row2.x, this.row3.x);
+        mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
+        mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
         return mtx;
     };
 
@@ -71,17 +77,17 @@ var Matrix3 = function() {
         var mtx = MatrixFactory.New();
         var rhs = m.getTransponse();
 
-        mtx.row1.set(
+        mtx.row1.setValues(
             this.row1.dot(rhs.row1),
             this.row1.dot(rhs.row2),
             this.row1.dot(rhs.row3));
 
-        mtx.row2.set(
+        mtx.row2.setValues(
             this.row2.dot(rhs.row1),
             this.row2.dot(rhs.row2),
             this.row2.dot(rhs.row3));
 
-        mtx.row3.set(
+        mtx.row3.setValues(
             this.row3.dot(rhs.row1),
             this.row3.dot(rhs.row2),
             this.row3.dot(rhs.row3));
