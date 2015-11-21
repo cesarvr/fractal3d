@@ -1,3 +1,4 @@
+
 var Vector3 = function(x, y, z) {
     this.x = x || 0.0;
     this.y = y || 0.0;
@@ -30,12 +31,9 @@ var Vector3 = function(x, y, z) {
         return this.z;
     };
 
-    this.copy = function(v) {
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
+    this.copy = function() {
 
-        return this;
+        return new Vector3(this.x, this.y, this.z );
     };
 
     this.setValues = function(x,y,z) {

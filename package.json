@@ -21,5 +21,10 @@
   "homepage": "https://github.com/cesarvr/fractal3d#readme",
   "devDependencies": {
     "chai": "^3.4.1"
+  },
+  "dependencies": {
+    "backbone": "^1.2.3",
+    "ejs-loader": "^0.2.1",
+    "jquery": "^2.1.4"
   }
 }

@@ -87,16 +87,24 @@ module.exports = {
 
 
         var dx = 1;
-
+        var dz = 0.5; 
+          
         function render() {
             //Utils.getNextFrame.call(this, render);
             window.requestAnimationFrame(render);
         dx+= 0.5;
+        dz+= 0.5;
+        if(dz>359) dz =0.5;
+
+        buffer.geometry({
+            points: geometry.plane(dz).getModel(),
+            size: 9
+        });
 
 
         var entity = {
             buffer: buffer,
-            model: Transform.rotateY(dx).getMatrix(),
+            model: Transform.rotateY(0).getMatrix(),
             drawType: geometry.getDrawType(),
             texture: texture,
         };

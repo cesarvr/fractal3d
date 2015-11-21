@@ -109,7 +109,7 @@ describe('Vector', function() {
         var a = Vec3.New(2, 3, 4);
         var b = Vec3.New(5, 6, 7);
 
-        var z = a.cross(b).inverse().scalarMult(2);
+        var z = a.cross(b).inverse().multiplyByScalar(2);
         assert.strictEqual(z.x, 6, 'equal 6');
         assert.strictEqual(z.y, -12, 'equal -12');
         assert.strictEqual(z.z, 6, 'equal 6');

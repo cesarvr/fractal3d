@@ -18,7 +18,7 @@ var Point = function(vertex, colors, uv) {
 var Poly = function(Core, that) {
 
     that.drawType = 'TRIANGLE_STRIPS';
-    that.geometry = [];    
+    that.geometry = [];
 
     that.getModel = function() {
         var tmp = [];
@@ -41,76 +41,115 @@ var Poly = function(Core, that) {
         return new Float32Array(tmp);
     };
 
-    that.setGeometry = function(m){
+    that.setGeometry = function(m) {
         var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
 
-        that.geometry.push(new Point(m.row1, color, {u:0,v:1}));
-        that.geometry.push(new Point(m.row2, color, {u:1,v:1}));
-        that.geometry.push(new Point(m.row3, color, {u:1,v:0}));
+        that.geometry.push(new Point(m.row1, color, {
+            u: 0,
+            v: 1
+        }));
+        that.geometry.push(new Point(m.row2, color, {
+            u: 1,
+            v: 1
+        }));
+        that.geometry.push(new Point(m.row3, color, {
+            u: 1,
+            v: 0
+        }));
 
     };
 
-
-    that.rotx = function(m){
-    
-        return m 
+    /*
+     * Degree to radian.
+     */
+    function dgToRad(angle) {
+        return (angle * Math.PI) / 180;
     };
 
 
+    that.roty = function(angle) {
+        var roty = Mat3.Identity();
+        roty.row1.setValues(Math.cos(dgToRad(angle)),0, Math.sin(dgToRad(angle)));
+        roty.row3.setValues(-Math.sin(dgToRad(angle)),0 , Math.cos(dgToRad(angle)));
 
-    that.plane = function(width, height) {
-        
-      that.drawType = 'TRIANGLES';
-      var m1 = Mat3.New();
+        return roty;
+    };
 
-      var rotx = Mat3.Identity();
-      rotx.row2.setValues(0,0,-1);
-      rotx.row3.setValues(0,1,0);
-        
+   that.rotx = function(angle) {
+        var rot = Mat3.Identity();
+        rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
+        rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
 
-      var rfl = Mat3.Identity();
-      rfl.row2.setValues(0,1,0);
-      rfl.row3.setValues(0,0,-1);
-     
-
-      var roty = Mat3.Identity();
-      roty.row1.setValues(0,0,1);
-      roty.row3.setValues(-1,1,0);
+        return rot;
+    };
 
 
-      m1.row1.setValues(-1,1,0);
-      m1.row2.setValues(0.0,1,0);
-      m1.row3.setValues(0,0,0);
+    that.rotz = function(angle) {
+        var rot = Mat3.Identity();
+        rot.row1.setValues( Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
+        rot.row2.setValues( Math.sin(dgToRad(angle)),  Math.cos(dgToRad(angle)), 0);
+        rot.row3.setValues(0,0,1);
 
+        return rot;
+    };
 
-      m1.multiplyByScalar(5);      
+    function makeModule(seed){
+        var mod = [];
+        mod.push(seed.copy());
+        var reflect = seed.copy().multiply(that.roty(180)).copy();  //reflection of the seed.
+        mod.push(reflect.copy()); 
 
-      that.setGeometry(m1);
+        /* seed and his reflection rotate around z-axis create a face. */
+       /* for(var m = 90; m<=360; m+=90){
+          mod.push(seed.multiply(that.rotz(m)).copy());  
+          mod.push(reflect.multiply(that.rotz(m)).copy());  
+        }*/
 
+        return mod;
+    };
 
-      that.setGeometry(m1.multiply(rfl));
-      that.setGeometry(m1.multiply(rfl));
-      //that.setGeometry(roty.multiply(m1));
-      //that.setGeometry(m1.multiply(roty));
-     // that.setGeometry(m1.multiply(rotx));
+    function mirrorModule(mtxs , dx){
+      mtxs.forEach(function(mtx){
+       mtxs.push( mtx.copy().multiply(that.rotx(90)) );
+      });
+    }
+
+    function setFace(mtxs) {
+      mtxs.forEach(function(mtx){
+        that.setGeometry(mtx);
+      });
+    }
+
+    that.plane = function(dx) {
+
+        that.geometry = [];
+        that.drawType = 'TRIANGLES';
 /*
-       m1.multiply(roty); 
-    
-        that.setGeometry(m1);
+        var m1 = Mat3.New();
 
-        m1.multiply(roty); 
-    
-        that.setGeometry(m1);
- 
-        
-        m1.multiply(roty); 
-
-
-    
-        that.setGeometry(m1);
-
+        m1.row1.setValues(-1, 1, 0);
+        m1.row2.setValues(0, 1, 0);
+        m1.row3.setValues(0, 0, 0);
 */
 
+        var m2 = Mat3.New();
+
+        m2.row1.setValues(-1, -1, 0);
+        m2.row2.setValues(-1, -1, 1);
+        m2.row3.setValues(1, -1, 1);
+
+
+
+        m2.multiplyByScalar(5);
+        
+        that.setGeometry(m2);   
+
+        //var m = makeModule(m2); 
+        //mirrorModule(m, dx);
+        //setFace(m);
+        
+        that.setGeometry(m2.copy().multiply(that.roty(dx)));
+        
         return that;
     };
 
@@ -119,6 +158,6 @@ var Poly = function(Core, that) {
     };
 
     return that;
-};
+}
 
 module.exports = new Factory(Poly);

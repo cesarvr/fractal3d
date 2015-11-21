@@ -29,7 +29,7 @@ var Matrix3 = function() {
 
     this.getMatrix = function() {
         return new Float32Array(
-            [this.row1.x, this.row2.x, this.row3.x,
+            [   this.row1.x, this.row2.x, this.row3.x,
                 this.row1.y, this.row2.y, this.row3.y,
                 this.row1.z, this.row2.z, this.row3.z
             ]);
@@ -57,6 +57,10 @@ var Matrix3 = function() {
         this.row3 = r3 || this.row3;
 
         return this;
+    };
+
+    this.copy = function(){
+      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy());
     };
 
     this.multiplyByScalar = function(s){

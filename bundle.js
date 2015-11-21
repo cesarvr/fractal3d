@@ -12914,9 +12914,9 @@
 	    this.MLib = {
 	        Vec3: __webpack_require__(17).Vec3,
 	        Vec4: __webpack_require__(17).Vec4,
-	        Mat4: __webpack_require__(19),
+	        Mat4: __webpack_require__(18),
 	        Mat3: __webpack_require__(23),
-	        Transform: __webpack_require__(18),
+	        Transform: __webpack_require__(19),
 	    };
 	};
 
@@ -13107,12 +13107,13 @@
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {/*!
+	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
 	 * The buffer module from node.js, for the browser.
 	 *
 	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
 	 * @license  MIT
 	 */
+	/* eslint-disable no-proto */
 
 	var base64 = __webpack_require__(10)
 	var ieee754 = __webpack_require__(11)
@@ -13152,7 +13153,11 @@
 	 * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
 	 * get the Object implementation, which is slower but behaves correctly.
 	 */
-	Buffer.TYPED_ARRAY_SUPPORT = (function () {
+	Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
+	  ? global.TYPED_ARRAY_SUPPORT
+	  : typedArraySupport()
+
+	function typedArraySupport () {
 	  function Bar () {}
 	  try {
 	    var arr = new Uint8Array(1)
@@ -13165,7 +13170,7 @@
 	  } catch (e) {
 	    return false
 	  }
-	})()
+	}
 
 	function kMaxLength () {
 	  return Buffer.TYPED_ARRAY_SUPPORT
@@ -13321,10 +13326,16 @@
 	  return that
 	}
 
+	if (Buffer.TYPED_ARRAY_SUPPORT) {
+	  Buffer.prototype.__proto__ = Uint8Array.prototype
+	  Buffer.__proto__ = Uint8Array
+	}
+
 	function allocate (that, length) {
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    // Return an augmented `Uint8Array` instance, for best performance
 	    that = Buffer._augment(new Uint8Array(length))
+	    that.__proto__ = Buffer.prototype
 	  } else {
 	    // Fallback: Return an object instance of the Buffer class
 	    that.length = length
@@ -14113,7 +14124,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-	  this[offset] = value
+	  this[offset] = (value & 0xff)
 	  return offset + 1
 	}
 
@@ -14130,7 +14141,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14144,7 +14155,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = value
+	    this[offset + 1] = (value & 0xff)
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14166,7 +14177,7 @@
 	    this[offset + 3] = (value >>> 24)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 1] = (value >>> 8)
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, true)
 	  }
@@ -14181,7 +14192,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = value
+	    this[offset + 3] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14234,7 +14245,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
 	  if (value < 0) value = 0xff + value + 1
-	  this[offset] = value
+	  this[offset] = (value & 0xff)
 	  return offset + 1
 	}
 
@@ -14243,7 +14254,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14257,7 +14268,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = value
+	    this[offset + 1] = (value & 0xff)
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14269,7 +14280,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = value
+	    this[offset] = (value & 0xff)
 	    this[offset + 1] = (value >>> 8)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 3] = (value >>> 24)
@@ -14288,7 +14299,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = value
+	    this[offset + 3] = (value & 0xff)
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14641,7 +14652,7 @@
 	  return i
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer, (function() { return this; }())))
 
 /***/ },
 /* 10 */
@@ -15095,8 +15106,8 @@
 
 	var Factory = __webpack_require__(13);
 	var Vec4  = __webpack_require__(17).Vec4;
-	var Matrix  = __webpack_require__(19);
-	var Transform = __webpack_require__(18);
+	var Matrix  = __webpack_require__(18);
+	var Transform = __webpack_require__(19);
 
 
 	var Camera = function(){
@@ -15171,6 +15182,7 @@
 /* 17 */
 /***/ function(module, exports) {
 
+	
 	var Vector3 = function(x, y, z) {
 	    this.x = x || 0.0;
 	    this.y = y || 0.0;
@@ -15203,12 +15215,9 @@
 	        return this.z;
 	    };
 
-	    this.copy = function(v) {
-	        this.x = v.x;
-	        this.y = v.y;
-	        this.z = v.z;
+	    this.copy = function() {
 
-	        return this;
+	        return new Vector3(this.x, this.y, this.z );
 	    };
 
 	    this.setValues = function(x,y,z) {
@@ -15431,91 +15440,6 @@
 
 /***/ },
 /* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(19);
-
-	/*
-	 * Degree to radian.
-	 */
-	function dgToRad(angle){
-	    return (angle*Math.PI) / 180;
-	};
-
-	var Transform = function(m) {
-	    var _m = m;
-	    var cos = Math.cos;
-	    var sin = Math.sin;
-
-	    this.translate = function(x, y, z) {
-	        _m.row1.w = x || 0.0;
-	        _m.row2.w = y || 0.0;
-	        _m.row3.w = z || 0.0;
-	        return this;
-	    };
-
-	    this.scale = function(x, y, z) {
-	        _m.row1.x = x || 0.0;
-	        _m.row2.y = y || 0.0;
-	        _m.row3.z = z || 0.0;
-	        return this;
-	    };
-
-	    this.rotateX = function(angle) {
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        _m.row2.y =  _cos || 0.0;
-	        _m.row2.z = -_sin || 0.0; 
-
-	        _m.row3.y = _sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
-
-	        return this;
-	    };
-
-	    
-	    this.rotateY = function(angle){
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        _m.row1.x =  _cos || 0.0;
-	        _m.row1.z =  _sin || 0.0; 
-
-	        _m.row3.x = -_sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
-
-	        return this;
-	    };
-
-
-
-
-	    this.getMatrix = function(){
-	      return _m.getMatrix();
-	    };
-
-	    this.getMatrixObject = function(){
-	        return _m;
-	    }; 
-
-	};
-
-	module.exports = {
-	    Apply: function(m) {
-	        return new Transform(m);
-	    },
-	    New: function(){
-	      return new Transform( Mat4.Identity() );
-	    },
-	};
-
-
-/***/ },
-/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Vec4 = __webpack_require__(17).Vec4;
@@ -15776,6 +15700,91 @@
 
 
 /***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 = __webpack_require__(18);
+
+	/*
+	 * Degree to radian.
+	 */
+	function dgToRad(angle){
+	    return (angle*Math.PI) / 180;
+	};
+
+	var Transform = function(m) {
+	    var _m = m;
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+
+	    this.translate = function(x, y, z) {
+	        _m.row1.w = x || 0.0;
+	        _m.row2.w = y || 0.0;
+	        _m.row3.w = z || 0.0;
+	        return this;
+	    };
+
+	    this.scale = function(x, y, z) {
+	        _m.row1.x = x || 0.0;
+	        _m.row2.y = y || 0.0;
+	        _m.row3.z = z || 0.0;
+	        return this;
+	    };
+
+	    this.rotateX = function(angle) {
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row2.y =  _cos || 0.0;
+	        _m.row2.z = -_sin || 0.0; 
+
+	        _m.row3.y = _sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+	    
+	    this.rotateY = function(angle){
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row1.x =  _cos || 0.0;
+	        _m.row1.z =  _sin || 0.0; 
+
+	        _m.row3.x = -_sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+
+
+
+	    this.getMatrix = function(){
+	      return _m.getMatrix();
+	    };
+
+	    this.getMatrixObject = function(){
+	        return _m;
+	    }; 
+
+	};
+
+	module.exports = {
+	    Apply: function(m) {
+	        return new Transform(m);
+	    },
+	    New: function(){
+	      return new Transform( Mat4.Identity() );
+	    },
+	};
+
+
+/***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -15852,8 +15861,8 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(19);
-	var Transform = __webpack_require__(18);
+	var Mat4 = __webpack_require__(18);
+	var Transform = __webpack_require__(19);
 
 	var Renderable = function(geometry, color, texture) {
 	    this.geometry = geometry || Vec3.New();
@@ -16102,7 +16111,7 @@
 
 	    this.getMatrix = function() {
 	        return new Float32Array(
-	            [this.row1.x, this.row2.x, this.row3.x,
+	            [   this.row1.x, this.row2.x, this.row3.x,
 	                this.row1.y, this.row2.y, this.row3.y,
 	                this.row1.z, this.row2.z, this.row3.z
 	            ]);
@@ -16130,6 +16139,10 @@
 	        this.row3 = r3 || this.row3;
 
 	        return this;
+	    };
+
+	    this.copy = function(){
+	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy());
 	    };
 
 	    this.multiplyByScalar = function(s){
@@ -16685,16 +16698,24 @@
 
 
 	        var dx = 1;
-
+	        var dz = 0.5; 
+	          
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
 	            window.requestAnimationFrame(render);
 	        dx+= 0.5;
+	        dz+= 0.5;
+	        if(dz>359) dz =0.5;
+
+	        buffer.geometry({
+	            points: geometry.plane(dz).getModel(),
+	            size: 9
+	        });
 
 
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.rotateY(dx).getMatrix(),
+	            model: Transform.rotateY(0).getMatrix(),
 	            drawType: geometry.getDrawType(),
 	            texture: texture,
 	        };
@@ -16718,9 +16739,9 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(19);
+	var Mat4 = __webpack_require__(18);
 	var Mat3 = __webpack_require__(23);
-	var Transform = __webpack_require__(18);
+	var Transform = __webpack_require__(19);
 
 
 
@@ -16735,7 +16756,7 @@
 	var Poly = function(Core, that) {
 
 	    that.drawType = 'TRIANGLE_STRIPS';
-	    that.geometry = [];    
+	    that.geometry = [];
 
 	    that.getModel = function() {
 	        var tmp = [];
@@ -16758,76 +16779,115 @@
 	        return new Float32Array(tmp);
 	    };
 
-	    that.setGeometry = function(m){
+	    that.setGeometry = function(m) {
 	        var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
 
-	        that.geometry.push(new Point(m.row1, color, {u:0,v:1}));
-	        that.geometry.push(new Point(m.row2, color, {u:1,v:1}));
-	        that.geometry.push(new Point(m.row3, color, {u:1,v:0}));
+	        that.geometry.push(new Point(m.row1, color, {
+	            u: 0,
+	            v: 1
+	        }));
+	        that.geometry.push(new Point(m.row2, color, {
+	            u: 1,
+	            v: 1
+	        }));
+	        that.geometry.push(new Point(m.row3, color, {
+	            u: 1,
+	            v: 0
+	        }));
 
 	    };
 
-
-	    that.rotx = function(m){
-	    
-	        return m 
+	    /*
+	     * Degree to radian.
+	     */
+	    function dgToRad(angle) {
+	        return (angle * Math.PI) / 180;
 	    };
 
 
+	    that.roty = function(angle) {
+	        var roty = Mat3.Identity();
+	        roty.row1.setValues(Math.cos(dgToRad(angle)),0, Math.sin(dgToRad(angle)));
+	        roty.row3.setValues(-Math.sin(dgToRad(angle)),0 , Math.cos(dgToRad(angle)));
 
-	    that.plane = function(width, height) {
-	        
-	      that.drawType = 'TRIANGLES';
-	      var m1 = Mat3.New();
+	        return roty;
+	    };
 
-	      var rotx = Mat3.Identity();
-	      rotx.row2.setValues(0,0,-1);
-	      rotx.row3.setValues(0,1,0);
-	        
+	   that.rotx = function(angle) {
+	        var rot = Mat3.Identity();
+	        rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
+	        rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
 
-	      var rfl = Mat3.Identity();
-	      rfl.row2.setValues(0,1,0);
-	      rfl.row3.setValues(0,0,-1);
-	     
-
-	      var roty = Mat3.Identity();
-	      roty.row1.setValues(0,0,1);
-	      roty.row3.setValues(-1,1,0);
+	        return rot;
+	    };
 
 
-	      m1.row1.setValues(-1,1,0);
-	      m1.row2.setValues(0.0,1,0);
-	      m1.row3.setValues(0,0,0);
+	    that.rotz = function(angle) {
+	        var rot = Mat3.Identity();
+	        rot.row1.setValues( Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
+	        rot.row2.setValues( Math.sin(dgToRad(angle)),  Math.cos(dgToRad(angle)), 0);
+	        rot.row3.setValues(0,0,1);
 
+	        return rot;
+	    };
 
-	      m1.multiplyByScalar(5);      
+	    function makeModule(seed){
+	        var mod = [];
+	        mod.push(seed.copy());
+	        var reflect = seed.copy().multiply(that.roty(180)).copy();  //reflection of the seed.
+	        mod.push(reflect.copy()); 
 
-	      that.setGeometry(m1);
+	        /* seed and his reflection rotate around z-axis create a face. */
+	       /* for(var m = 90; m<=360; m+=90){
+	          mod.push(seed.multiply(that.rotz(m)).copy());  
+	          mod.push(reflect.multiply(that.rotz(m)).copy());  
+	        }*/
 
+	        return mod;
+	    };
 
-	      that.setGeometry(m1.multiply(rfl));
-	      that.setGeometry(m1.multiply(rfl));
-	      //that.setGeometry(roty.multiply(m1));
-	      //that.setGeometry(m1.multiply(roty));
-	     // that.setGeometry(m1.multiply(rotx));
+	    function mirrorModule(mtxs , dx){
+	      mtxs.forEach(function(mtx){
+	       mtxs.push( mtx.copy().multiply(that.rotx(90)) );
+	      });
+	    }
+
+	    function setFace(mtxs) {
+	      mtxs.forEach(function(mtx){
+	        that.setGeometry(mtx);
+	      });
+	    }
+
+	    that.plane = function(dx) {
+
+	        that.geometry = [];
+	        that.drawType = 'TRIANGLES';
 	/*
-	       m1.multiply(roty); 
-	    
-	        that.setGeometry(m1);
+	        var m1 = Mat3.New();
 
-	        m1.multiply(roty); 
-	    
-	        that.setGeometry(m1);
-	 
-	        
-	        m1.multiply(roty); 
-
-
-	    
-	        that.setGeometry(m1);
-
+	        m1.row1.setValues(-1, 1, 0);
+	        m1.row2.setValues(0, 1, 0);
+	        m1.row3.setValues(0, 0, 0);
 	*/
 
+	        var m2 = Mat3.New();
+
+	        m2.row1.setValues(-1, -1, 0);
+	        m2.row2.setValues(-1, -1, 1);
+	        m2.row3.setValues(1, -1, 1);
+
+
+
+	        m2.multiplyByScalar(5);
+	        
+	        that.setGeometry(m2);   
+
+	        //var m = makeModule(m2); 
+	        //mirrorModule(m, dx);
+	        //setFace(m);
+	        
+	        that.setGeometry(m2.copy().multiply(that.roty(dx)));
+	        
 	        return that;
 	    };
 
@@ -16836,7 +16896,7 @@
 	    };
 
 	    return that;
-	};
+	}
 
 	module.exports = new Factory(Poly);
 
