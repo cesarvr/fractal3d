@@ -87,7 +87,7 @@ module.exports = {
 
 
         var dx = 1;
-        var dz = 0.5; 
+        var dz = 0.1; 
           
         function render() {
             //Utils.getNextFrame.call(this, render);
@@ -104,7 +104,7 @@ module.exports = {
 
         var entity = {
             buffer: buffer,
-            model: Transform.rotateY(0).getMatrix(),
+            model: Transform.rotateY(dx).getMatrix(),
             drawType: geometry.getDrawType(),
             texture: texture,
         };

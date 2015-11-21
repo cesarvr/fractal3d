@@ -12914,9 +12914,9 @@
 	    this.MLib = {
 	        Vec3: __webpack_require__(17).Vec3,
 	        Vec4: __webpack_require__(17).Vec4,
-	        Mat4: __webpack_require__(18),
+	        Mat4: __webpack_require__(19),
 	        Mat3: __webpack_require__(23),
-	        Transform: __webpack_require__(19),
+	        Transform: __webpack_require__(18),
 	    };
 	};
 
@@ -13107,13 +13107,12 @@
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
+	/* WEBPACK VAR INJECTION */(function(Buffer) {/*!
 	 * The buffer module from node.js, for the browser.
 	 *
 	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
 	 * @license  MIT
 	 */
-	/* eslint-disable no-proto */
 
 	var base64 = __webpack_require__(10)
 	var ieee754 = __webpack_require__(11)
@@ -13153,11 +13152,7 @@
 	 * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
 	 * get the Object implementation, which is slower but behaves correctly.
 	 */
-	Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
-	  ? global.TYPED_ARRAY_SUPPORT
-	  : typedArraySupport()
-
-	function typedArraySupport () {
+	Buffer.TYPED_ARRAY_SUPPORT = (function () {
 	  function Bar () {}
 	  try {
 	    var arr = new Uint8Array(1)
@@ -13170,7 +13165,7 @@
 	  } catch (e) {
 	    return false
 	  }
-	}
+	})()
 
 	function kMaxLength () {
 	  return Buffer.TYPED_ARRAY_SUPPORT
@@ -13326,16 +13321,10 @@
 	  return that
 	}
 
-	if (Buffer.TYPED_ARRAY_SUPPORT) {
-	  Buffer.prototype.__proto__ = Uint8Array.prototype
-	  Buffer.__proto__ = Uint8Array
-	}
-
 	function allocate (that, length) {
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    // Return an augmented `Uint8Array` instance, for best performance
 	    that = Buffer._augment(new Uint8Array(length))
-	    that.__proto__ = Buffer.prototype
 	  } else {
 	    // Fallback: Return an object instance of the Buffer class
 	    that.length = length
@@ -14124,7 +14113,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14141,7 +14130,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14155,7 +14144,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14177,7 +14166,7 @@
 	    this[offset + 3] = (value >>> 24)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 1] = (value >>> 8)
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, true)
 	  }
@@ -14192,7 +14181,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14245,7 +14234,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
 	  if (value < 0) value = 0xff + value + 1
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14254,7 +14243,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14268,7 +14257,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14280,7 +14269,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 3] = (value >>> 24)
@@ -14299,7 +14288,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14652,7 +14641,7 @@
 	  return i
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
 
 /***/ },
 /* 10 */
@@ -15106,8 +15095,8 @@
 
 	var Factory = __webpack_require__(13);
 	var Vec4  = __webpack_require__(17).Vec4;
-	var Matrix  = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Matrix  = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 
 	var Camera = function(){
@@ -15443,6 +15432,91 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 = __webpack_require__(19);
+
+	/*
+	 * Degree to radian.
+	 */
+	function dgToRad(angle){
+	    return (angle*Math.PI) / 180;
+	};
+
+	var Transform = function(m) {
+	    var _m = m;
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+
+	    this.translate = function(x, y, z) {
+	        _m.row1.w = x || 0.0;
+	        _m.row2.w = y || 0.0;
+	        _m.row3.w = z || 0.0;
+	        return this;
+	    };
+
+	    this.scale = function(x, y, z) {
+	        _m.row1.x = x || 0.0;
+	        _m.row2.y = y || 0.0;
+	        _m.row3.z = z || 0.0;
+	        return this;
+	    };
+
+	    this.rotateX = function(angle) {
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row2.y =  _cos || 0.0;
+	        _m.row2.z = -_sin || 0.0; 
+
+	        _m.row3.y = _sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+	    
+	    this.rotateY = function(angle){
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row1.x =  _cos || 0.0;
+	        _m.row1.z =  _sin || 0.0; 
+
+	        _m.row3.x = -_sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
+
+	        return this;
+	    };
+
+
+
+
+	    this.getMatrix = function(){
+	      return _m.getMatrix();
+	    };
+
+	    this.getMatrixObject = function(){
+	        return _m;
+	    }; 
+
+	};
+
+	module.exports = {
+	    Apply: function(m) {
+	        return new Transform(m);
+	    },
+	    New: function(){
+	      return new Transform( Mat4.Identity() );
+	    },
+	};
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Vec4 = __webpack_require__(17).Vec4;
 	var Vec3 = __webpack_require__(17).Vec3;
 
 
@@ -15700,91 +15774,6 @@
 
 
 /***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-
-	/*
-	 * Degree to radian.
-	 */
-	function dgToRad(angle){
-	    return (angle*Math.PI) / 180;
-	};
-
-	var Transform = function(m) {
-	    var _m = m;
-	    var cos = Math.cos;
-	    var sin = Math.sin;
-
-	    this.translate = function(x, y, z) {
-	        _m.row1.w = x || 0.0;
-	        _m.row2.w = y || 0.0;
-	        _m.row3.w = z || 0.0;
-	        return this;
-	    };
-
-	    this.scale = function(x, y, z) {
-	        _m.row1.x = x || 0.0;
-	        _m.row2.y = y || 0.0;
-	        _m.row3.z = z || 0.0;
-	        return this;
-	    };
-
-	    this.rotateX = function(angle) {
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        _m.row2.y =  _cos || 0.0;
-	        _m.row2.z = -_sin || 0.0; 
-
-	        _m.row3.y = _sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
-
-	        return this;
-	    };
-
-	    
-	    this.rotateY = function(angle){
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        _m.row1.x =  _cos || 0.0;
-	        _m.row1.z =  _sin || 0.0; 
-
-	        _m.row3.x = -_sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
-
-	        return this;
-	    };
-
-
-
-
-	    this.getMatrix = function(){
-	      return _m.getMatrix();
-	    };
-
-	    this.getMatrixObject = function(){
-	        return _m;
-	    }; 
-
-	};
-
-	module.exports = {
-	    Apply: function(m) {
-	        return new Transform(m);
-	    },
-	    New: function(){
-	      return new Transform( Mat4.Identity() );
-	    },
-	};
-
-
-/***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -15861,8 +15850,8 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Mat4 = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 	var Renderable = function(geometry, color, texture) {
 	    this.geometry = geometry || Vec3.New();
@@ -16698,7 +16687,7 @@
 
 
 	        var dx = 1;
-	        var dz = 0.5; 
+	        var dz = 0.1; 
 	          
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
@@ -16715,7 +16704,7 @@
 
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.rotateY(0).getMatrix(),
+	            model: Transform.rotateY(dx).getMatrix(),
 	            drawType: geometry.getDrawType(),
 	            texture: texture,
 	        };
@@ -16739,9 +16728,9 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
+	var Mat4 = __webpack_require__(19);
 	var Mat3 = __webpack_require__(23);
-	var Transform = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 
 
@@ -16807,13 +16796,13 @@
 
 	    that.roty = function(angle) {
 	        var roty = Mat3.Identity();
-	        roty.row1.setValues(Math.cos(dgToRad(angle)),0, Math.sin(dgToRad(angle)));
-	        roty.row3.setValues(-Math.sin(dgToRad(angle)),0 , Math.cos(dgToRad(angle)));
+	        roty.row1.setValues(Math.cos(dgToRad(angle)), 0, Math.sin(dgToRad(angle)));
+	        roty.row3.setValues(-Math.sin(dgToRad(angle)), 0, Math.cos(dgToRad(angle)));
 
 	        return roty;
 	    };
 
-	   that.rotx = function(angle) {
+	    that.rotx = function(angle) {
 	        var rot = Mat3.Identity();
 	        rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
 	        rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
@@ -16824,70 +16813,102 @@
 
 	    that.rotz = function(angle) {
 	        var rot = Mat3.Identity();
-	        rot.row1.setValues( Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
-	        rot.row2.setValues( Math.sin(dgToRad(angle)),  Math.cos(dgToRad(angle)), 0);
-	        rot.row3.setValues(0,0,1);
+	        rot.row1.setValues(Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
+	        rot.row2.setValues(Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)), 0);
+	        rot.row3.setValues(0, 0, 1);
 
 	        return rot;
 	    };
 
-	    function makeModule(seed){
+	    function makeModule(seed, reflectRot, rotationFn) {
 	        var mod = [];
 	        mod.push(seed.copy());
-	        var reflect = seed.copy().multiply(that.roty(180)).copy();  //reflection of the seed.
-	        mod.push(reflect.copy()); 
+	        var reflect = seed.copy().multiply(reflectRot(180)).copy(); //reflection of the seed.
+	        mod.push(reflect.copy());
 
 	        /* seed and his reflection rotate around z-axis create a face. */
-	       /* for(var m = 90; m<=360; m+=90){
-	          mod.push(seed.multiply(that.rotz(m)).copy());  
-	          mod.push(reflect.multiply(that.rotz(m)).copy());  
-	        }*/
+	        for (var m = 90; m <= 360; m += 90) {
+	            mod.push(seed.multiply(rotationFn(m)).copy());
+	            mod.push(reflect.multiply(rotationFn(m)).copy());
+	        }
 
 	        return mod;
 	    };
 
-	    function mirrorModule(mtxs , dx){
-	      mtxs.forEach(function(mtx){
-	       mtxs.push( mtx.copy().multiply(that.rotx(90)) );
-	      });
+
+
+	    function translate(x, y, z) {
+
+	        var _x = x;
+	        var _y = y;
+	        var _z = z;
+
+	        return function(m) {
+	            m.row1.add(Vec3.New(_x, _y, _z));
+	            m.row2.add(Vec3.New(_x, _y, _z));
+	            m.row3.add(Vec3.New(_x, _y, _z));
+	            return m;
+	        }
+	    };
+
+
+	    function mirrorModule(mtxs, transform, rot, dx) {
+	        var modul3 = [];
+	        
+	        if(dx>90) dx = 90; 
+
+	        mtxs.forEach(function(mtx) {
+	            modul3.push(transform(mtx.copy().multiply(rot(dx))));
+	        });
+
+	        return modul3; 
 	    }
 
+
 	    function setFace(mtxs) {
-	      mtxs.forEach(function(mtx){
-	        that.setGeometry(mtx);
-	      });
+	        mtxs.forEach(function(mtx) {
+	            that.setGeometry(mtx);
+	        });
 	    }
 
 	    that.plane = function(dx) {
 
 	        that.geometry = [];
 	        that.drawType = 'TRIANGLES';
-	/*
 	        var m1 = Mat3.New();
 
 	        m1.row1.setValues(-1, 1, 0);
 	        m1.row2.setValues(0, 1, 0);
 	        m1.row3.setValues(0, 0, 0);
-	*/
 
-	        var m2 = Mat3.New();
+	        m1.multiplyByScalar(5);
 
-	        m2.row1.setValues(-1, -1, 0);
-	        m2.row2.setValues(-1, -1, 1);
-	        m2.row3.setValues(1, -1, 1);
+	        that.setGeometry(m1);
 
 
+	        var tleft = translate(-5, 0, 5);
+	        var tright = translate(5, 0, 5);
 
-	        m2.multiplyByScalar(5);
-	        
-	        that.setGeometry(m2);   
+	        var tup = translate(0, 5, 5);
+	        var tdown = translate(0, -5, 5);
 
-	        //var m = makeModule(m2); 
-	        //mirrorModule(m, dx);
-	        //setFace(m);
-	        
-	        that.setGeometry(m2.copy().multiply(that.roty(dx)));
-	        
+	        var tfront = translate(0, 0, 10);
+
+	        var m = makeModule(m1, that.roty, that.rotz, dx);
+
+
+
+	        setFace( mirrorModule(m, tfront,  that.rotz, dx) );
+
+	        setFace( mirrorModule(m, tleft,  that.roty, dx) );
+	        setFace( mirrorModule(m, tright, that.roty, dx) );
+
+	        setFace( mirrorModule(m, tup, that.rotx, dx) );
+	        setFace( mirrorModule(m, tdown, that.rotx, dx) );
+
+	        setFace(m);
+
+
 	        return that;
 	    };
 
