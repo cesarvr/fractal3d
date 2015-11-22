@@ -23,7 +23,11 @@ module.exports = {
 
 
         /* config */
-        scene.setViewPort(core.canvas.x, core.canvas.y);
+
+    
+        core.canvas.setResize(function(x, y) {
+            scene.setViewPort(x, y);
+        });
         scene.shader = shader;
         scene.camera = Utils.camera.MakeOrtho(0, 50, 50, 0, 1, -1);
 
@@ -89,6 +93,10 @@ module.exports = {
 
         render();
 
+    },
+
+    stop: function(){
+        window.cancelAnimationFrame(window.requestID);
     }
 
 };

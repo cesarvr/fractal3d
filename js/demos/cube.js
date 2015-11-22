@@ -22,9 +22,12 @@ module.exports = {
         var Utils = core.getUtils();
 
 
-
         /* config */
-        scene.setViewPort(core.canvas.x, core.canvas.y);
+
+        core.canvas.setResize(function(x, y) {
+            scene.setViewPort(x, y);
+        });
+ 
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
@@ -76,10 +79,8 @@ module.exports = {
 
         texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-        var Transform = core.MLib.Transform.New();
         var entity = {
             buffer: buffer,
-            model: Transform.translate(5, 5, -30).getMatrix(),
             drawType: 'TRIANGLE_STRIP',
             texture: texture,
         };
@@ -89,13 +90,14 @@ module.exports = {
 
         function render() {
             //Utils.getNextFrame.call(this, render);
-            window.requestAnimationFrame(render);
+            window.requestID = window.requestAnimationFrame(render);
         dx+= 0.5;
 
 
+        var Transform = core.MLib.Transform.New();
         var entity = {
             buffer: buffer,
-            model: Transform.rotateY(dx).getMatrix(),
+            model: Transform.translate(4,4,-30).rotateY(dx).rotateX(dx).getMatrix(),
             drawType: 'TRIANGLE_STRIPS',
             texture: texture,
         };
@@ -107,6 +109,10 @@ module.exports = {
 
         render();
 
+    },
+
+    stop: function(){
+        window.cancelAnimationFrame(window.requestID);
     }
 
 };

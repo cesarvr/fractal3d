@@ -12,28 +12,51 @@ var DemoRouter = Backbone.Router.extend({
         '*path': 'index',
     },
     
+    demos: [],
+    
+    clear: function(){
+        this.demos.forEach(function(demos){
+            demos.stop();
+        });
+    },
+     
     index: function(){
-        
-        console.log('hello');
-
-        require('./index').init();
+        this.clear();
+        var demo = require('./index');
+        demo.init();
+        this.demos.push(demo);
     },
 
     xorDemo: function(){
-        console.log('xor demo');
-        require('./xor_demo').init();
+
+       this.clear();
+       var demo = require('./xor_demo')
+       demo.init();
+       this.demos.push(demo);
     },
 
     primeDemo: function(){
-        require('./thread/prime/prime').init();
+  
+       this.clear();
+      var demo =require('./thread/prime/prime');
+       demo.init();
+       this.demos.push(demo);
     },
 
     cube: function(){
-      require('./cube').init();
+
+       this.clear();
+     var demo = require('./cube');
+     demo.init();
+     this.demos.push(demo);
     },
 
     tunel: function(){
-      require('./blink').init();
+
+       this.clear();
+     var demo =  require('./blink');
+     demo.init();
+     this.demos.push(demo);
     },
 
 });

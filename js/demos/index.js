@@ -14,6 +14,9 @@ module.exports = {
         div.innerHTML = tmpl_menu();
 
         document.body.appendChild(div);
+        
+        div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
+
 
 
         var core = new Core({
@@ -32,7 +35,10 @@ module.exports = {
 
 
         /* config */
-        scene.setViewPort(core.canvas.x, core.canvas.y);
+        core.canvas.setResize(function(x, y) {
+            scene.setViewPort(x, y);
+        });
+ 
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
@@ -85,21 +91,13 @@ module.exports = {
 
         texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-        var Transform = core.MLib.Transform.New();
-        var entity = {
-            buffer: buffer,
-            model: Transform.translate(0, 0, -30).getMatrix(),
-            drawType: geometry.getDrawType(),
-            texture: texture,
-        };
-
-
         var dx = 0.1;
           
         function render() {
             //Utils.getNextFrame.call(this, render);
-            window.requestAnimationFrame(render);
+        window.requestID =  window.requestAnimationFrame(render);
 
+        var Transform = core.MLib.Transform.New();
             dx += 0.5;
         buffer.geometry({
             points: geometry.plane(5).getModel(),
@@ -109,7 +107,7 @@ module.exports = {
 
         var entity = {
             buffer: buffer,
-            model: Transform.rotateY(dx).getMatrix(),
+            model: Transform.translate(4,4,-20).rotateY(dx).getMatrix(),
             drawType: geometry.getDrawType(),
             texture: texture,
         };
@@ -121,6 +119,10 @@ module.exports = {
 
         render();
 
+    },
+
+    stop: function(){
+        window.cancelAnimationFrame(window.requestID);
     }
 
 };

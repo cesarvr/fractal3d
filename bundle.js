@@ -58,28 +58,51 @@
 	        '*path': 'index',
 	    },
 	    
+	    demos: [],
+	    
+	    clear: function(){
+	        this.demos.forEach(function(demos){
+	            demos.stop();
+	        });
+	    },
+	     
 	    index: function(){
-	        
-	        console.log('hello');
-
-	        __webpack_require__(32).init();
+	        this.clear();
+	        var demo = __webpack_require__(32);
+	        demo.init();
+	        this.demos.push(demo);
 	    },
 
 	    xorDemo: function(){
-	        console.log('xor demo');
-	        __webpack_require__(4).init();
+
+	       this.clear();
+	       var demo = __webpack_require__(4)
+	       demo.init();
+	       this.demos.push(demo);
 	    },
 
 	    primeDemo: function(){
-	        __webpack_require__(25).init();
+	  
+	       this.clear();
+	      var demo =__webpack_require__(25);
+	       demo.init();
+	       this.demos.push(demo);
 	    },
 
 	    cube: function(){
-	      __webpack_require__(27).init();
+
+	       this.clear();
+	     var demo = __webpack_require__(27);
+	     demo.init();
+	     this.demos.push(demo);
 	    },
 
 	    tunel: function(){
-	      __webpack_require__(34).init();
+
+	       this.clear();
+	     var demo =  __webpack_require__(34);
+	     demo.init();
+	     this.demos.push(demo);
 	    },
 
 	});
@@ -12788,7 +12811,11 @@
 
 
 	        /* config */
-	        scene.setViewPort(core.canvas.x, core.canvas.y);
+
+	    
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
 	        scene.shader = shader;
 	        scene.camera = Utils.camera.MakeOrtho(0, 50, 50, 0, 1, -1);
 
@@ -12854,6 +12881,10 @@
 
 	        render();
 
+	    },
+
+	    stop: function(){
+	        window.cancelAnimationFrame(window.requestID);
 	    }
 
 	};
@@ -12944,7 +12975,10 @@
 
 	var Canvas = function(fullscreen, el) {
 	    var _createCanvas = function() {
-	        _canvas = document.createElement('CANVAS');
+	        _canvas = document.getElementsByTagName('CANVAS')[0];
+	        if(!_canvas)
+	            _canvas = document.createElement('CANVAS');
+
 	        _canvas.setAttribute('width', 800);
 	        _canvas.setAttribute('height', 600);
 	        _canvas.setAttribute('style', 'position:absolute; left:0px; top:0px; border-style:none;');
@@ -16541,9 +16575,12 @@
 	        var Utils = core.getUtils();
 
 
-
 	        /* config */
-	        scene.setViewPort(core.canvas.x, core.canvas.y);
+
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	 
 	        scene.shader = shader;
 	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
 	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
@@ -16595,10 +16632,8 @@
 
 	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-	        var Transform = core.MLib.Transform.New();
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.translate(5, 5, -30).getMatrix(),
 	            drawType: 'TRIANGLE_STRIP',
 	            texture: texture,
 	        };
@@ -16608,13 +16643,14 @@
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
-	            window.requestAnimationFrame(render);
+	            window.requestID = window.requestAnimationFrame(render);
 	        dx+= 0.5;
 
 
+	        var Transform = core.MLib.Transform.New();
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.rotateY(dx).getMatrix(),
+	            model: Transform.translate(4,4,-30).rotateY(dx).rotateX(dx).getMatrix(),
 	            drawType: 'TRIANGLE_STRIPS',
 	            texture: texture,
 	        };
@@ -16626,6 +16662,10 @@
 
 	        render();
 
+	    },
+
+	    stop: function(){
+	        window.cancelAnimationFrame(window.requestID);
 	    }
 
 	};
@@ -16902,6 +16942,9 @@
 	        div.innerHTML = tmpl_menu();
 
 	        document.body.appendChild(div);
+	        
+	        div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
+
 
 
 	        var core = new Core({
@@ -16920,7 +16963,10 @@
 
 
 	        /* config */
-	        scene.setViewPort(core.canvas.x, core.canvas.y);
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	 
 	        scene.shader = shader;
 	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
 	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
@@ -16973,21 +17019,13 @@
 
 	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-	        var Transform = core.MLib.Transform.New();
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(0, 0, -30).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
 	        var dx = 0.1;
 	          
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
-	            window.requestAnimationFrame(render);
+	        window.requestID =  window.requestAnimationFrame(render);
 
+	        var Transform = core.MLib.Transform.New();
 	            dx += 0.5;
 	        buffer.geometry({
 	            points: geometry.plane(5).getModel(),
@@ -16997,7 +17035,7 @@
 
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.rotateY(dx).getMatrix(),
+	            model: Transform.translate(4,4,-20).rotateY(dx).getMatrix(),
 	            drawType: geometry.getDrawType(),
 	            texture: texture,
 	        };
@@ -17009,6 +17047,10 @@
 
 	        render();
 
+	    },
+
+	    stop: function(){
+	        window.cancelAnimationFrame(window.requestID);
 	    }
 
 	};
@@ -17117,7 +17159,7 @@
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
-	            window.requestAnimationFrame(render);
+	            window.requestID = window.requestAnimationFrame(render);
 	            dx += 0.3;
 	            dz += 0.1;
 	            if (dz > 359) dz = 0.5;
@@ -17143,6 +17185,10 @@
 
 	        render();
 
+	    },
+
+	    stop: function(){
+	        window.cancelAnimationFrame(window.requestID);
 	    }
 
 	};
@@ -17154,7 +17200,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a></li>\n    <li><a href="#blink" >kaleidoscope </a> </li>\n\n    <li><a href="#xor" > xor texture test </a></li>    \n\n</ul>\n';
+	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
 	return __p
 	}
 

@@ -87,7 +87,7 @@ module.exports = {
 
         function render() {
             //Utils.getNextFrame.call(this, render);
-            window.requestAnimationFrame(render);
+            window.requestID = window.requestAnimationFrame(render);
             dx += 0.3;
             dz += 0.1;
             if (dz > 359) dz = 0.5;
@@ -113,6 +113,10 @@ module.exports = {
 
         render();
 
+    },
+
+    stop: function(){
+        window.cancelAnimationFrame(window.requestID);
     }
 
 };

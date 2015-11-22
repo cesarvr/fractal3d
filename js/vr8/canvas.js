@@ -2,7 +2,10 @@
 
 var Canvas = function(fullscreen, el) {
     var _createCanvas = function() {
-        _canvas = document.createElement('CANVAS');
+        _canvas = document.getElementsByTagName('CANVAS')[0];
+        if(!_canvas)
+            _canvas = document.createElement('CANVAS');
+
         _canvas.setAttribute('width', 800);
         _canvas.setAttribute('height', 600);
         _canvas.setAttribute('style', 'position:absolute; left:0px; top:0px; border-style:none;');
