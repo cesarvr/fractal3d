@@ -3,7 +3,7 @@
 module.exports = {
 
     init: function() {
-        var tmpl = require('../template/cube.html');
+        var tmpl = require('../template/new.html');
         var Core = require('../vr8/core');
         var Noise = require('./noise');
         var Polygon = require('./blinn/polygon');
@@ -40,11 +40,6 @@ module.exports = {
 
         var geometry = Polygon.New();
 
-        buffer.geometry({
-            points: geometry.plane(5, 5).getModel(),
-            size: 9
-        });
-
         /* Generarting XOR Texture */
         var textureSize = 128;
         var pix = [];
@@ -53,7 +48,7 @@ module.exports = {
         for (var x = 0; x < textureSize; x++) {
             for (var y = 0; y < textureSize; y++) {
                 var xor = x ^ y;
-                pix.push(xor + 34) // r
+                pix.push(xor) // r
                 pix.push(xor) // g
                 pix.push(xor) // b
             }
@@ -75,7 +70,7 @@ module.exports = {
             if (dz > 359) dz = 0.5;
 
             buffer.geometry({
-                points: geometry.plane(5, dz).getModel(),
+                points: geometry.cube(5, dz).getModel(),
                 size: 9
             });
 
@@ -83,7 +78,7 @@ module.exports = {
 
             var entity = {
                 buffer: buffer,
-                model: T.translate(0, 0, -30).rotateX(dx).rotateY(dx).getMatrix(),
+                model: T.translate(0, 0, -20).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };

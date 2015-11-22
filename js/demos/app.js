@@ -9,6 +9,7 @@ var DemoRouter = Backbone.Router.extend({
         'prime': 'primeDemo',
         'cube' : 'cube',
         'blink' : 'tunel',
+        'new': 'noname',
         '*path': 'index',
     },
     
@@ -26,6 +27,14 @@ var DemoRouter = Backbone.Router.extend({
         demo.init();
         this.demos.push(demo);
     },
+
+    noname: function(){
+        this.clear();
+        var demo = require('./noname');
+        demo.init();
+        this.demos.push(demo);
+    },
+
 
     xorDemo: function(){
 

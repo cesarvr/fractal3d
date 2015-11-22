@@ -55,6 +55,7 @@
 	        'prime': 'primeDemo',
 	        'cube' : 'cube',
 	        'blink' : 'tunel',
+	        'new': 'noname',
 	        '*path': 'index',
 	    },
 	    
@@ -72,6 +73,14 @@
 	        demo.init();
 	        this.demos.push(demo);
 	    },
+
+	    noname: function(){
+	        this.clear();
+	        var demo = __webpack_require__(36);
+	        demo.init();
+	        this.demos.push(demo);
+	    },
+
 
 	    xorDemo: function(){
 
@@ -16789,7 +16798,7 @@
 
 	        /* seed and his reflection rotate around z-axis create a face. */
 	        for (var m = 90; m <= 360; m += 90) {
-	           mod.push(seed.multiply(rotationFn(m)).copy());
+	          mod.push(seed.multiply(rotationFn(m)).copy());
 	          mod.push(reflect.multiply(rotationFn(m)).copy());
 	        }
 
@@ -16861,6 +16870,58 @@
 
 	        };
 	    }
+
+
+	    that.cube = function(size, dx) {
+
+	        that.geometry = [];
+	        that.drawType = 'TRIANGLES';
+	      
+	        var cube = Faces();
+	        var m1 = Mat3.New();
+
+	        m1.row1.setValues(-1, 1, 0);
+	        m1.row2.setValues(0, 1, 0);
+	        m1.row3.setValues(0, 0, 0);
+
+
+	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
+	        var body = 5;
+	        m1.multiplyByScalar(size);
+
+
+
+	        var tleft = translate(-body, 0, body);
+	        var tright = translate(body, 0, body);
+
+	        var tup = translate(0, body, body);
+	        var tdown = translate(0, -body, body);
+
+	        var tfront = translate(0, 0, 10);
+
+	        var m = makeModule(m1, that.roty, that.rotz, dx);
+
+
+	        cube.add(m);
+
+	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
+
+	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
+	        cube.add( mirrorModule(m, tright, that.roty, dx) );
+
+	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
+	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
+
+	    
+
+	        setFace(cube.get());
+
+	        return that;
+	    };
+
+
+
+
 
 	    that.plane = function(size, dx) {
 
@@ -17121,22 +17182,6 @@
 	        var textureSize = 128;
 	        var pix = [];
 	        var noi = [];
-	        /*
-	        var noise = new Noise();
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                 noi.push(  noise.perlin(x,y,4)  )*8;
-	            }
-	        }
-
-
-	        console.log(noi);
-	        noi.forEach(function(noise){
-	            pix.push(noise); //r
-	            pix.push(noise); //g
-	            pix.push(noise); //b
-	        });
-	        */
 
 	        for (var x = 0; x < textureSize; x++) {
 	            for (var y = 0; y < textureSize; y++) {
@@ -17149,9 +17194,7 @@
 
 
 	        /* */
-
 	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
 
 
 	        var dx = 0.1;
@@ -17187,7 +17230,7 @@
 
 	    },
 
-	    stop: function(){
+	    stop: function() {
 	        window.cancelAnimationFrame(window.requestID);
 	    }
 
@@ -17201,6 +17244,121 @@
 	module.exports = function (data) {
 	var __t, __p = '';
 	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
+	return __p
+	}
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(37);
+	        var Core = __webpack_require__(6);
+	        var Noise = __webpack_require__(24);
+	        var Polygon = __webpack_require__(30);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	        scene.shader = shader;
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix();
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = Polygon.New();
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+
+	        /* */
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+
+	        var dx = 0.1;
+	        var dz = 0.1;
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestID = window.requestAnimationFrame(render);
+	            dx += 0.3;
+	            dz += 0.1;
+	            if (dz > 359) dz = 0.5;
+
+	            buffer.geometry({
+	                points: geometry.cube(5, dz).getModel(),
+	                size: 9
+	            });
+
+	            var T = core.MLib.Transform.New();
+
+	            var entity = {
+	                buffer: buffer,
+	                model: T.translate(0, 0, -20).rotateX(dx).rotateY(dx).getMatrix(),
+	                drawType: geometry.getDrawType(),
+	                texture: texture,
+	            };
+
+
+	            scene.clean();
+	            scene.render(entity);
+	        };
+
+	        render();
+
+	    },
+
+	    stop: function() {
+	        window.cancelAnimationFrame(window.requestID);
+	    }
+
+	};
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = 30.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n\n    }\n\n</script>\n';
 	return __p
 	}
 
