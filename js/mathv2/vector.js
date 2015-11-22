@@ -143,9 +143,16 @@ var Vector4 = function(x, y, z, w) {
 
     };
 
+
+    this.copy = function() {
+        return new Vector4(this.x, this.y, this.z, this.w);
+    };
+
+
     this.dot = function(v) {
         return (this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w);
     };
+
 
     this.add = function(v) {
         this.x += v.x;

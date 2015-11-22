@@ -54,7 +54,15 @@
 	        'xor': 'xorDemo',
 	        'prime': 'primeDemo',
 	        'cube' : 'cube',
-	        'tunel' : 'tunel',
+	        'blink' : 'tunel',
+	        '*path': 'index',
+	    },
+	    
+	    index: function(){
+	        
+	        console.log('hello');
+
+	        __webpack_require__(32).init();
 	    },
 
 	    xorDemo: function(){
@@ -71,7 +79,7 @@
 	    },
 
 	    tunel: function(){
-	      __webpack_require__(29).init();
+	      __webpack_require__(34).init();
 	    },
 
 	});
@@ -12882,7 +12890,7 @@
 	    var webGL = core.getWebGL();
 
 
-	    this.canvas = core.canvas;
+	    this.canvas = core;
 	    this.createBuffer = function() {
 	        return this.Buffer.New(webGL);
 	    };
@@ -12946,6 +12954,17 @@
 
 	    var _canvas = _createCanvas();
 	    var $el = el || document.body;
+	    var that = this;
+	    var setFullScreen = function() {
+	        _canvas.style.width = window.innerWidth + "px";
+	        _canvas.style.height = window.innerHeight + "px";
+	        _canvas.width = window.innerWidth;
+	        _canvas.height = window.innerHeight;
+	       
+	        if(that.resizeViewPort)
+	        that.resizeViewPort(_canvas.width, _canvas.height); 
+	    };
+
 
 	    $el.appendChild(_canvas);
 
@@ -12959,11 +12978,10 @@
 	        }
 
 	        if (fullscreen) {
-	            _canvas.style.width = window.innerWidth + "px";
-	            _canvas.style.height = window.innerHeight + "px";
-	            _canvas.width = window.innerWidth;
-	            _canvas.height = window.innerHeight;
+	            setFullScreen();
+	            window.onresize = setFullScreen;
 	        }
+
 
 	    } catch (e) {
 	        console.log(e);
@@ -12977,6 +12995,11 @@
 	            x: _canvas.width,
 	            y: _canvas.height
 	        },
+	        
+	        setResize: function(cb){
+	            that.resizeViewPort = cb;
+	        },
+
 	        fullscreen: fullscreen,
 	    };
 	}
@@ -15316,9 +15339,16 @@
 
 	    };
 
+
+	    this.copy = function() {
+	        return new Vector4(this.x, this.y, this.z, this.w);
+	    };
+
+
 	    this.dot = function(v) {
 	        return (this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w);
 	    };
+
 
 	    this.add = function(v) {
 	        this.x += v.x;
@@ -15445,6 +15475,7 @@
 	    var _m = m;
 	    var cos = Math.cos;
 	    var sin = Math.sin;
+	    var I = Mat4.Identity();
 
 	    this.translate = function(x, y, z) {
 	        _m.row1.w = x || 0.0;
@@ -15461,30 +15492,38 @@
 	    };
 
 	    this.rotateX = function(angle) {
+
+	        var m = I.copy(); 
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
-	        _m.row2.y =  _cos || 0.0;
-	        _m.row2.z = -_sin || 0.0; 
+	        m.row2.y =  _cos || 0.0;
+	        m.row2.z = -_sin || 0.0; 
 
-	        _m.row3.y = _sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
+	        m.row3.y = _sin || 0.0;
+	        m.row3.z = _cos || 0.0;
+
+	        _m.multiply(m);
 
 	        return this;
 	    };
 
 	    
 	    this.rotateY = function(angle){
+	    
+	        var m = I.copy(); 
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
-	        _m.row1.x =  _cos || 0.0;
-	        _m.row1.z =  _sin || 0.0; 
+	        m.row1.x =  _cos || 0.0;
+	        m.row1.z =  _sin || 0.0; 
 
-	        _m.row3.x = -_sin || 0.0;
-	        _m.row3.z = _cos || 0.0;
+	        m.row3.x = -_sin || 0.0;
+	        m.row3.z = _cos || 0.0;
+
+	        _m.multiply(m);
 
 	        return this;
 	    };
@@ -15624,6 +15663,14 @@
 	        mtx.row4.set(this.row1.w, this.row2.w, this.row3.w, this.row4.w);
 	        return mtx;
 	    };
+
+	    this.copy = function(){
+	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
+	    };
+
+
+
+
 
 	    this.multiply = function(m) {
 	        var mtx = MatrixFactory.New();
@@ -16595,133 +16642,7 @@
 	}
 
 /***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(28);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-	        var Polygon = __webpack_require__(30);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-
-	        /* config */
-	        scene.setViewPort(core.canvas.x, core.canvas.y);
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix(); 
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = Polygon.New();
-
-	        buffer.geometry({
-	            points: geometry.plane(5,5).getModel(),
-	            size: 9
-	        });
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-	        /*
-	        var noise = new Noise();
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                 noi.push(  noise.perlin(x,y,4)  )*8;
-	            }
-	        }
-
-
-	        console.log(noi);
-	        noi.forEach(function(noise){
-	            pix.push(noise); //r
-	            pix.push(noise); //g
-	            pix.push(noise); //b
-	        });
-	        */
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-
-	        /* */
-
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-	        var Transform = core.MLib.Transform.New();
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(0, 0, -30).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
-	        var dx = 1;
-	        var dz = 0.1; 
-	          
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestAnimationFrame(render);
-	        dx+= 0.5;
-	        dz+= 0.5;
-	        if(dz>359) dz =0.5;
-
-	        buffer.geometry({
-	            points: geometry.plane(dz).getModel(),
-	            size: 9
-	        });
-
-
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.rotateY(dx).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    }
-
-	};
-
-
-/***/ },
+/* 29 */,
 /* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -16820,7 +16741,7 @@
 	        return rot;
 	    };
 
-	    function makeModule(seed, reflectRot, rotationFn) {
+	    function makeModule(seed, reflectRot, rotationFn, dx) {
 	        var mod = [];
 	        mod.push(seed.copy());
 	        var reflect = seed.copy().multiply(reflectRot(180)).copy(); //reflection of the seed.
@@ -16828,8 +16749,8 @@
 
 	        /* seed and his reflection rotate around z-axis create a face. */
 	        for (var m = 90; m <= 360; m += 90) {
-	            mod.push(seed.multiply(rotationFn(m)).copy());
-	            mod.push(reflect.multiply(rotationFn(m)).copy());
+	           mod.push(seed.multiply(rotationFn(m)).copy());
+	          mod.push(reflect.multiply(rotationFn(m)).copy());
 	        }
 
 	        return mod;
@@ -16855,10 +16776,8 @@
 	    function mirrorModule(mtxs, transform, rot, dx) {
 	        var modul3 = [];
 	        
-	        if(dx>90) dx = 90; 
-
 	        mtxs.forEach(function(mtx) {
-	            modul3.push(transform(mtx.copy().multiply(rot(dx))));
+	            modul3.push(transform(mtx.copy().multiply(rot(90))));
 	        });
 
 	        return modul3; 
@@ -16871,43 +16790,83 @@
 	        });
 	    }
 
-	    that.plane = function(dx) {
+	    function Faces(){
+	        var matrices = [];
+
+	        return {
+	            add: function(mtx){
+	               matrices = matrices.concat(mtx);
+	            },
+
+	            inflate: function(dx){
+	                matrices.forEach(function(m){
+	                    if(m.row3.z > 0){
+	                    m.row3.z += dx;
+	                    m.row1.z += dx;
+	                    m.row2.z += dx;
+	                    }else{
+	                    m.row3.z -= dx;}
+
+	                    if(m.row3.y > 0){
+	                    m.row3.y += dx;
+	                    }else{
+	                    m.row3.y -= dx;}
+
+	                });
+	            },
+
+	            get: function(){
+	                return matrices;
+	            }
+
+	        };
+	    }
+
+	    that.plane = function(size, dx) {
 
 	        that.geometry = [];
 	        that.drawType = 'TRIANGLES';
+	      
+	        var cube = Faces();
 	        var m1 = Mat3.New();
 
 	        m1.row1.setValues(-1, 1, 0);
 	        m1.row2.setValues(0, 1, 0);
 	        m1.row3.setValues(0, 0, 0);
 
-	        m1.multiplyByScalar(5);
 
-	        that.setGeometry(m1);
+	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
+	        var body = 5;
+	        m1.multiplyByScalar(size);
 
 
-	        var tleft = translate(-5, 0, 5);
-	        var tright = translate(5, 0, 5);
 
-	        var tup = translate(0, 5, 5);
-	        var tdown = translate(0, -5, 5);
+	        var tleft = translate(-body, 0, body);
+	        var tright = translate(body, 0, body);
+
+	        var tup = translate(0, body, body);
+	        var tdown = translate(0, -body, body);
 
 	        var tfront = translate(0, 0, 10);
 
 	        var m = makeModule(m1, that.roty, that.rotz, dx);
 
 
+	        cube.add(m);
 
-	        setFace( mirrorModule(m, tfront,  that.rotz, dx) );
+	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
 
-	        setFace( mirrorModule(m, tleft,  that.roty, dx) );
-	        setFace( mirrorModule(m, tright, that.roty, dx) );
+	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
+	        cube.add( mirrorModule(m, tright, that.roty, dx) );
 
-	        setFace( mirrorModule(m, tup, that.rotx, dx) );
-	        setFace( mirrorModule(m, tdown, that.rotx, dx) );
+	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
+	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-	        setFace(m);
+	    
+	        if(inflation)
+	            cube.inflate(inflation);
 
+	        setFace(cube.get());
 
 	        return that;
 	    };
@@ -16921,6 +16880,283 @@
 
 	module.exports = new Factory(Poly);
 
+
+/***/ },
+/* 31 */,
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(33);
+	        var tmpl_menu = __webpack_require__(35);
+	        var Core = __webpack_require__(6);
+	        var Noise = __webpack_require__(24);
+	        var Polygon = __webpack_require__(30);
+
+	        var div = document.createElement('div');
+	        div.className = 'wrapper';
+	        div.innerHTML = tmpl_menu();
+
+	        document.body.appendChild(div);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+	        scene.setViewPort(core.canvas.x, core.canvas.y);
+	        scene.shader = shader;
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix(); 
+	        scene.setClearColor({r:1, g:1,b:1});
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = Polygon.New();
+
+	        buffer.geometry({
+	            points: geometry.plane(5,5).getModel(),
+	            size: 9
+	        });
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+	        /*
+	        var noise = new Noise();
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                 noi.push(  noise.perlin(x,y,4)  )*8;
+	            }
+	        }
+
+
+	        console.log(noi);
+	        noi.forEach(function(noise){
+	            pix.push(noise); //r
+	            pix.push(noise); //g
+	            pix.push(noise); //b
+	        });
+	        */
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor+34) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+
+	        /* */
+
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+	        var Transform = core.MLib.Transform.New();
+	        var entity = {
+	            buffer: buffer,
+	            model: Transform.translate(0, 0, -30).getMatrix(),
+	            drawType: geometry.getDrawType(),
+	            texture: texture,
+	        };
+
+
+	        var dx = 0.1;
+	          
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestAnimationFrame(render);
+
+	            dx += 0.5;
+	        buffer.geometry({
+	            points: geometry.plane(5).getModel(),
+	            size: 9
+	        });
+
+
+	        var entity = {
+	            buffer: buffer,
+	            model: Transform.rotateY(dx).getMatrix(),
+	            drawType: geometry.getDrawType(),
+	            texture: texture,
+	        };
+
+
+	            scene.clean();
+	            scene.render(entity);
+	        };
+
+	        render();
+
+	    }
+
+	};
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        vec4 c =  texture2D(uSampler, oTexture); \n\n        gl_FragColor =oColors;\n    }\n\n</script>\n';
+	return __p
+	}
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(28);
+	        var Core = __webpack_require__(6);
+	        var Noise = __webpack_require__(24);
+	        var Polygon = __webpack_require__(30);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	        scene.shader = shader;
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix();
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = Polygon.New();
+
+	        buffer.geometry({
+	            points: geometry.plane(5, 5).getModel(),
+	            size: 9
+	        });
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+	        /*
+	        var noise = new Noise();
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                 noi.push(  noise.perlin(x,y,4)  )*8;
+	            }
+	        }
+
+
+	        console.log(noi);
+	        noi.forEach(function(noise){
+	            pix.push(noise); //r
+	            pix.push(noise); //g
+	            pix.push(noise); //b
+	        });
+	        */
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor + 34) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+
+	        /* */
+
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+
+
+	        var dx = 0.1;
+	        var dz = 0.1;
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestAnimationFrame(render);
+	            dx += 0.3;
+	            dz += 0.1;
+	            if (dz > 359) dz = 0.5;
+
+	            buffer.geometry({
+	                points: geometry.plane(5, dz).getModel(),
+	                size: 9
+	            });
+
+	            var T = core.MLib.Transform.New();
+
+	            var entity = {
+	                buffer: buffer,
+	                model: T.translate(0, 0, -30).rotateX(dx).rotateY(dx).getMatrix(),
+	                drawType: geometry.getDrawType(),
+	                texture: texture,
+	            };
+
+
+	            scene.clean();
+	            scene.render(entity);
+	        };
+
+	        render();
+
+	    }
+
+	};
+
+
+/***/ },
+/* 35 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a></li>\n    <li><a href="#blink" >kaleidoscope </a> </li>\n\n    <li><a href="#xor" > xor texture test </a></li>    \n\n</ul>\n';
+	return __p
+	}
 
 /***/ }
 /******/ ]);

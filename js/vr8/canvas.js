@@ -12,6 +12,17 @@ var Canvas = function(fullscreen, el) {
 
     var _canvas = _createCanvas();
     var $el = el || document.body;
+    var that = this;
+    var setFullScreen = function() {
+        _canvas.style.width = window.innerWidth + "px";
+        _canvas.style.height = window.innerHeight + "px";
+        _canvas.width = window.innerWidth;
+        _canvas.height = window.innerHeight;
+       
+        if(that.resizeViewPort)
+        that.resizeViewPort(_canvas.width, _canvas.height); 
+    };
+
 
     $el.appendChild(_canvas);
 
@@ -25,11 +36,10 @@ var Canvas = function(fullscreen, el) {
         }
 
         if (fullscreen) {
-            _canvas.style.width = window.innerWidth + "px";
-            _canvas.style.height = window.innerHeight + "px";
-            _canvas.width = window.innerWidth;
-            _canvas.height = window.innerHeight;
+            setFullScreen();
+            window.onresize = setFullScreen;
         }
+
 
     } catch (e) {
         console.log(e);
@@ -43,6 +53,11 @@ var Canvas = function(fullscreen, el) {
             x: _canvas.width,
             y: _canvas.height
         },
+        
+        setResize: function(cb){
+            that.resizeViewPort = cb;
+        },
+
         fullscreen: fullscreen,
     };
 }

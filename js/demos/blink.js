@@ -25,12 +25,15 @@ module.exports = {
 
 
         /* config */
-        scene.setViewPort(core.canvas.x, core.canvas.y);
+
+        core.canvas.setResize(function(x, y) {
+            scene.setViewPort(x, y);
+        });
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-        scene.camera = perspective.multiply(camera).getMatrix(); 
+        scene.camera = perspective.multiply(camera).getMatrix();
 
         shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
         /*         */
@@ -38,7 +41,7 @@ module.exports = {
         var geometry = Polygon.New();
 
         buffer.geometry({
-            points: geometry.plane(5,5).getModel(),
+            points: geometry.plane(5, 5).getModel(),
             size: 9
         });
 
@@ -66,7 +69,7 @@ module.exports = {
         for (var x = 0; x < textureSize; x++) {
             for (var y = 0; y < textureSize; y++) {
                 var xor = x ^ y;
-                pix.push(xor) // r
+                pix.push(xor + 34) // r
                 pix.push(xor) // g
                 pix.push(xor) // b
             }
@@ -77,37 +80,31 @@ module.exports = {
 
         texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-        var Transform = core.MLib.Transform.New();
-        var entity = {
-            buffer: buffer,
-            model: Transform.translate(0, 0, -30).getMatrix(),
-            drawType: geometry.getDrawType(),
-            texture: texture,
-        };
 
 
-        var dx = 1;
-        var dz = 0.1; 
-          
+        var dx = 0.1;
+        var dz = 0.1;
+
         function render() {
             //Utils.getNextFrame.call(this, render);
             window.requestAnimationFrame(render);
-        dx+= 0.5;
-        dz+= 0.5;
-        if(dz>359) dz =0.5;
+            dx += 0.3;
+            dz += 0.1;
+            if (dz > 359) dz = 0.5;
 
-        buffer.geometry({
-            points: geometry.plane(dz).getModel(),
-            size: 9
-        });
+            buffer.geometry({
+                points: geometry.plane(5, dz).getModel(),
+                size: 9
+            });
 
+            var T = core.MLib.Transform.New();
 
-        var entity = {
-            buffer: buffer,
-            model: Transform.rotateY(dx).getMatrix(),
-            drawType: geometry.getDrawType(),
-            texture: texture,
-        };
+            var entity = {
+                buffer: buffer,
+                model: T.translate(0, 0, -30).rotateX(dx).rotateY(dx).getMatrix(),
+                drawType: geometry.getDrawType(),
+                texture: texture,
+            };
 
 
             scene.clean();

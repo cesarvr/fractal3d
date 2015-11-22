@@ -8,7 +8,7 @@ var DemoRouter = Backbone.Router.extend({
         'xor': 'xorDemo',
         'prime': 'primeDemo',
         'cube' : 'cube',
-        'blink' : 'tunel',
+        'tunel' : 'tunel',
         '*path': 'index',
     },
     
@@ -33,7 +33,7 @@ var DemoRouter = Backbone.Router.extend({
     },
 
     tunel: function(){
-      require('./blink').init();
+      require('./cilinder').init();
     },
 
 });

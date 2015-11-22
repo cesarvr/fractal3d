@@ -107,6 +107,14 @@ var Matrix4 = function() {
         return mtx;
     };
 
+    this.copy = function(){
+      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
+    };
+
+
+
+
+
     this.multiply = function(m) {
         var mtx = MatrixFactory.New();
         var rhs = m.getTransponse();

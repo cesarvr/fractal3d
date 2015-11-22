@@ -93,7 +93,7 @@ var Poly = function(Core, that) {
         return rot;
     };
 
-    function makeModule(seed, reflectRot, rotationFn) {
+    function makeModule(seed, reflectRot, rotationFn, dx) {
         var mod = [];
         mod.push(seed.copy());
         var reflect = seed.copy().multiply(reflectRot(180)).copy(); //reflection of the seed.
@@ -101,8 +101,8 @@ var Poly = function(Core, that) {
 
         /* seed and his reflection rotate around z-axis create a face. */
         for (var m = 90; m <= 360; m += 90) {
-            mod.push(seed.multiply(rotationFn(m)).copy());
-            mod.push(reflect.multiply(rotationFn(m)).copy());
+           mod.push(seed.multiply(rotationFn(m)).copy());
+          mod.push(reflect.multiply(rotationFn(m)).copy());
         }
 
         return mod;
@@ -128,10 +128,8 @@ var Poly = function(Core, that) {
     function mirrorModule(mtxs, transform, rot, dx) {
         var modul3 = [];
         
-        if(dx>90) dx = 90; 
-
         mtxs.forEach(function(mtx) {
-            modul3.push(transform(mtx.copy().multiply(rot(dx))));
+            modul3.push(transform(mtx.copy().multiply(rot(90))));
         });
 
         return modul3; 
@@ -144,43 +142,83 @@ var Poly = function(Core, that) {
         });
     }
 
-    that.plane = function(dx) {
+    function Faces(){
+        var matrices = [];
+
+        return {
+            add: function(mtx){
+               matrices = matrices.concat(mtx);
+            },
+
+            inflate: function(dx){
+                matrices.forEach(function(m){
+                    if(m.row3.z > 0){
+                    m.row3.z += dx;
+                    m.row1.z += dx;
+                    m.row2.z += dx;
+                    }else{
+                    m.row3.z -= dx;}
+
+                    if(m.row3.y > 0){
+                    m.row3.y += dx;
+                    }else{
+                    m.row3.y -= dx;}
+
+                });
+            },
+
+            get: function(){
+                return matrices;
+            }
+
+        };
+    }
+
+    that.plane = function(size, dx) {
 
         that.geometry = [];
         that.drawType = 'TRIANGLES';
+      
+        var cube = Faces();
         var m1 = Mat3.New();
 
         m1.row1.setValues(-1, 1, 0);
         m1.row2.setValues(0, 1, 0);
         m1.row3.setValues(0, 0, 0);
 
-        m1.multiplyByScalar(5);
 
-        that.setGeometry(m1);
+        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
+        var body = 5;
+        m1.multiplyByScalar(size);
 
 
-        var tleft = translate(-5, 0, 5);
-        var tright = translate(5, 0, 5);
 
-        var tup = translate(0, 5, 5);
-        var tdown = translate(0, -5, 5);
+        var tleft = translate(-body, 0, body);
+        var tright = translate(body, 0, body);
+
+        var tup = translate(0, body, body);
+        var tdown = translate(0, -body, body);
 
         var tfront = translate(0, 0, 10);
 
         var m = makeModule(m1, that.roty, that.rotz, dx);
 
 
+        cube.add(m);
 
-        setFace( mirrorModule(m, tfront,  that.rotz, dx) );
+        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
 
-        setFace( mirrorModule(m, tleft,  that.roty, dx) );
-        setFace( mirrorModule(m, tright, that.roty, dx) );
+        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
+        cube.add( mirrorModule(m, tright, that.roty, dx) );
 
-        setFace( mirrorModule(m, tup, that.rotx, dx) );
-        setFace( mirrorModule(m, tdown, that.rotx, dx) );
+        cube.add( mirrorModule(m, tup, that.rotx, dx) );
+        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-        setFace(m);
+    
+        if(inflation)
+            cube.inflate(inflation);
 
+        setFace(cube.get());
 
         return that;
     };

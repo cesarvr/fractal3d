@@ -1,0 +1,17 @@
+li {
+   font-family: 'Open Sans';
+   font-size: 27px;
+   font-style: normal;
+   font-variant: normal; 
+   list-style-type: none;
+}
+
+a {
+   text-decoration: none; 
+   color: #333333;
+}
+.wrapper {
+   position: absolute;
+
+  
+}

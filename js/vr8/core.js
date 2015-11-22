@@ -15,7 +15,7 @@ var Core = function(options) {
     var webGL = core.getWebGL();
 
 
-    this.canvas = core.canvas;
+    this.canvas = core;
     this.createBuffer = function() {
         return this.Buffer.New(webGL);
     };
