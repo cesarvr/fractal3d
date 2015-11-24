@@ -30,7 +30,7 @@ module.exports = {
             scene.setViewPort(x, y);
         });
         scene.shader = shader;
-        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
         scene.camera = perspective.multiply(camera).getMatrix();
@@ -77,7 +77,16 @@ module.exports = {
 
         var dx = 0.1;
         var dz = 0.001;
-        var t = 0.1; 
+        var t = 0.1;
+
+       
+
+            buffer.update({
+                points: geometry.cube(5, dz).getModel(),
+                size: 9
+            });
+
+
 
         function render() {
             //Utils.getNextFrame.call(this, render);
@@ -85,27 +94,31 @@ module.exports = {
             dx += 0.3;
             dz += 0.1;
             if (dz > 359) dz = 0.5;
-
-            buffer.update({
-                points: geometry.cube(5, dz).getModel(),
-                size: 9
-            });
-
             var T = core.MLib.Transform.New();
 
-            var entity = {
+            var entity1 = {
                 buffer: buffer,
-                model: T.translate(0, 0, -20).rotateX(dx).rotateY(dx).getMatrix(),
+                model: T.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
 
+            var entity2 = {
+                buffer: buffer,
+                model: T.translate(-30, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
+                drawType: geometry.getDrawType(),
+                texture: texture,
+            };
+
+
             shader.prepare({
-                'blurify': Math.sin(dz*2)
+                'blurify': Math.sin(dz)
             });
 
             scene.clean();
-            scene.render(entity);
+            scene.render(entity1);
+            scene.render(entity2);
+
         };
 
         render();

@@ -150,6 +150,10 @@ var Poly = function(Core, that) {
                matrices = matrices.concat(mtx);
             },
 
+            each: function(cb){
+                matrices.forEach(cb); 
+            },
+
             inflate: function(dx){
                 matrices.forEach(function(m){
                     if(m.row3.z > 0){
@@ -215,9 +219,8 @@ var Poly = function(Core, that) {
         cube.add( mirrorModule(m, tup, that.rotx, dx) );
         cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-    
-
-        setFace(cube.get());
+   
+       setFace(cube.get());
 
         return that;
     };

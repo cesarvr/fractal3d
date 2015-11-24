@@ -69,14 +69,14 @@
 	     
 	    index: function(){
 	        this.clear();
-	        var demo = __webpack_require__(31);
+	        var demo = __webpack_require__(32);
 	        demo.init();
 	        this.demos.push(demo);
 	    },
 
 	    noname: function(){
 	        this.clear();
-	        var demo = __webpack_require__(34);
+	        var demo = __webpack_require__(36);
 	        demo.init();
 	        this.demos.push(demo);
 	    },
@@ -109,7 +109,7 @@
 	    tunel: function(){
 
 	       this.clear();
-	     var demo =  __webpack_require__(36);
+	     var demo =  __webpack_require__(34);
 	     demo.init();
 	     this.demos.push(demo);
 	    },
@@ -12962,9 +12962,9 @@
 	    this.MLib = {
 	        Vec3: __webpack_require__(17).Vec3,
 	        Vec4: __webpack_require__(17).Vec4,
-	        Mat4: __webpack_require__(18),
+	        Mat4: __webpack_require__(19),
 	        Mat3: __webpack_require__(23),
-	        Transform: __webpack_require__(19),
+	        Transform: __webpack_require__(18),
 	    };
 	};
 
@@ -13174,13 +13174,12 @@
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer, global) {/*!
+	/* WEBPACK VAR INJECTION */(function(Buffer) {/*!
 	 * The buffer module from node.js, for the browser.
 	 *
 	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
 	 * @license  MIT
 	 */
-	/* eslint-disable no-proto */
 
 	var base64 = __webpack_require__(10)
 	var ieee754 = __webpack_require__(11)
@@ -13220,11 +13219,7 @@
 	 * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
 	 * get the Object implementation, which is slower but behaves correctly.
 	 */
-	Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
-	  ? global.TYPED_ARRAY_SUPPORT
-	  : typedArraySupport()
-
-	function typedArraySupport () {
+	Buffer.TYPED_ARRAY_SUPPORT = (function () {
 	  function Bar () {}
 	  try {
 	    var arr = new Uint8Array(1)
@@ -13237,7 +13232,7 @@
 	  } catch (e) {
 	    return false
 	  }
-	}
+	})()
 
 	function kMaxLength () {
 	  return Buffer.TYPED_ARRAY_SUPPORT
@@ -13393,16 +13388,10 @@
 	  return that
 	}
 
-	if (Buffer.TYPED_ARRAY_SUPPORT) {
-	  Buffer.prototype.__proto__ = Uint8Array.prototype
-	  Buffer.__proto__ = Uint8Array
-	}
-
 	function allocate (that, length) {
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    // Return an augmented `Uint8Array` instance, for best performance
 	    that = Buffer._augment(new Uint8Array(length))
-	    that.__proto__ = Buffer.prototype
 	  } else {
 	    // Fallback: Return an object instance of the Buffer class
 	    that.length = length
@@ -14191,7 +14180,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14208,7 +14197,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14222,7 +14211,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14244,7 +14233,7 @@
 	    this[offset + 3] = (value >>> 24)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 1] = (value >>> 8)
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, true)
 	  }
@@ -14259,7 +14248,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14312,7 +14301,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
 	  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
 	  if (value < 0) value = 0xff + value + 1
-	  this[offset] = (value & 0xff)
+	  this[offset] = value
 	  return offset + 1
 	}
 
@@ -14321,7 +14310,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	  } else {
 	    objectWriteUInt16(this, value, offset, true)
@@ -14335,7 +14324,7 @@
 	  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
 	    this[offset] = (value >>> 8)
-	    this[offset + 1] = (value & 0xff)
+	    this[offset + 1] = value
 	  } else {
 	    objectWriteUInt16(this, value, offset, false)
 	  }
@@ -14347,7 +14336,7 @@
 	  offset = offset | 0
 	  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
 	  if (Buffer.TYPED_ARRAY_SUPPORT) {
-	    this[offset] = (value & 0xff)
+	    this[offset] = value
 	    this[offset + 1] = (value >>> 8)
 	    this[offset + 2] = (value >>> 16)
 	    this[offset + 3] = (value >>> 24)
@@ -14366,7 +14355,7 @@
 	    this[offset] = (value >>> 24)
 	    this[offset + 1] = (value >>> 16)
 	    this[offset + 2] = (value >>> 8)
-	    this[offset + 3] = (value & 0xff)
+	    this[offset + 3] = value
 	  } else {
 	    objectWriteUInt32(this, value, offset, false)
 	  }
@@ -14719,7 +14708,7 @@
 	  return i
 	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer, (function() { return this; }())))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
 
 /***/ },
 /* 10 */
@@ -15184,8 +15173,8 @@
 
 	var Factory = __webpack_require__(13);
 	var Vec4  = __webpack_require__(17).Vec4;
-	var Matrix  = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Matrix  = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 
 	var Camera = function(){
@@ -15528,6 +15517,100 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Vec4 = __webpack_require__(17).Vec4;
+	var Mat4 = __webpack_require__(19);
+
+	/*
+	 * Degree to radian.
+	 */
+	function dgToRad(angle){
+	    return (angle*Math.PI) / 180;
+	};
+
+	var Transform = function(m) {
+	    var _m = m;
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+	    var I = Mat4.Identity();
+
+	    this.translate = function(x, y, z) {
+	        _m.row1.w = x || 0.0;
+	        _m.row2.w = y || 0.0;
+	        _m.row3.w = z || 0.0;
+	        return this;
+	    };
+
+	    this.scale = function(x, y, z) {
+	        _m.row1.x = x || 0.0;
+	        _m.row2.y = y || 0.0;
+	        _m.row3.z = z || 0.0;
+	        return this;
+	    };
+
+	    this.rotateX = function(angle) {
+
+	        var m = I.copy(); 
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        m.row2.y =  _cos || 0.0;
+	        m.row2.z = -_sin || 0.0; 
+
+	        m.row3.y = _sin || 0.0;
+	        m.row3.z = _cos || 0.0;
+
+	        _m.multiply(m);
+
+	        return this;
+	    };
+
+	    
+	    this.rotateY = function(angle){
+	    
+	        var m = I.copy(); 
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        m.row1.x =  _cos || 0.0;
+	        m.row1.z =  _sin || 0.0; 
+
+	        m.row3.x = -_sin || 0.0;
+	        m.row3.z = _cos || 0.0;
+
+	        _m.multiply(m);
+
+	        return this;
+	    };
+
+
+
+
+	    this.getMatrix = function(){
+	      return _m.getMatrix();
+	    };
+
+	    this.getMatrixObject = function(){
+	        return _m;
+	    }; 
+
+	};
+
+	module.exports = {
+	    Apply: function(m) {
+	        return new Transform(m);
+	    },
+	    New: function(){
+	      return new Transform( Mat4.Identity() );
+	    },
+	};
+
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Vec4 = __webpack_require__(17).Vec4;
 	var Vec3 = __webpack_require__(17).Vec3;
 
 
@@ -15793,100 +15876,6 @@
 
 
 /***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-
-	/*
-	 * Degree to radian.
-	 */
-	function dgToRad(angle){
-	    return (angle*Math.PI) / 180;
-	};
-
-	var Transform = function(m) {
-	    var _m = m;
-	    var cos = Math.cos;
-	    var sin = Math.sin;
-	    var I = Mat4.Identity();
-
-	    this.translate = function(x, y, z) {
-	        _m.row1.w = x || 0.0;
-	        _m.row2.w = y || 0.0;
-	        _m.row3.w = z || 0.0;
-	        return this;
-	    };
-
-	    this.scale = function(x, y, z) {
-	        _m.row1.x = x || 0.0;
-	        _m.row2.y = y || 0.0;
-	        _m.row3.z = z || 0.0;
-	        return this;
-	    };
-
-	    this.rotateX = function(angle) {
-
-	        var m = I.copy(); 
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        m.row2.y =  _cos || 0.0;
-	        m.row2.z = -_sin || 0.0; 
-
-	        m.row3.y = _sin || 0.0;
-	        m.row3.z = _cos || 0.0;
-
-	        _m.multiply(m);
-
-	        return this;
-	    };
-
-	    
-	    this.rotateY = function(angle){
-	    
-	        var m = I.copy(); 
-	        var tetha = dgToRad(angle);
-	        var _cos = cos(tetha);
-	        var _sin = sin(tetha);
-
-	        m.row1.x =  _cos || 0.0;
-	        m.row1.z =  _sin || 0.0; 
-
-	        m.row3.x = -_sin || 0.0;
-	        m.row3.z = _cos || 0.0;
-
-	        _m.multiply(m);
-
-	        return this;
-	    };
-
-
-
-
-	    this.getMatrix = function(){
-	      return _m.getMatrix();
-	    };
-
-	    this.getMatrixObject = function(){
-	        return _m;
-	    }; 
-
-	};
-
-	module.exports = {
-	    Apply: function(m) {
-	        return new Transform(m);
-	    },
-	    New: function(){
-	      return new Transform( Mat4.Identity() );
-	    },
-	};
-
-
-/***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -15963,8 +15952,8 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Mat4 = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 	var Renderable = function(geometry, color, texture) {
 	    this.geometry = geometry || Vec3.New();
@@ -16721,9 +16710,9 @@
 	var Factory = __webpack_require__(13);
 	var Vec3 = __webpack_require__(17).Vec3;
 	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
+	var Mat4 = __webpack_require__(19);
 	var Mat3 = __webpack_require__(23);
-	var Transform = __webpack_require__(19);
+	var Transform = __webpack_require__(18);
 
 
 
@@ -16870,6 +16859,10 @@
 	               matrices = matrices.concat(mtx);
 	            },
 
+	            each: function(cb){
+	                matrices.forEach(cb); 
+	            },
+
 	            inflate: function(dx){
 	                matrices.forEach(function(m){
 	                    if(m.row3.z > 0){
@@ -16935,9 +16928,8 @@
 	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
 	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-	    
-
-	        setFace(cube.get());
+	   
+	       setFace(cube.get());
 
 	        return that;
 	    };
@@ -17006,7 +16998,8 @@
 
 
 /***/ },
-/* 31 */
+/* 31 */,
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17014,8 +17007,8 @@
 	module.exports = {
 
 	    init: function() {
-	        var tmpl = __webpack_require__(32);
-	        var tmpl_menu = __webpack_require__(33);
+	        var tmpl = __webpack_require__(33);
+	        var tmpl_menu = __webpack_require__(35);
 	        var Core = __webpack_require__(6);
 	        var Noise = __webpack_require__(24);
 	        var Polygon = __webpack_require__(30);
@@ -17140,7 +17133,7 @@
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports) {
 
 	module.exports = function (data) {
@@ -17150,152 +17143,7 @@
 	}
 
 /***/ },
-/* 33 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
-	return __p
-	}
-
-/***/ },
 /* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(35);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-	        var Polygon = __webpack_require__(30);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-
-	        /* config */
-
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix();
-
-	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
-
-	        shaderCode.init = function(shader) {
-	            shader.use();
-	            shader
-	                .attribute('position')
-	                .attribute('texture')
-	                .attribute('colors')
-	                .uniform('MV')
-	                .uniform('uSampler')
-	                .uniform('blurify')
-	                .uniform('P');
-	        }
-
-
-	        shader.create(shaderCode);
-
-	        /*         */
-
-	        var geometry = Polygon.New();
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-
-	        /* */
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-
-	        var dx = 0.1;
-	        var dz = 0.001;
-	        var t = 0.1; 
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
-	            dx += 0.3;
-	            dz += 0.1;
-	            if (dz > 359) dz = 0.5;
-
-	            buffer.update({
-	                points: geometry.cube(5, dz).getModel(),
-	                size: 9
-	            });
-
-	            var T = core.MLib.Transform.New();
-
-	            var entity = {
-	                buffer: buffer,
-	                model: T.translate(0, 0, -20).rotateX(dx).rotateY(dx).getMatrix(),
-	                drawType: geometry.getDrawType(),
-	                texture: texture,
-	            };
-
-	            shader.prepare({
-	                'blurify': Math.sin(dz*2)
-	            });
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function() {
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 35 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n';
-	return __p
-	}
-
-/***/ },
-/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17404,6 +17252,164 @@
 
 	};
 
+
+/***/ },
+/* 35 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
+	return __p
+	}
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(37);
+	        var Core = __webpack_require__(6);
+	        var Noise = __webpack_require__(24);
+	        var Polygon = __webpack_require__(30);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	        scene.shader = shader;
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix();
+
+	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
+
+	        shaderCode.init = function(shader) {
+	            shader.use();
+	            shader
+	                .attribute('position')
+	                .attribute('texture')
+	                .attribute('colors')
+	                .uniform('MV')
+	                .uniform('uSampler')
+	                .uniform('blurify')
+	                .uniform('P');
+	        }
+
+
+	        shader.create(shaderCode);
+
+	        /*         */
+
+	        var geometry = Polygon.New();
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+
+	        /* */
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+
+	        var dx = 0.1;
+	        var dz = 0.001;
+	        var t = 0.1;
+
+	       
+
+	            buffer.update({
+	                points: geometry.cube(5, dz).getModel(),
+	                size: 9
+	            });
+
+
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestID = window.requestAnimationFrame(render);
+	            dx += 0.3;
+	            dz += 0.1;
+	            if (dz > 359) dz = 0.5;
+	            var T = core.MLib.Transform.New();
+
+	            var entity1 = {
+	                buffer: buffer,
+	                model: T.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
+	                drawType: geometry.getDrawType(),
+	                texture: texture,
+	            };
+
+	            var entity2 = {
+	                buffer: buffer,
+	                model: T.translate(-30, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
+	                drawType: geometry.getDrawType(),
+	                texture: texture,
+	            };
+
+
+	            shader.prepare({
+	                'blurify': Math.sin(dz)
+	            });
+
+	            scene.clean();
+	            scene.render(entity1);
+	            scene.render(entity2);
+
+	        };
+
+	        render();
+
+	    },
+
+	    stop: function() {
+	        window.cancelAnimationFrame(window.requestID);
+	    }
+
+	};
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n';
+	return __p
+	}
 
 /***/ }
 /******/ ]);
