@@ -76,7 +76,7 @@ module.exports = {
 
 
         var dx = 0.1;
-        var dz = 0.1;
+        var dz = 0.001;
         var t = 0.1; 
 
         function render() {
@@ -86,7 +86,7 @@ module.exports = {
             dz += 0.1;
             if (dz > 359) dz = 0.5;
 
-            buffer.geometry({
+            buffer.update({
                 points: geometry.cube(5, dz).getModel(),
                 size: 9
             });
@@ -101,7 +101,7 @@ module.exports = {
             };
 
             shader.prepare({
-                'blurify': Math.sin(dz)
+                'blurify': Math.sin(dz*2)
             });
 
             scene.clean();

@@ -13079,8 +13079,10 @@
 
 
 
-	    if (buffer === null)
+	    if (buffer === null){
 	        buffer = gl.createBuffer();
+	        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	    }
 
 	    that.memoryLayout = function(bufferObject) {
 	        size = bufferObject.size;
@@ -13089,7 +13091,6 @@
 	    }
 
 	    that.geometry = function(g) {
-	        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
@@ -13110,11 +13111,14 @@
 	    };
 
 	    that.update = function(g) {
+
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
 	            new Float32Array(g.points),
-	            bufferType
+	            gl.DYNAMIC_DRAW
 	        );
+
+	        that.memoryLayout(g);
 	    }
 
 	    that.upload_vertex = function(shader_position) {
@@ -17237,7 +17241,7 @@
 
 
 	        var dx = 0.1;
-	        var dz = 0.1;
+	        var dz = 0.001;
 	        var t = 0.1; 
 
 	        function render() {
@@ -17247,7 +17251,7 @@
 	            dz += 0.1;
 	            if (dz > 359) dz = 0.5;
 
-	            buffer.geometry({
+	            buffer.update({
 	                points: geometry.cube(5, dz).getModel(),
 	                size: 9
 	            });
@@ -17262,7 +17266,7 @@
 	            };
 
 	            shader.prepare({
-	                'blurify': Math.sin(dz)
+	                'blurify': Math.sin(dz*2)
 	            });
 
 	            scene.clean();

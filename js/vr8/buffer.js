@@ -23,8 +23,10 @@ Buffer = function(Core, that) {
 
 
 
-    if (buffer === null)
+    if (buffer === null){
         buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    }
 
     that.memoryLayout = function(bufferObject) {
         size = bufferObject.size;
@@ -33,7 +35,6 @@ Buffer = function(Core, that) {
     }
 
     that.geometry = function(g) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
         gl.bufferData(
             gl.ARRAY_BUFFER,
@@ -54,11 +55,14 @@ Buffer = function(Core, that) {
     };
 
     that.update = function(g) {
+
         gl.bufferData(
             gl.ARRAY_BUFFER,
             new Float32Array(g.points),
-            bufferType
+            gl.DYNAMIC_DRAW
         );
+
+        that.memoryLayout(g);
     }
 
     that.upload_vertex = function(shader_position) {
