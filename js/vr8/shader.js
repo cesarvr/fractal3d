@@ -39,6 +39,7 @@ var Shader = function(Core, that) {
 
     that.uniform = function(param) {
         that.vars[param] = gl.getUniformLocation(program, param);
+        if (!that.vars[param]) throw " Error uniform " + param + " not found.";
         return this;
     }
 
@@ -63,10 +64,20 @@ var Shader = function(Core, that) {
     }
 
     that.prepare = function(varsGL) {
+
+
         for (var var_name in varsGL) {
             var value = varsGL[var_name];
-            gl.uniformMatrix4fv(that.vars[var_name], false, value);
+
+            if (value instanceof Float32Array) {
+                gl.uniformMatrix4fv(that.vars[var_name], false, value);
+            } else if (typeof value === 'number') {
+                this.use();
+                gl.uniform1f(that.vars[var_name], value);
+            }
+
         }
+
     };
 
     return that;

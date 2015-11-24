@@ -35,7 +35,23 @@ module.exports = {
 
         scene.camera = perspective.multiply(camera).getMatrix();
 
-        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
+
+        shaderCode.init = function(shader) {
+            shader.use();
+            shader
+                .attribute('position')
+                .attribute('texture')
+                .attribute('colors')
+                .uniform('MV')
+                .uniform('uSampler')
+                .uniform('blurify')
+                .uniform('P');
+        }
+
+
+        shader.create(shaderCode);
+
         /*         */
 
         var geometry = Polygon.New();
@@ -61,6 +77,7 @@ module.exports = {
 
         var dx = 0.1;
         var dz = 0.1;
+        var t = 0.1; 
 
         function render() {
             //Utils.getNextFrame.call(this, render);
@@ -83,6 +100,9 @@ module.exports = {
                 texture: texture,
             };
 
+            shader.prepare({
+                'blurify': Math.sin(dz)
+            });
 
             scene.clean();
             scene.render(entity);

@@ -47,10 +47,7 @@ Buffer = function(Core, that) {
     that.setBufferType = function(type) {
         if (gl[type] > 0)
             bufferType = gl[type];
-
-        console.log('render type-> ', renderType);
     }
-
 
     that.prepare = function(){
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);

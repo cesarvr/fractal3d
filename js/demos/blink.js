@@ -88,6 +88,7 @@ module.exports = {
                 texture: texture,
             };
 
+            shader.prepare({'blurify':20} );
 
             scene.clean();
             scene.render(entity);

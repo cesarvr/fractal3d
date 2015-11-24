@@ -25,13 +25,14 @@
     varying vec2 oTexture;
     varying vec4 oColors;
     uniform sampler2D uSampler;
+    uniform float blurify;
 
     void main(void) {
 
        vec4 sam0, sam1, sam2, sam3;
 
 
-       float step = 30.0;
+       float step = blurify / 100.0;
 
         sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );
         sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );
@@ -39,6 +40,7 @@
         sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );
 
         gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;
+        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);
 
     }
 
