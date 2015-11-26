@@ -13,7 +13,7 @@ module.exports = {
             element: document.getElementById('webgl-div')
         });
 
-        var buffer = core.createBuffer();
+        var buffer = core.createBufferN();
         var shader = core.createShader();
         var texture = core.createTexture();
         var Vec3 = core.MLib.Vec3;
@@ -27,21 +27,24 @@ module.exports = {
         core.canvas.setResize(function(x, y) {
             scene.setViewPort(x, y);
         });
- 
+
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-        scene.camera = perspective.multiply(camera).getMatrix(); 
+        scene.camera = perspective.multiply(camera).getMatrix();
 
         shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
         /*         */
 
         var geometry = core.createGeometry();
 
-        buffer.geometry({
-            points: geometry.cube(5, 5).getModel(),
-            size: 9
+        buffer
+        .load(geometry.cube(5, 5).getModel())
+        .order({
+            'position': 3,
+            'colors': 4,
+            'texture': 2
         });
 
         /* Generarting XOR Texture */
@@ -91,16 +94,16 @@ module.exports = {
         function render() {
             //Utils.getNextFrame.call(this, render);
             window.requestID = window.requestAnimationFrame(render);
-        dx+= 0.5;
+            dx += 0.5;
 
 
-        var Transform = core.MLib.Transform.New();
-        var entity = {
-            buffer: buffer,
-            model: Transform.translate(4,4,-30).rotateY(dx).rotateX(dx).getMatrix(),
-            drawType: 'TRIANGLE_STRIPS',
-            texture: texture,
-        };
+            var Transform = core.MLib.Transform.New();
+            var entity = {
+                buffer: buffer,
+                model: Transform.translate(4, 4, -30).rotateY(dx).rotateX(dx).getMatrix(),
+                drawType: 'TRIANGLE_STRIPS',
+                texture: texture,
+            };
 
 
             scene.clean();
@@ -111,7 +114,7 @@ module.exports = {
 
     },
 
-    stop: function(){
+    stop: function() {
         window.cancelAnimationFrame(window.requestID);
     }
 

@@ -75,6 +75,7 @@ Buffer = function(Core, that) {
     }
 
     that.upload_texture = function(shader_texture) {
+
         if (no_texture)
             return;
 

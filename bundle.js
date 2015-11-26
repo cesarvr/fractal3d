@@ -12920,6 +12920,7 @@
 	    var CanvasGL = __webpack_require__(7);
 
 	    this.Buffer = __webpack_require__(8);
+	    this.BufferN = __webpack_require__(37);
 	    this.Shader = __webpack_require__(14);
 	    this.Texture = __webpack_require__(15);
 	    this.Camera = __webpack_require__(16);
@@ -12933,6 +12934,10 @@
 	    this.canvas = core;
 	    this.createBuffer = function() {
 	        return this.Buffer.New(webGL);
+	    };
+
+	    this.createBufferN = function() {
+	        return this.BufferN.New(webGL);
 	    };
 
 	    this.createShader = function() {
@@ -13131,6 +13136,7 @@
 	    }
 
 	    that.upload_texture = function(shader_texture) {
+
 	        if (no_texture)
 	            return;
 
@@ -15925,6 +15931,9 @@
 	            'MV': this.camera,
 	            'P': entity.model
 	        });
+	       
+	        debugger;
+	        if(typeof entity.buffer['prepare'] !== 'undefined'){
 
 	        entity.buffer.prepare();
 	        entity.buffer.upload_vertex(this.shader.vars.position);
@@ -15933,6 +15942,10 @@
 
 	        if (entity.texture)
 	            entity.texture.prepare(this.shader.vars);
+	        }else{
+
+	         entity.buffer.exec(); 
+	        }
 	    };
 
 	    that.draw = function(entity) {
@@ -16598,7 +16611,7 @@
 	            element: document.getElementById('webgl-div')
 	        });
 
-	        var buffer = core.createBuffer();
+	        var buffer = core.createBufferN();
 	        var shader = core.createShader();
 	        var texture = core.createTexture();
 	        var Vec3 = core.MLib.Vec3;
@@ -16612,21 +16625,24 @@
 	        core.canvas.setResize(function(x, y) {
 	            scene.setViewPort(x, y);
 	        });
-	 
+
 	        scene.shader = shader;
 	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
 	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-	        scene.camera = perspective.multiply(camera).getMatrix(); 
+	        scene.camera = perspective.multiply(camera).getMatrix();
 
 	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
 	        /*         */
 
 	        var geometry = core.createGeometry();
 
-	        buffer.geometry({
-	            points: geometry.cube(5, 5).getModel(),
-	            size: 9
+	        buffer
+	        .load(geometry.cube(5, 5).getModel())
+	        .order({
+	            'position': 3,
+	            'colors': 4,
+	            'texture': 2
 	        });
 
 	        /* Generarting XOR Texture */
@@ -16676,16 +16692,16 @@
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
 	            window.requestID = window.requestAnimationFrame(render);
-	        dx+= 0.5;
+	            dx += 0.5;
 
 
-	        var Transform = core.MLib.Transform.New();
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(4,4,-30).rotateY(dx).rotateX(dx).getMatrix(),
-	            drawType: 'TRIANGLE_STRIPS',
-	            texture: texture,
-	        };
+	            var Transform = core.MLib.Transform.New();
+	            var entity = {
+	                buffer: buffer,
+	                model: Transform.translate(4, 4, -30).rotateY(dx).rotateX(dx).getMatrix(),
+	                drawType: 'TRIANGLE_STRIPS',
+	                texture: texture,
+	            };
 
 
 	            scene.clean();
@@ -16696,7 +16712,7 @@
 
 	    },
 
-	    stop: function(){
+	    stop: function() {
 	        window.cancelAnimationFrame(window.requestID);
 	    }
 
@@ -17419,6 +17435,110 @@
 	    }
 
 	};
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var Factory = __webpack_require__(13);
+
+	var Buffer = function(Core, that) {
+
+	    var gl = Core;
+	    var buffer = gl.createBuffer();
+	    var vertexDataSize = 0,
+	        bufferPerVertex = 0;
+
+	    var that = that || {};
+	    var pipeline = [];
+
+	    that.sides = 0;
+
+	    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+	    var save = function(list, bufferType) {
+	        vertexDataSize = list.length;
+
+	        gl.bufferData(
+	            gl.ARRAY_BUFFER,
+	            new Float32Array(list),
+	            bufferType
+	        );
+	    }
+
+	    /*
+	     * obj
+	     *  name: shader attribute name.
+	     *  value: number of values per attribute.
+	     */
+
+	    var prepare = function(_obj) {
+	        var object = _obj;
+	        console.log('offset ->', object.offset);
+	        return function(stride) {
+	            gl.vertexAttribPointer(
+	                object.name,
+	                object.value,
+	                gl.FLOAT,
+	                false,
+	                stride,
+	                object.offset // starting from. 
+	            );
+	        }
+	    };
+
+
+	    that.load = function(list) {
+	        save(list, gl.STATIC_DRAW);
+	        return that;
+	    }
+
+	    that.update = function(list) {
+	        save(list, gl.DYNAMIC_DRAW);
+	        return that;
+	    }
+
+	    /* @order 
+	     * organize the interleave order.
+	     * obj
+	     *    name: shader attribute name.
+	     *    value: number of values per attribute.
+	     *
+	     */
+	    that.order = function(obj) {
+	        var bufferPerVertex = 0;
+
+	        Object.keys(obj).forEach(function(key) {
+
+
+	            pipeline.push(prepare({
+	                name: key,
+	                value: obj[key],
+	                offset: (bufferPerVertex * Float32Array.BYTES_PER_ELEMENT),
+	            }));
+
+	            bufferPerVertex += obj[key];
+	        });
+
+	        that.sides = vertexDataSize / bufferPerVertex;
+
+	        that.exec = function() {
+	            pipeline.forEach(function(vertexAttrib) {
+	                vertexAttrib(bufferPerVertex * Float32Array.BYTES_PER_ELEMENT);
+	            });
+	        }
+
+	        return that;
+	    }
+
+	    return that;
+	};
+
+
+	module.exports = new Factory(Buffer);
 
 
 /***/ }

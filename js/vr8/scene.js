@@ -33,6 +33,9 @@ var Scene = function(Core, that) {
             'MV': this.camera,
             'P': entity.model
         });
+       
+        debugger;
+        if(typeof entity.buffer['prepare'] !== 'undefined'){
 
         entity.buffer.prepare();
         entity.buffer.upload_vertex(this.shader.vars.position);
@@ -41,6 +44,10 @@ var Scene = function(Core, that) {
 
         if (entity.texture)
             entity.texture.prepare(this.shader.vars);
+        }else{
+
+         entity.buffer.exec(); 
+        }
     };
 
     that.draw = function(entity) {
