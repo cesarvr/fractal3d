@@ -2,113 +2,99 @@
 
 var Factory = require('../utils/factory');
 
-Buffer = function(Core, that) {
-
-    var that = that || {};
+var Buffer = function(Core, that) {
 
     var gl = Core;
+    var buffer = gl.createBuffer();
+    var vertexDataSize = 0,
+        bufferPerVertex = 0;
 
-    var buffer = null;
-    var bufferType = gl.STATIC_DRAW;
+    var that = that || {};
+    var pipeline = [];
 
-    var size = 0;
-    var stride = 0;
+    that.sides = 0;
 
-    var color_size = 4;
-    var vertex_size = 3;
-    var texture_size = 2;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
-    var no_color_data = false;
-    var no_texture = false;
-
-
-
-    if (buffer === null){
-        buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    }
-
-    that.memoryLayout = function(bufferObject) {
-        size = bufferObject.size;
-        that.sides = bufferObject.points.length / bufferObject.size;
-        stride = bufferObject.size * Float32Array.BYTES_PER_ELEMENT;
-    }
-
-    that.geometry = function(g) {
+    var save = function(list, bufferType) {
+        vertexDataSize = list.length;
 
         gl.bufferData(
             gl.ARRAY_BUFFER,
-            new Float32Array(g.points),
+            new Float32Array(list),
             bufferType
         );
-
-        that.memoryLayout(g);
     }
 
-    that.setBufferType = function(type) {
-        if (gl[type] > 0)
-            bufferType = gl[type];
-    }
+    /*
+     * obj
+     *  name: shader attribute name.
+     *  value: number of values per attribute.
+     */
 
-    that.prepare = function(){
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    var prepare = function(_obj) {
+        var object = _obj;
+        console.log('offset ->', object.offset);
+        return function(stride) {
+            gl.vertexAttribPointer(
+                object.name,
+                object.value,
+                gl.FLOAT,
+                false,
+                stride,
+                object.offset // starting from. 
+            );
+        }
     };
 
-    that.update = function(g) {
 
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array(g.points),
-            gl.DYNAMIC_DRAW
-        );
-
-        that.memoryLayout(g);
+    that.load = function(list) {
+        save(list, gl.STATIC_DRAW);
+        return that;
     }
 
-    that.upload_vertex = function(shader_position) {
-        gl.vertexAttribPointer(shader_position,
-            vertex_size,
-            gl.FLOAT,
-            false,
-            stride,
-            0);
+    that.update = function(list) {
+        save(list, gl.DYNAMIC_DRAW);
+        return that;
     }
 
-    that.upload_texture = function(shader_texture) {
+    /* @order 
+     * organize the interleave order.
+     * obj
+     *    name: shader attribute name.
+     *    value: number of values per attribute.
+     *
+     */
+    that.order = function(shaderMap, obj) {
+        var bufferPerVertex = 0;
 
-        if (no_texture)
-            return;
+        Object.keys(obj).forEach(function(key) {
 
-        var offset = vertex_size * Float32Array.BYTES_PER_ELEMENT;
 
-        if (!no_color_data)
-            offset += color_size * Float32Array.BYTES_PER_ELEMENT;
+            pipeline.push(prepare({
+                name: shaderMap[key],
+                value: obj[key],
+                offset: (bufferPerVertex * Float32Array.BYTES_PER_ELEMENT),
+            }));
 
-        gl.vertexAttribPointer(
-            shader_texture,
-            texture_size,
-            gl.FLOAT,
-            false,
-            stride,
-            offset
-        );
-    }
+            bufferPerVertex += obj[key];
+        });
 
-    that.upload_colors = function(shader_color) {
+        that.sides = vertexDataSize / bufferPerVertex;
 
-        if (no_color_data)
-            return;
+        that.exec = function() {
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
-        gl.vertexAttribPointer(shader_color,
-            color_size,
-            gl.FLOAT,
-            false,
-            stride,
-            vertex_size * Float32Array.BYTES_PER_ELEMENT
-        );
+            for(var vertexAttrib in pipeline){
+                pipeline[vertexAttrib](bufferPerVertex * Float32Array.BYTES_PER_ELEMENT);
+            }
+        }
+
+        return that;
     }
 
     return that;
 };
+
 
 module.exports = new Factory(Buffer);

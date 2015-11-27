@@ -13,7 +13,7 @@ module.exports = {
             element: document.getElementById('webgl-div')
         });
 
-        var buffer = core.createBufferN();
+        var buffer = core.createBuffer();
         var shader = core.createShader();
         var texture = core.createTexture();
         var Vec3 = core.MLib.Vec3;
@@ -24,6 +24,7 @@ module.exports = {
 
         /* config */
 
+        scene.setViewPort(window.innerWidth, window.innerHeight);
         core.canvas.setResize(function(x, y) {
             scene.setViewPort(x, y);
         });
@@ -40,33 +41,17 @@ module.exports = {
         var geometry = core.createGeometry();
 
         buffer
-        .load(geometry.cube(5, 5).getModel())
-        .order({
-            'position': 3,
-            'colors': 4,
-            'texture': 2
-        });
+            .load(geometry.cube(5, 5).getModel())
+            .order(shader.vars, {
+                'position': 3,
+                'colors': 4,
+                'texture': 2
+            });
 
         /* Generarting XOR Texture */
+
         var textureSize = 128;
         var pix = [];
-        var noi = [];
-        /*
-        var noise = new Noise();
-        for (var x = 0; x < textureSize; x++) {
-            for (var y = 0; y < textureSize; y++) {
-                 noi.push(  noise.perlin(x,y,4)  )*8;
-            }
-        }
-
-
-        console.log(noi);
-        noi.forEach(function(noise){
-            pix.push(noise); //r
-            pix.push(noise); //g
-            pix.push(noise); //b
-        });
-        */
 
         for (var x = 0; x < textureSize; x++) {
             for (var y = 0; y < textureSize; y++) {
@@ -76,7 +61,6 @@ module.exports = {
                 pix.push(xor) // b
             }
         }
-
 
         /* */
 

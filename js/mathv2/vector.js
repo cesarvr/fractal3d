@@ -32,7 +32,6 @@ var Vector3 = function(x, y, z) {
     };
 
     this.copy = function() {
-
         return new Vector3(this.x, this.y, this.z );
     };
 
@@ -150,7 +149,7 @@ var Vector4 = function(x, y, z, w) {
 
 
     this.dot = function(v) {
-        return (this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w);
+        return ((this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w));
     };
 
 

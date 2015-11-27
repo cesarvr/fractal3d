@@ -5,7 +5,6 @@ var Core = function(options) {
     var CanvasGL = require('./canvas');
 
     this.Buffer = require('./buffer');
-    this.BufferN = require('./buffern');
     this.Shader = require('./shader');
     this.Texture = require('./texture');
     this.Camera = require('./camera');
@@ -19,10 +18,6 @@ var Core = function(options) {
     this.canvas = core;
     this.createBuffer = function() {
         return this.Buffer.New(webGL);
-    };
-
-    this.createBufferN = function() {
-        return this.BufferN.New(webGL);
     };
 
     this.createShader = function() {

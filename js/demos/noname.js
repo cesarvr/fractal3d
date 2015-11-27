@@ -26,9 +26,11 @@ module.exports = {
 
         /* config */
 
+        scene.setViewPort(window.innerWidth, window.innerHeight);
         core.canvas.setResize(function(x, y) {
             scene.setViewPort(x, y);
         });
+
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
@@ -79,12 +81,15 @@ module.exports = {
         var dz = 0.001;
         var t = 0.1;
 
-       
 
-            buffer.update({
-                points: geometry.cube(5, dz).getModel(),
-                size: 9
-            });
+
+        buffer
+        .load(geometry.cube(5, dz).getModel())
+        .order(shader.vars, {
+            'position': 3,
+            'colors': 4,
+            'texture': 2
+        });
 
 
 

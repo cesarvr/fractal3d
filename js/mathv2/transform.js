@@ -51,14 +51,14 @@ var Transform = function(m) {
     
         var m = I.copy(); 
         var tetha = dgToRad(angle);
+
         var _cos = cos(tetha);
         var _sin = sin(tetha);
 
-        m.row1.x =  _cos || 0.0;
-        m.row1.z =  _sin || 0.0; 
-
-        m.row3.x = -_sin || 0.0;
-        m.row3.z = _cos || 0.0;
+        m.row1.x =  _cos;
+        m.row1.z =  _sin; 
+        m.row3.x = -_sin;
+        m.row3.z = _cos;
 
         _m.multiply(m);
 

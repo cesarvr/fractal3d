@@ -6,6 +6,8 @@ var Shader = function(Core, that) {
     var gl = Core;
     var program = null;
     that.vars = {};
+    that.cache = {};
+
 
     that.add = function(shaderCode, type) {
         var shader = null;
@@ -16,13 +18,14 @@ var Shader = function(Core, that) {
         if (type === 'vertex')
             shader = gl.createShader(gl.VERTEX_SHADER);
 
-        if (!shader) {
-            throw 'invalid shader code!!';
-            console.log('invalid shader code' + shaderCode);
-        }
-
         gl.shaderSource(shader, shaderCode);
         gl.compileShader(shader);
+
+        var error = gl.getShaderInfoLog(shader);
+
+        if(error.length > 0){
+          throw error; 
+        }
 
         return shader;
     }
@@ -33,6 +36,7 @@ var Shader = function(Core, that) {
 
     that.attribute = function(param) {
         that.vars[param] = gl.getAttribLocation(program, param);
+        if (that.vars[param] < 0) throw " Error attribute " + param + " not found.";
         gl.enableVertexAttribArray(that.vars[param]);
         return this;
     }
@@ -58,27 +62,39 @@ var Shader = function(Core, that) {
         gl.linkProgram(program);
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.log('Error linking shaders.')
-            throw 'error linking shaders';
+            throw 'error linking shaders: ' + gl.getProgramInfoLog(program);
         }
     }
+    
+    var unify = function(_obj){
+       var obj = _obj;
+       var param = obj.param;
 
-    that.prepare = function(varsGL) {
+       return function(value){
+        obj.args[param] = value;
+        obj.method.apply(gl, obj.args);
+       }
+    }
+  
+    var saveIntoCache = function(shaderId, key, val){
+      if(val instanceof Float32Array) {
+       that.cache[key] = unify( { method: gl.uniformMatrix4fv, args: [shaderId, false, val], param: 2 } );
+      }   
 
+      if(typeof val === 'number') {
+        that.cache[key] = unify( { method: gl.uniform1f, args: [shaderId, val], param: 1 } );
+      }
+    }
 
-        for (var var_name in varsGL) {
-            var value = varsGL[var_name];
-
-            if (value instanceof Float32Array) {
-                gl.uniformMatrix4fv(that.vars[var_name], false, value);
-            } else if (typeof value === 'number') {
-                this.use();
-                gl.uniform1f(that.vars[var_name], value);
-            }
-
+    that.prepare = function(vars) {
+      for(var key in vars){
+         if( that.cache[key]  ){
+          that.cache[key](vars[key]);
+        }else{
+          saveIntoCache(that.vars[key],key, vars[key]);        
         }
-
-    };
+      }
+    }
 
     return that;
 }
