@@ -10,6 +10,7 @@ var Core = function(options) {
     this.Camera = require('./camera');
     this.Scene = require('./scene');
     this.Geometry = require('./geometry');
+    this.FrameBuffer = require('./framebuffer');
 
     var core = new CanvasGL(options.fullscreen, options.element);
     var webGL = core.getWebGL();
@@ -28,6 +29,10 @@ var Core = function(options) {
         return this.Texture.New(webGL);
     };
 
+    this.getFrameBuffer = function(){
+        return this.FrameBuffer.New(webGL); 
+    };
+
     this.createScene = function() {
         return this.Scene.New(webGL);
     };
@@ -35,7 +40,7 @@ var Core = function(options) {
     this.createGeometry = function() {
         return this.Geometry.New();
     };
-
+    
     this.getUtils = function() {
         return {
             camera: this.Camera.New(),

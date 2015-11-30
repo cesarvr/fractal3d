@@ -88,9 +88,9 @@ var Shader = function(Core, that) {
 
     that.prepare = function(shaderVariables) {
       for(var key in shaderVariables){
-         if( that.cache[key]  ){
+         if( that.cache[key]  ) {
           that.cache[key](shaderVariables[key]);
-        }else{
+        }else {
           saveIntoCache(that.vars[key],key, shaderVariables[key]);        
         }
       }
