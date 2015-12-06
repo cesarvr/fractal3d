@@ -69,14 +69,14 @@
 	     
 	    index: function(){
 	        this.clear();
-	        var demo = __webpack_require__(31);
+	        var demo = __webpack_require__(4);
 	        demo.init();
 	        this.demos.push(demo);
 	    },
 
 	    noname: function(){
 	        this.clear();
-	        var demo = __webpack_require__(34);
+	        var demo = __webpack_require__(24);
 	        demo.init();
 	        this.demos.push(demo);
 	    },
@@ -85,7 +85,7 @@
 	    xorDemo: function(){
 
 	       this.clear();
-	       var demo = __webpack_require__(4)
+	       var demo = __webpack_require__(26)
 	       demo.init();
 	       this.demos.push(demo);
 	    },
@@ -93,7 +93,7 @@
 	    primeDemo: function(){
 	  
 	       this.clear();
-	      var demo =__webpack_require__(25);
+	      var demo =__webpack_require__(28);
 	       demo.init();
 	       this.demos.push(demo);
 	    },
@@ -101,7 +101,7 @@
 	    cube: function(){
 
 	       this.clear();
-	     var demo = __webpack_require__(27);
+	     var demo = __webpack_require__(30);
 	     demo.init();
 	     this.demos.push(demo);
 	    },
@@ -109,7 +109,7 @@
 	    tunel: function(){
 
 	       this.clear();
-	     var demo =  __webpack_require__(36);
+	     var demo =  __webpack_require__(32);
 	     demo.init();
 	     this.demos.push(demo);
 	    },
@@ -12801,8 +12801,19 @@
 
 	    init: function() {
 	        var tmpl = __webpack_require__(5);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
+	        var tmpl_menu = __webpack_require__(6);
+	        var Core = __webpack_require__(7);
+	        var Noise = __webpack_require__(22);
+	        var Polygon = __webpack_require__(23);
+
+	        var div = document.createElement('div');
+	        div.className = 'wrapper';
+	        div.innerHTML = tmpl_menu();
+
+	        document.body.appendChild(div);
+	        
+	        div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
+
 
 
 	        var core = new Core({
@@ -12813,6 +12824,7 @@
 	        var buffer = core.createBuffer();
 	        var shader = core.createShader();
 	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
 
 	        var scene = core.createScene();
 	        var Utils = core.getUtils();
@@ -12820,21 +12832,24 @@
 
 
 	        /* config */
-
-	    
 	        core.canvas.setResize(function(x, y) {
 	            scene.setViewPort(x, y);
 	        });
+	 
 	        scene.shader = shader;
-	        scene.camera = Utils.camera.MakeOrtho(0, 50, 50, 0, 1, -1);
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix(); 
+	        scene.setClearColor({r:1, g:1,b:1});
 
 	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
 	        /*         */
 
-	        var geometry = core.createGeometry();
+	        var geometry = Polygon.New();
 
 	        buffer.geometry({
-	            points: geometry.plane(10, 15).getModel(),
+	            points: geometry.plane(5,5).getModel(),
 	            size: 9
 	        });
 
@@ -12848,7 +12863,7 @@
 	            for (var y = 0; y < textureSize; y++) {
 	                 noi.push(  noise.perlin(x,y,4)  )*8;
 	            }
-	        } 
+	        }
 
 
 	        console.log(noi);
@@ -12862,9 +12877,9 @@
 	        for (var x = 0; x < textureSize; x++) {
 	            for (var y = 0; y < textureSize; y++) {
 	                var xor = x ^ y;
-	                pix.push(xor) // r
+	                pix.push(xor+34) // r
 	                pix.push(xor) // g
-	                pix.push(xor) // b 
+	                pix.push(xor) // b
 	            }
 	        }
 
@@ -12873,17 +12888,28 @@
 
 	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
+	        var dx = 0.1;
+	          
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	        window.requestID =  window.requestAnimationFrame(render);
+
 	        var Transform = core.MLib.Transform.New();
+	            dx += 0.5;
+	        buffer.geometry({
+	            points: geometry.plane(5).getModel(),
+	            size: 9
+	        });
+
+
 	        var entity = {
 	            buffer: buffer,
-	            model: Transform.translate(25, 25).getMatrix(),
-	            drawType: 'TRIANGLE_STRIP',
+	            model: Transform.translate(4,4,-20).rotateY(dx).getMatrix(),
+	            drawType: geometry.getDrawType(),
 	            texture: texture,
 	        };
 
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            //window.requestAnimationFrame(render);
+
 	            scene.clean();
 	            scene.render(entity);
 	        };
@@ -12905,27 +12931,37 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;  \n     attribute vec4 colors;  \n\n     uniform mat4 MV;\n     uniform mat4 P;\n     \n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) { \n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n    \n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        vec4 c =  texture2D(uSampler, oTexture); \n\n        gl_FragColor =oColors;\n    }\n\n</script>\n';
 	return __p
 	}
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
+	return __p
+	}
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 
 	var Core = function(options) {
-	    var CanvasGL = __webpack_require__(7);
+	    var CanvasGL = __webpack_require__(8);
 
-	    this.Buffer = __webpack_require__(8);
-	    this.Shader = __webpack_require__(14);
-	    this.Texture = __webpack_require__(15);
-	    this.Camera = __webpack_require__(16);
-	    this.Scene = __webpack_require__(20);
-	    this.Geometry = __webpack_require__(21);
-	    this.FrameBuffer = __webpack_require__(38);
+	    this.Buffer = __webpack_require__(9);
+	    this.Shader = __webpack_require__(11);
+	    this.Texture = __webpack_require__(12);
+	    this.Camera = __webpack_require__(13);
+	    this.Scene = __webpack_require__(17);
+	    this.Geometry = __webpack_require__(18);
+	    this.FrameBuffer = __webpack_require__(19);
 
 	    var core = new CanvasGL(options.fullscreen, options.element);
 	    var webGL = core.getWebGL();
@@ -12959,17 +12995,17 @@
 	    this.getUtils = function() {
 	        return {
 	            camera: this.Camera.New(),
-	            util: __webpack_require__(22).New()
+	            util: __webpack_require__(20).New()
 	        };
 	    };
 
 
 	    this.MLib = {
-	        Vec3: __webpack_require__(17).Vec3,
-	        Vec4: __webpack_require__(17).Vec4,
-	        Mat4: __webpack_require__(18),
-	        Mat3: __webpack_require__(23),
-	        Transform: __webpack_require__(19),
+	        Vec3: __webpack_require__(14).Vec3,
+	        Vec4: __webpack_require__(14).Vec4,
+	        Mat4: __webpack_require__(15),
+	        Mat3: __webpack_require__(21),
+	        Transform: __webpack_require__(16),
 	    };
 	};
 
@@ -12982,7 +13018,7 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13056,12 +13092,12 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
+	var Factory = __webpack_require__(10);
 
 	var Buffer = function(Core, that) {
 
@@ -13162,11 +13198,7 @@
 
 
 /***/ },
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */,
-/* 13 */
+/* 10 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13185,12 +13217,12 @@
 
 
 /***/ },
-/* 14 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
+	var Factory = __webpack_require__(10);
 
 	var Shader = function(Core, that) {
 	    var gl = Core;
@@ -13293,12 +13325,12 @@
 
 
 /***/ },
-/* 15 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
+	var Factory = __webpack_require__(10);
 
 	var Texture = function(Core, that) {
 	    var gl = Core;
@@ -13334,15 +13366,15 @@
 
 
 /***/ },
-/* 16 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
-	var Vec4  = __webpack_require__(17).Vec4;
-	var Matrix  = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Factory = __webpack_require__(10);
+	var Vec4  = __webpack_require__(14).Vec4;
+	var Matrix  = __webpack_require__(15);
+	var Transform = __webpack_require__(16);
 
 
 	var Camera = function(){
@@ -13414,7 +13446,7 @@
 
 
 /***/ },
-/* 17 */
+/* 14 */
 /***/ function(module, exports) {
 
 	
@@ -13680,11 +13712,11 @@
 
 
 /***/ },
-/* 18 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Vec3 = __webpack_require__(17).Vec3;
+	var Vec4 = __webpack_require__(14).Vec4;
+	var Vec3 = __webpack_require__(14).Vec3;
 
 
 	/*
@@ -13949,11 +13981,11 @@
 
 
 /***/ },
-/* 19 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
+	var Vec4 = __webpack_require__(14).Vec4;
+	var Mat4 = __webpack_require__(15);
 
 	/*
 	 * Degree to radian.
@@ -13963,6 +13995,7 @@
 	};
 
 	var Transform = function(m) {
+
 	    var _m = m;
 	    var cos = Math.cos;
 	    var sin = Math.sin;
@@ -13973,17 +14006,16 @@
 	        _m.row2.w = y || 0.0;
 	        _m.row3.w = z || 0.0;
 	        return this;
-	    };
+	    }
 
 	    this.scale = function(x, y, z) {
 	        _m.row1.x = x || 0.0;
 	        _m.row2.y = y || 0.0;
 	        _m.row3.z = z || 0.0;
 	        return this;
-	    };
+	    }
 
 	    this.rotateX = function(angle) {
-
 	        var m = I.copy(); 
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
@@ -13998,11 +14030,10 @@
 	        _m.multiply(m);
 
 	        return this;
-	    };
+	    }
 
 	    
 	    this.rotateY = function(angle){
-	    
 	        var m = I.copy(); 
 	        var tetha = dgToRad(angle);
 
@@ -14017,20 +14048,17 @@
 	        _m.multiply(m);
 
 	        return this;
-	    };
-
-
-
+	    }
 
 	    this.getMatrix = function(){
 	      return _m.getMatrix();
-	    };
+	    }
 
 	    this.getMatrixObject = function(){
 	        return _m;
-	    }; 
+	    } 
 
-	};
+	}
 
 	module.exports = {
 	    Apply: function(m) {
@@ -14043,12 +14071,12 @@
 
 
 /***/ },
-/* 20 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
+	var Factory = __webpack_require__(10);
 
 	var Scene = function(Core, that) {
 
@@ -14105,16 +14133,16 @@
 
 
 /***/ },
-/* 21 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
-	var Vec3 = __webpack_require__(17).Vec3;
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-	var Transform = __webpack_require__(19);
+	var Factory = __webpack_require__(10);
+	var Vec3 = __webpack_require__(14).Vec3;
+	var Vec4 = __webpack_require__(14).Vec4;
+	var Mat4 = __webpack_require__(15);
+	var Transform = __webpack_require__(16);
 
 	var Renderable = function(geometry, color, texture) {
 	    this.geometry = geometry || Vec3.New();
@@ -14255,12 +14283,76 @@
 
 
 /***/ },
-/* 22 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	var Factory = __webpack_require__(13);
+	var Factory = __webpack_require__(10);
+
+	var Texture = function(gl) {
+	    this.texture = gl.createTexture();
+	}
+
+	Texture.prototype.create = function(width, height) {
+	    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
+	        gl.UNSIGNED_SHORT_5_6_5, null);
+
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	}
+
+	var FrameBuffer = function(Core, that) {
+
+	    var that = that || {};
+	    var gl = Core;
+	    var width = 512;
+	    var height = 512;
+
+	    that.framebuffer = gl.createFramebuffer();
+	    that.depthbuffer = gl.createRenderbuffer();
+
+
+	    that.create = function(_width, _height) {
+
+	        var texture = new Texture(gl);
+	        texture.create(_width || width, _height || width); //default 512 x 512. 
+
+	        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+
+	        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
+	        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
+	            gl.TEXTURE_2D, texture.texture, 0);
+
+	        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, that.depthbuffer);
+	    }
+
+	    that.render = function(renderCb) {
+	        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
+
+	        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
+	            renderCb();
+	        }
+	    }
+
+	    return that;
+	};
+
+
+	module.exports = new Factory(Texture);
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var Factory = __webpack_require__(10);
 
 	var Utils = function() {
 
@@ -14329,11 +14421,11 @@
 
 
 /***/ },
-/* 23 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Vec3 = __webpack_require__(17).Vec3;
+	var Vec4 = __webpack_require__(14).Vec4;
+	var Vec3 = __webpack_require__(14).Vec3;
 
 	function p3(m) {
 	    console.log('Matrix3:Debug');
@@ -14456,7 +14548,7 @@
 
 
 /***/ },
-/* 24 */
+/* 22 */
 /***/ function(module, exports) {
 
 	var Noise = function() {
@@ -14583,284 +14675,15 @@
 
 
 /***/ },
-/* 25 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Thread = __webpack_require__(26);
-
-
-	module.exports = {
-	    init: function() {
-	        console.log('hello world');
-	        console.log('thread', Thread);
-
-	        var serve = Thread.Server();
-	        serve.loadFile('/module/noise.js');
-	        serve.subscribe({
-	            notify: function(o) {
-	                console.log('notify-->', o);
-	            }
-	        });
-
-	        var wrk = serve.spawn();
-	        wrk.execute('prime', 44900);
-
-	        var wrk2 = serve.spawn();
-	        wrk2.execute('prime', 33900);
-
-
-
-
-
-	    }
-	};
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports) {
-
-	    var thread = function(_object) {
-	        var that = {};
-
-	        that.object = _object;
-
-	        self.addEventListener('message', function(e) {
-	            that.execute(e.data);
-	        });
-
-	        that.execute = function(msg) {
-	            that.end({
-	                cmd: msg.cmd,
-	                ret: that.object[msg.cmd](msg.args) || true
-	            });
-	        }
-
-	        that.end = function(args) {
-	            that.finishedTask = true;
-	            self.postMessage(args);
-	        }
-
-	        return that;
-	    };
-
-	        
-	    
-	   var server = function(_that) {
-	        var that = _that || {};
-	        var workers = [];
-	        var observers = [];
-	        var processFile = null;
-	        var _execute = function(method, args) {
-	            this.postMessage({
-	                cmd: method,
-	                args: args
-	            });
-	        };
-
-
-	        that.clear = function() {
-	            var len = workers.length;
-	            for (var i = 0; i < len; i++) {
-	                workers[i].terminate();
-	            }
-
-	            workers = [];
-	        };
-
-	        that.getWorkersCount = function() {
-	            return workers.length;
-	        };
-
-	        that.workAll = function(method, args) {
-	            workers.forEach(function(worker) {
-	                worker.execute(method, args);
-	            });
-	        };
-
-	        that.changeBehavior = function(fn) {
-	            _execute = fn;
-	        };
-
-	        that.subscribe = function(object) {
-	            object.server = that;
-	            observers.push(object);
-	        };
-
-	        that.loadFile = function(filename) {
-	            processFile = filename;
-	        };
-
-	        that.spawn = function() {
-
-	            var wrk = new Worker(processFile);
-
-	            wrk.addEventListener('message', that.notify);
-	            wrk.execute = _execute;
-	            wrk.idle = false;
-
-	            workers.push(wrk);
-	            return wrk;
-	        };
-
-	        that.notify = function(args) {
-	            that.idle = true;
-
-	            observers.forEach(function(observer) {
-	                observer.notify(args.data);
-	            });
-	        };
-
-	        return that;
-	    };
-
-
-
-	    
-
-	    var SWorker = {
-	        Thread: thread,
-	        Server: server
-	    };
-
-	    if(typeof DedicatedWorkerGlobalScope ==='undefined' ){
-	       
-	        module.exports = SWorker;
-	    }
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(28);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-	        /* config */
-
-	        scene.setViewPort(window.innerWidth, window.innerHeight);
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix();
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = core.createGeometry();
-
-	        buffer
-	            .load(geometry.cube(5, 5).getModel())
-	            .order(shader.vars, {
-	                'position': 3,
-	                'colors': 4,
-	                'texture': 2
-	            });
-
-	        /* Generarting XOR Texture */
-
-	        var textureSize = 128;
-	        var pix = [];
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-	        /* */
-
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-	        var entity = {
-	            buffer: buffer,
-	            drawType: 'TRIANGLE_STRIP',
-	            texture: texture,
-	        };
-
-
-	        var dx = 1;
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
-	            dx += 0.5;
-
-
-	            var Transform = core.MLib.Transform.New();
-	            var entity = {
-	                buffer: buffer,
-	                model: Transform.translate(4, 4, -30).rotateY(dx).rotateX(dx).getMatrix(),
-	                drawType: 'TRIANGLE_STRIPS',
-	                texture: texture,
-	            };
-
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function() {
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 28 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n';
-	return __p
-	}
-
-/***/ },
-/* 29 */,
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Factory = __webpack_require__(13);
-	var Vec3 = __webpack_require__(17).Vec3;
-	var Vec4 = __webpack_require__(17).Vec4;
-	var Mat4 = __webpack_require__(18);
-	var Mat3 = __webpack_require__(23);
-	var Transform = __webpack_require__(19);
+	var Factory = __webpack_require__(10);
+	var Vec3 = __webpack_require__(14).Vec3;
+	var Vec4 = __webpack_require__(14).Vec4;
+	var Mat4 = __webpack_require__(15);
+	var Mat3 = __webpack_require__(21);
+	var Transform = __webpack_require__(16);
 
 
 
@@ -15146,7 +14969,7 @@
 
 
 /***/ },
-/* 31 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15154,164 +14977,10 @@
 	module.exports = {
 
 	    init: function() {
-	        var tmpl = __webpack_require__(32);
-	        var tmpl_menu = __webpack_require__(33);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-	        var Polygon = __webpack_require__(30);
-
-	        var div = document.createElement('div');
-	        div.className = 'wrapper';
-	        div.innerHTML = tmpl_menu();
-
-	        document.body.appendChild(div);
-	        
-	        div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
-
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-
-	        /* config */
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-	 
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix(); 
-	        scene.setClearColor({r:1, g:1,b:1});
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = Polygon.New();
-
-	        buffer.geometry({
-	            points: geometry.plane(5,5).getModel(),
-	            size: 9
-	        });
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-	        /*
-	        var noise = new Noise();
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                 noi.push(  noise.perlin(x,y,4)  )*8;
-	            }
-	        }
-
-
-	        console.log(noi);
-	        noi.forEach(function(noise){
-	            pix.push(noise); //r
-	            pix.push(noise); //g
-	            pix.push(noise); //b
-	        });
-	        */
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor+34) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-
-	        /* */
-
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-	        var dx = 0.1;
-	          
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	        window.requestID =  window.requestAnimationFrame(render);
-
-	        var Transform = core.MLib.Transform.New();
-	            dx += 0.5;
-	        buffer.geometry({
-	            points: geometry.plane(5).getModel(),
-	            size: 9
-	        });
-
-
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(4,4,-20).rotateY(dx).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function(){
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        vec4 c =  texture2D(uSampler, oTexture); \n\n        gl_FragColor =oColors;\n    }\n\n</script>\n';
-	return __p
-	}
-
-/***/ },
-/* 33 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
-	return __p
-	}
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(35);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-	        var Polygon = __webpack_require__(30);
+	        var tmpl = __webpack_require__(25);
+	        var Core = __webpack_require__(7);
+	        var Noise = __webpack_require__(22);
+	        var Polygon = __webpack_require__(23);
 
 
 	        var core = new Core({
@@ -15400,35 +15069,421 @@
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
+	           // window.requestID = window.requestAnimationFrame(render);
 	            dx += 0.3;
 	            dz += 0.1;
 	            if (dz > 359) dz = 0.5;
 	            var T = core.MLib.Transform.New();
-
 	            var entity1 = {
 	                buffer: buffer,
-	                model: T.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
+	                model: T.translate(19, 5, -50).getMatrix(),
 	                drawType: geometry.getDrawType(),
 	                texture: texture,
 	            };
 
+	            var T = core.MLib.Transform.New();
 	            var entity2 = {
 	                buffer: buffer,
-	                model: T.translate(-30, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
+	                model: T.translate(-5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
 	                drawType: geometry.getDrawType(),
 	                texture: texture,
 	            };
 
 
 	            shader.prepare({
-	                'blurify': Math.sin(dz)
+	                'blurify': 0.2
 	            });
 
 	            scene.clean();
 	            scene.render(entity1);
-	            scene.render(entity2);
+	          //  scene.render(entity2);
 
+	        }
+
+	        render();
+
+	    },
+
+	    stop: function() {
+	        window.cancelAnimationFrame(window.requestID);
+	    }
+
+	};
+
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n';
+	return __p
+	}
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(27);
+	        var Core = __webpack_require__(7);
+	        var Noise = __webpack_require__(22);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+
+	        /* config */
+
+	    
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+	        scene.shader = shader;
+	        scene.camera = Utils.camera.MakeOrtho(0, 50, 50, 0, 1, -1);
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = core.createGeometry();
+
+	        buffer.geometry({
+	            points: geometry.plane(10, 15).getModel(),
+	            size: 9
+	        });
+
+	        /* Generarting XOR Texture */
+	        var textureSize = 128;
+	        var pix = [];
+	        var noi = [];
+	        /*
+	        var noise = new Noise();
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                 noi.push(  noise.perlin(x,y,4)  )*8;
+	            }
+	        } 
+
+
+	        console.log(noi);
+	        noi.forEach(function(noise){
+	            pix.push(noise); //r
+	            pix.push(noise); //g
+	            pix.push(noise); //b
+	        });
+	        */
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b 
+	            }
+	        }
+
+
+	        /* */
+
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+	        var Transform = core.MLib.Transform.New();
+	        var entity = {
+	            buffer: buffer,
+	            model: Transform.translate(25, 25).getMatrix(),
+	            drawType: 'TRIANGLE_STRIP',
+	            texture: texture,
+	        };
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            //window.requestAnimationFrame(render);
+	            scene.clean();
+	            scene.render(entity);
+	        };
+
+	        render();
+
+	    },
+
+	    stop: function(){
+	        window.cancelAnimationFrame(window.requestID);
+	    }
+
+	};
+
+
+/***/ },
+/* 27 */
+/***/ function(module, exports) {
+
+	module.exports = function (data) {
+	var __t, __p = '';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;  \n     attribute vec4 colors;  \n\n     uniform mat4 MV;\n     uniform mat4 P;\n     \n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) { \n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n    \n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n\n';
+	return __p
+	}
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Thread = __webpack_require__(29);
+
+
+	module.exports = {
+	    init: function() {
+	        console.log('hello world');
+	        console.log('thread', Thread);
+
+	        var serve = Thread.Server();
+	        serve.loadFile('/module/noise.js');
+	        serve.subscribe({
+	            notify: function(o) {
+	                console.log('notify-->', o);
+	            }
+	        });
+
+	        var wrk = serve.spawn();
+	        wrk.execute('prime', 44900);
+
+	        var wrk2 = serve.spawn();
+	        wrk2.execute('prime', 33900);
+
+
+
+
+
+	    }
+	};
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports) {
+
+	    var thread = function(_object) {
+	        var that = {};
+
+	        that.object = _object;
+
+	        self.addEventListener('message', function(e) {
+	            that.execute(e.data);
+	        });
+
+	        that.execute = function(msg) {
+	            that.end({
+	                cmd: msg.cmd,
+	                ret: that.object[msg.cmd](msg.args) || true
+	            });
+	        }
+
+	        that.end = function(args) {
+	            that.finishedTask = true;
+	            self.postMessage(args);
+	        }
+
+	        return that;
+	    };
+
+	        
+	    
+	   var server = function(_that) {
+	        var that = _that || {};
+	        var workers = [];
+	        var observers = [];
+	        var processFile = null;
+	        var _execute = function(method, args) {
+	            this.postMessage({
+	                cmd: method,
+	                args: args
+	            });
+	        };
+
+
+	        that.clear = function() {
+	            var len = workers.length;
+	            for (var i = 0; i < len; i++) {
+	                workers[i].terminate();
+	            }
+
+	            workers = [];
+	        };
+
+	        that.getWorkersCount = function() {
+	            return workers.length;
+	        };
+
+	        that.workAll = function(method, args) {
+	            workers.forEach(function(worker) {
+	                worker.execute(method, args);
+	            });
+	        };
+
+	        that.changeBehavior = function(fn) {
+	            _execute = fn;
+	        };
+
+	        that.subscribe = function(object) {
+	            object.server = that;
+	            observers.push(object);
+	        };
+
+	        that.loadFile = function(filename) {
+	            processFile = filename;
+	        };
+
+	        that.spawn = function() {
+
+	            var wrk = new Worker(processFile);
+
+	            wrk.addEventListener('message', that.notify);
+	            wrk.execute = _execute;
+	            wrk.idle = false;
+
+	            workers.push(wrk);
+	            return wrk;
+	        };
+
+	        that.notify = function(args) {
+	            that.idle = true;
+
+	            observers.forEach(function(observer) {
+	                observer.notify(args.data);
+	            });
+	        };
+
+	        return that;
+	    };
+
+
+
+	    
+
+	    var SWorker = {
+	        Thread: thread,
+	        Server: server
+	    };
+
+	    if(typeof DedicatedWorkerGlobalScope ==='undefined' ){
+	       
+	        module.exports = SWorker;
+	    }
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = {
+
+	    init: function() {
+	        var tmpl = __webpack_require__(31);
+	        var Core = __webpack_require__(7);
+	        var Noise = __webpack_require__(22);
+
+
+	        var core = new Core({
+	            fullscreen: true,
+	            element: document.getElementById('webgl-div')
+	        });
+
+	        var buffer = core.createBuffer();
+	        var shader = core.createShader();
+	        var texture = core.createTexture();
+	        var Vec3 = core.MLib.Vec3;
+
+	        var scene = core.createScene();
+	        var Utils = core.getUtils();
+
+
+	        /* config */
+
+	        scene.setViewPort(window.innerWidth, window.innerHeight);
+	        core.canvas.setResize(function(x, y) {
+	            scene.setViewPort(x, y);
+	        });
+
+	        scene.shader = shader;
+	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
+	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+
+	        scene.camera = perspective.multiply(camera).getMatrix();
+
+	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
+	        /*         */
+
+	        var geometry = core.createGeometry();
+
+	        buffer
+	            .load(geometry.cube(5, 5).getModel())
+	            .order(shader.vars, {
+	                'position': 3,
+	                'colors': 4,
+	                'texture': 2
+	            });
+
+	        /* Generarting XOR Texture */
+
+	        var textureSize = 128;
+	        var pix = [];
+
+	        for (var x = 0; x < textureSize; x++) {
+	            for (var y = 0; y < textureSize; y++) {
+	                var xor = x ^ y;
+	                pix.push(xor) // r
+	                pix.push(xor) // g
+	                pix.push(xor) // b
+	            }
+	        }
+
+	        /* */
+
+	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
+
+	        var entity = {
+	            buffer: buffer,
+	            drawType: 'TRIANGLE_STRIP',
+	            texture: texture,
+	        };
+
+
+	        var dx = 1;
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestID = window.requestAnimationFrame(render);
+	            dx += 0.5;
+
+
+	            var Transform = core.MLib.Transform.New();
+	            var entity = {
+	                buffer: buffer,
+	                model: Transform.translate(4, 4, -30).rotateY(dx).rotateX(dx).getMatrix(),
+	                drawType: 'TRIANGLE_STRIPS',
+	                texture: texture,
+	            };
+
+
+	            scene.clean();
+	            scene.render(entity);
 	        };
 
 	        render();
@@ -15443,17 +15498,17 @@
 
 
 /***/ },
-/* 35 */
+/* 31 */
 /***/ function(module, exports) {
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n';
 	return __p
 	}
 
 /***/ },
-/* 36 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -15461,10 +15516,10 @@
 	module.exports = {
 
 	    init: function() {
-	        var tmpl = __webpack_require__(28);
-	        var Core = __webpack_require__(6);
-	        var Noise = __webpack_require__(24);
-	        var Polygon = __webpack_require__(30);
+	        var tmpl = __webpack_require__(31);
+	        var Core = __webpack_require__(7);
+	        var Noise = __webpack_require__(22);
+	        var Polygon = __webpack_require__(23);
 
 
 	        var core = new Core({
@@ -15561,72 +15616,6 @@
 	    }
 
 	};
-
-
-/***/ },
-/* 37 */,
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(13);
-
-	var Texture = function(gl) {
-	    this.texture = gl.createTexture();
-	}
-
-	Texture.prototype.create = function(width, height) {
-	    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
-	        gl.UNSIGNED_SHORT_5_6_5, null);
-
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	}
-
-	var FrameBuffer = function(Core, that) {
-
-	    var that = that || {};
-	    var gl = Core;
-	    var width = 512;
-	    var height = 512;
-
-	    that.framebuffer = gl.createFramebuffer();
-	    that.depthbuffer = gl.createRenderbuffer();
-
-
-	    that.create = function(_width, _height) {
-
-	        var texture = new Texture(gl);
-	        texture.create(_width || width, _height || width); //default 512 x 512. 
-
-	        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
-	        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-
-	        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
-	        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-	            gl.TEXTURE_2D, texture.texture, 0);
-
-	        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, that.depthbuffer);
-	    };
-
-	    that.render = function(renderCb) {
-	        return function() {
-	            if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
-	                renderCb();
-	            }
-	        }
-	    }
-
-	    return that;
-	};
-
-
-	module.exports = new Factory(Texture);
 
 
 /***/ }

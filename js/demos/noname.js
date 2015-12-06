@@ -95,36 +95,36 @@ module.exports = {
 
         function render() {
             //Utils.getNextFrame.call(this, render);
-            window.requestID = window.requestAnimationFrame(render);
+           // window.requestID = window.requestAnimationFrame(render);
             dx += 0.3;
             dz += 0.1;
             if (dz > 359) dz = 0.5;
             var T = core.MLib.Transform.New();
-
             var entity1 = {
                 buffer: buffer,
-                model: T.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
+                model: T.translate(19, 5, -50).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
 
+            var T = core.MLib.Transform.New();
             var entity2 = {
                 buffer: buffer,
-                model: T.translate(-30, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
+                model: T.translate(-5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
 
 
             shader.prepare({
-                'blurify': Math.sin(dz)
+                'blurify': 0.2
             });
 
             scene.clean();
             scene.render(entity1);
-            scene.render(entity2);
+          //  scene.render(entity2);
 
-        };
+        }
 
         render();
 

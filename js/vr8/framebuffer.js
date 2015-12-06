@@ -34,7 +34,6 @@ var FrameBuffer = function(Core, that) {
         var texture = new Texture(gl);
         texture.create(_width || width, _height || width); //default 512 x 512. 
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
@@ -42,13 +41,13 @@ var FrameBuffer = function(Core, that) {
             gl.TEXTURE_2D, texture.texture, 0);
 
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, that.depthbuffer);
-    };
+    }
 
     that.render = function(renderCb) {
-        return function() {
-            if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
-                renderCb();
-            }
+        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
+
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
+            renderCb();
         }
     }
 

@@ -9,6 +9,7 @@ function dgToRad(angle){
 };
 
 var Transform = function(m) {
+
     var _m = m;
     var cos = Math.cos;
     var sin = Math.sin;
@@ -19,17 +20,16 @@ var Transform = function(m) {
         _m.row2.w = y || 0.0;
         _m.row3.w = z || 0.0;
         return this;
-    };
+    }
 
     this.scale = function(x, y, z) {
         _m.row1.x = x || 0.0;
         _m.row2.y = y || 0.0;
         _m.row3.z = z || 0.0;
         return this;
-    };
+    }
 
     this.rotateX = function(angle) {
-
         var m = I.copy(); 
         var tetha = dgToRad(angle);
         var _cos = cos(tetha);
@@ -44,11 +44,10 @@ var Transform = function(m) {
         _m.multiply(m);
 
         return this;
-    };
+    }
 
     
     this.rotateY = function(angle){
-    
         var m = I.copy(); 
         var tetha = dgToRad(angle);
 
@@ -63,20 +62,17 @@ var Transform = function(m) {
         _m.multiply(m);
 
         return this;
-    };
-
-
-
+    }
 
     this.getMatrix = function(){
       return _m.getMatrix();
-    };
+    }
 
     this.getMatrixObject = function(){
         return _m;
-    }; 
+    } 
 
-};
+}
 
 module.exports = {
     Apply: function(m) {
