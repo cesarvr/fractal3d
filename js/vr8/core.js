@@ -29,7 +29,7 @@ var Core = function(options) {
         return this.Texture.New(webGL);
     };
 
-    this.getFrameBuffer = function(){
+    this.createFrameBuffer = function(){
         return this.FrameBuffer.New(webGL); 
     };
 
@@ -40,7 +40,8 @@ var Core = function(options) {
     this.createGeometry = function() {
         return this.Geometry.New();
     };
-    
+   
+
     this.getUtils = function() {
         return {
             camera: this.Camera.New(),

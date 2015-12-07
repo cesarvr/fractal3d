@@ -41,6 +41,16 @@ var Utils = function() {
         return el;
     };
 
+
+    this.loadCode = function(tmpl, list) {
+        var el = document.createElement('div');
+        el.innerHTML = tmpl;
+        var obj = {}; 
+        list.forEach(function(id){ obj[id] = el.querySelector('#' + id); });
+
+        return obj;
+    };
+
     this.getshaderUsingTemplate = function(tmpl) {
         var EL = this.loadShader(tmpl);
         var shader = {};

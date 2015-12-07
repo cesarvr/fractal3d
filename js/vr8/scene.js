@@ -29,11 +29,11 @@ var Scene = function(Core, that) {
     }
 
     that.prepare = function(entity) {
-        this.shader.prepare({
+       /* this.shader.prepare({
             'MV': this.camera,
             'P': entity.model
         });
-
+*/
         entity.buffer.exec(); 
     };
 

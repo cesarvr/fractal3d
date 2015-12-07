@@ -4,9 +4,12 @@ var Factory = require('../utils/factory');
 
 var Texture = function(gl) {
     this.texture = gl.createTexture();
+    this.gl = gl;
 }
 
 Texture.prototype.create = function(width, height) {
+    var gl = this.gl;
+
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
         gl.UNSIGNED_SHORT_5_6_5, null);
@@ -34,9 +37,12 @@ var FrameBuffer = function(Core, that) {
         var texture = new Texture(gl);
         texture.create(_width || width, _height || width); //default 512 x 512. 
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
+
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
+
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
             gl.TEXTURE_2D, texture.texture, 0);
 
@@ -55,4 +61,4 @@ var FrameBuffer = function(Core, that) {
 };
 
 
-module.exports = new Factory(Texture);
+module.exports = new Factory(FrameBuffer);

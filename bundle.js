@@ -12980,7 +12980,7 @@
 	        return this.Texture.New(webGL);
 	    };
 
-	    this.getFrameBuffer = function(){
+	    this.createFrameBuffer = function(){
 	        return this.FrameBuffer.New(webGL); 
 	    };
 
@@ -12991,7 +12991,8 @@
 	    this.createGeometry = function() {
 	        return this.Geometry.New();
 	    };
-	    
+	   
+
 	    this.getUtils = function() {
 	        return {
 	            camera: this.Camera.New(),
@@ -13230,6 +13231,13 @@
 	    that.vars = {};
 	    that.cache = {};
 
+	    var parse = function(code) {
+	        if (code instanceof HTMLElement) {
+	            return code.innerHTML;
+	        }
+
+	        return code;
+	    }
 
 	    that.add = function(shaderCode, type) {
 	        var shader = null;
@@ -13245,8 +13253,8 @@
 
 	        var error = gl.getShaderInfoLog(shader);
 
-	        if(error.length > 0){
-	          throw error; 
+	        if (error.length > 0) {
+	            throw error;
 	        }
 
 	        return shader;
@@ -13270,11 +13278,16 @@
 	    }
 
 	    that.create = function(code) {
+
 	        if (code && code.vertex && code.fragment) {
-	            that.link(code.vertex, code.fragment);
+	            that.link(parse(code.vertex), parse(code.fragment));
 	            code.init(that);
 	        }
 	    }
+
+
+
+
 
 	    that.link = function(vertex, fragment) {
 	        program = gl.createProgram();
@@ -13287,35 +13300,43 @@
 	            throw 'error linking shaders: ' + gl.getProgramInfoLog(program);
 	        }
 	    }
-	    
-	    var unify = function(_obj){
-	       var obj = _obj;
-	       var param = obj.param;
 
-	       return function(value){
-	        obj.args[param] = value;
-	        obj.method.apply(gl, obj.args);
-	       }
+	    var unify = function(_obj) {
+	        var obj = _obj;
+	        var param = obj.param;
+
+	        return function(value) {
+	            obj.args[param] = value;
+	            obj.method.apply(gl, obj.args);
+	        }
 	    }
-	  
-	    var saveIntoCache = function(shaderId, key, val){
-	      if(val instanceof Float32Array) {
-	       that.cache[key] = unify( { method: gl.uniformMatrix4fv, args: [shaderId, false, val], param: 2 } );
-	      }   
 
-	      if(typeof val === 'number') {
-	        that.cache[key] = unify( { method: gl.uniform1f, args: [shaderId, val], param: 1 } );
-	      }
+	    var saveIntoCache = function(shaderId, key, val) {
+	        if (val instanceof Float32Array) {
+	            that.cache[key] = unify({
+	                method: gl.uniformMatrix4fv,
+	                args: [shaderId, false, val],
+	                param: 2
+	            });
+	        }
+
+	        if (typeof val === 'number') {
+	            that.cache[key] = unify({
+	                method: gl.uniform1f,
+	                args: [shaderId, val],
+	                param: 1
+	            });
+	        }
 	    }
 
 	    that.prepare = function(shaderVariables) {
-	      for(var key in shaderVariables){
-	         if( that.cache[key]  ) {
-	          that.cache[key](shaderVariables[key]);
-	        }else {
-	          saveIntoCache(that.vars[key],key, shaderVariables[key]);        
+	        for (var key in shaderVariables) {
+	            if (that.cache[key]) {
+	                that.cache[key](shaderVariables[key]);
+	            } else {
+	                saveIntoCache(that.vars[key], key, shaderVariables[key]);
+	            }
 	        }
-	      }
 	    }
 
 	    return that;
@@ -14105,11 +14126,11 @@
 	    }
 
 	    that.prepare = function(entity) {
-	        this.shader.prepare({
+	       /* this.shader.prepare({
 	            'MV': this.camera,
 	            'P': entity.model
 	        });
-
+	*/
 	        entity.buffer.exec(); 
 	    };
 
@@ -14292,9 +14313,12 @@
 
 	var Texture = function(gl) {
 	    this.texture = gl.createTexture();
+	    this.gl = gl;
 	}
 
 	Texture.prototype.create = function(width, height) {
+	    var gl = this.gl;
+
 	    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 	        gl.UNSIGNED_SHORT_5_6_5, null);
@@ -14322,9 +14346,12 @@
 	        var texture = new Texture(gl);
 	        texture.create(_width || width, _height || width); //default 512 x 512. 
 
+	        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
+	        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
+
 	        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
-	        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
+
 	        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
 	            gl.TEXTURE_2D, texture.texture, 0);
 
@@ -14343,7 +14370,7 @@
 	};
 
 
-	module.exports = new Factory(Texture);
+	module.exports = new Factory(FrameBuffer);
 
 
 /***/ },
@@ -14391,6 +14418,16 @@
 	        var el = document.createElement('div');
 	        el.innerHTML = tmpl;
 	        return el;
+	    };
+
+
+	    this.loadCode = function(tmpl, list) {
+	        var el = document.createElement('div');
+	        el.innerHTML = tmpl;
+	        var obj = {}; 
+	        list.forEach(function(id){ obj[id] = el.querySelector('#' + id); });
+
+	        return obj;
 	    };
 
 	    this.getshaderUsingTemplate = function(tmpl) {
@@ -14982,19 +15019,23 @@
 	        var Noise = __webpack_require__(22);
 	        var Polygon = __webpack_require__(23);
 
-
 	        var core = new Core({
 	            fullscreen: true,
 	            element: document.getElementById('webgl-div')
 	        });
 
+	        var planeBuffer = core.createBuffer();
 	        var buffer = core.createBuffer();
 	        var shader = core.createShader();
+
+	        var post = core.createShader();
+
 	        var texture = core.createTexture();
 	        var Vec3 = core.MLib.Vec3;
 
 	        var scene = core.createScene();
 	        var Utils = core.getUtils();
+	        var framebuffer = core.createFrameBuffer();
 
 
 
@@ -15012,6 +15053,20 @@
 	        scene.camera = perspective.multiply(camera).getMatrix();
 
 	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
+	        var postCode = Utils.util.loadCode(tmpl(), ['post-vs', 'post-fs']);
+
+	        post.create({
+	            vertex: postCode['post-vs'],
+	            fragment: postCode['post-fs'],
+	            init: function(shader) {
+	                shader.use();
+	                shader
+	                    .attribute('position')
+	                    .attribute('texture')
+	                    .uniform('uSampler')
+	                    .uniform('blurify');
+	            }
+	        });
 
 	        shaderCode.init = function(shader) {
 	            shader.use();
@@ -15026,10 +15081,12 @@
 	        }
 
 
+
+
+
+
+
 	        shader.create(shaderCode);
-
-	        /*         */
-
 	        var geometry = Polygon.New();
 
 	        /* Generarting XOR Texture */
@@ -15057,19 +15114,29 @@
 
 
 
-	        buffer
-	        .load(geometry.cube(5, dz).getModel())
-	        .order(shader.vars, {
+	        planeBuffer.load([-0.5, 0, 0, 0, 0,
+	            0.5, 0, 0, 1, 0, -0.5, 0.5, 0, 0, 1,
+	            0.5, 0.5, 0, 1, 1,
+	        ]).order(post.vars, {
 	            'position': 3,
-	            'colors': 4,
 	            'texture': 2
 	        });
 
 
+	       /* buffer
+	            .load(geometry.cube(5, dz).getModel())
+	            .order(shader.vars, {
+	                'position': 3,
+	                'colors': 4,
+	                'texture': 2
+	            });
+	*/
 
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	           // window.requestID = window.requestAnimationFrame(render);
+
+	        // framebuffer.create(512, 512)
+
+
+	        var renderEntities = function() {
 	            dx += 0.3;
 	            dz += 0.1;
 	            if (dz > 359) dz = 0.5;
@@ -15084,7 +15151,7 @@
 	            var T = core.MLib.Transform.New();
 	            var entity2 = {
 	                buffer: buffer,
-	                model: T.translate(-5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
+	                model: T.translate(5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
 	                drawType: geometry.getDrawType(),
 	                texture: texture,
 	            };
@@ -15096,8 +15163,28 @@
 
 	            scene.clean();
 	            scene.render(entity1);
-	          //  scene.render(entity2);
+	            scene.render(entity2);
 
+
+	        }
+
+	        var T = core.MLib.Transform.New();
+	        var entity = {
+	            buffer: planeBuffer,
+	            model: T.translate(5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
+	            drawType: geometry.getDrawType(),
+	            texture: texture,
+	        };
+
+
+
+	        function render() {
+	            //Utils.getNextFrame.call(this, render);
+	            window.requestID = window.requestAnimationFrame(render);
+	            //framebuffer.render(renderEntities);
+
+	            scene.clean();
+	            scene.render(entity);
 	        }
 
 	        render();
@@ -15117,7 +15204,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n\n\n\n<script id="post-vs" type="vertex">\n\n   attribute vec3 position;\n   attribute vec2 texture;\n   varying vec2 oTexture;\n\n   void main(void) {\n    gl_Position = vec4(position, 1.0);\n    oTexture = texture;\n   }\n\n</script>\n\n\n<script id="post-fs" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        //gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        gl_FragColor = vec4(1,1,1,1);\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n\n\n\n';
 	return __p
 	}
 
