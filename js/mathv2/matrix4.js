@@ -70,7 +70,7 @@ var Matrix4 = function() {
                 this.row1.z, this.row2.z, this.row3.z, this.row4.z,
                 this.row1.w, this.row2.w, this.row3.w, this.row4.w
             ]);
-    };
+    }
 
     this.setIdentity = function() {
         this.row1 = Vec4.New(1.0, 0.0, 0.0, 0.0);
@@ -79,7 +79,7 @@ var Matrix4 = function() {
         this.row4 = Vec4.New(0.0, 0.0, 0.0, 1.0);
 
         return this;
-    };
+    }
 
     this.setMatrix = function(m) {
         this.row1 = m.row1;
@@ -88,7 +88,7 @@ var Matrix4 = function() {
         this.row4 = m.row4;
 
         return this;
-    };
+    }
 
     this.set = function(r1, r2, r3, r4) {
         this.row1 = r1 || this.row1;
@@ -96,7 +96,7 @@ var Matrix4 = function() {
         this.row3 = r3 || this.row3;
         this.row4 = r4 || this.row4;
         return this;
-    };
+    }
 
     this.getTransponse = function() {
         var mtx = MatrixFactory.New();
@@ -105,11 +105,11 @@ var Matrix4 = function() {
         mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);
         mtx.row4.set(this.row1.w, this.row2.w, this.row3.w, this.row4.w);
         return mtx;
-    };
+    }
 
     this.copy = function(){
       return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
-    };
+    }
 
 
 
@@ -144,8 +144,8 @@ var Matrix4 = function() {
             this.row4.dot(rhs.row4));
 
         return this.setMatrix(mtx);
-    };
-};
+    }
+}
 
 
 
@@ -168,7 +168,7 @@ var Matrix3 = function() {
                 this.row1.y, this.row2.y, this.row3.y,
                 this.row1.z, this.row2.z, this.row3.z
             ]);
-    };
+    }
 
     this.setIdentity = function() {
         this.row1 = Vec3.New(1.0, 0.0, 0.0);
@@ -176,7 +176,7 @@ var Matrix3 = function() {
         this.row3 = Vec3.New(0.0, 0.0, 1.0);
 
         return this;
-    };
+    }
 
     this.setMatrix = function(m) {
         this.row1 = m.row1;
@@ -184,7 +184,7 @@ var Matrix3 = function() {
         this.row3 = m.row3;
 
         return this;
-    };
+    }
 
     this.set = function(r1, r2, r3) {
         this.row1 = r1 || this.row1;
@@ -192,7 +192,7 @@ var Matrix3 = function() {
         this.row3 = r3 || this.row3;
 
         return this;
-    };
+    }
 
     this.getTransponse = function() {
         var mtx = new Matrix3();
@@ -200,7 +200,7 @@ var Matrix3 = function() {
         mtx.row2.set(this.row1.y, this.row2.y, this.row3.y);
         mtx.row3.set(this.row1.z, this.row2.z, this.row3.z);
         return mtx;
-    };
+    }
 
     this.multiply = function(m) {
         var mtx = MatrixFactory.New();
@@ -231,8 +231,8 @@ var Matrix3 = function() {
             this.row4.dot(rhs.row4));
 
         return this.setMatrix(mtx);
-    };
-};
+    }
+}
 
 
 
@@ -258,6 +258,6 @@ var MatrixFactory = {
         var o = new Matrix4();
         return o.set(r1, r2, r3, r4);
     }
-};
+}
 
 module.exports = MatrixFactory;

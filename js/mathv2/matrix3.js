@@ -33,7 +33,7 @@ var Matrix3 = function() {
                 this.row1.y, this.row2.y, this.row3.y,
                 this.row1.z, this.row2.z, this.row3.z
             ]);
-    };
+    }
 
     this.setIdentity = function() {
         this.row1 = Vec3.New(1.0, 0.0, 0.0);
@@ -41,7 +41,7 @@ var Matrix3 = function() {
         this.row3 = Vec3.New(0.0, 0.0, 1.0);
 
         return this;
-    };
+    }
 
     this.setMatrix = function(m) {
         this.row1 = m.row1;
@@ -49,7 +49,7 @@ var Matrix3 = function() {
         this.row3 = m.row3;
 
         return this;
-    };
+    }
 
     this.set = function(r1, r2, r3) {
         this.row1 = r1 || this.row1;
@@ -57,17 +57,17 @@ var Matrix3 = function() {
         this.row3 = r3 || this.row3;
 
         return this;
-    };
+    }
 
     this.copy = function(){
       return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy());
-    };
+    }
 
     this.multiplyByScalar = function(s){
        this.row1.scalarMultiply(s);
        this.row2.scalarMultiply(s);
        this.row3.scalarMultiply(s);
-    };
+    }
 
     this.getTransponse = function() {
         var mtx = new Matrix3();
@@ -75,7 +75,7 @@ var Matrix3 = function() {
         mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
         mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
         return mtx;
-    };
+    }
 
     this.multiply = function(m) {
         var mtx = MatrixFactory.New();
@@ -97,8 +97,8 @@ var Matrix3 = function() {
             this.row3.dot(rhs.row3));
 
         return this.setMatrix(mtx);
-    };
-};
+    }
+}
 
 var MatrixFactory = {
 
@@ -116,6 +116,6 @@ var MatrixFactory = {
         var o = new Matrix3();
         return o.set(r1, r2, r3);
     }
-};
+}
 
 module.exports = MatrixFactory;

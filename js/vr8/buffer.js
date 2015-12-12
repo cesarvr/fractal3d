@@ -14,11 +14,11 @@ var Buffer = function(Core, that) {
 
     that.sides = 0;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
     var save = function(list, bufferType) {
         vertexDataSize = list.length;
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(
             gl.ARRAY_BUFFER,
             new Float32Array(list),
@@ -34,7 +34,7 @@ var Buffer = function(Core, that) {
 
     var prepare = function(_obj) {
         var object = _obj;
-        console.log('offset ->', object.offset);
+
         return function(stride) {
             gl.vertexAttribPointer(
                 object.name,
@@ -45,8 +45,7 @@ var Buffer = function(Core, that) {
                 object.offset // starting from. 
             );
         }
-    };
-
+    }
 
     that.load = function(list) {
         save(list, gl.STATIC_DRAW);
@@ -70,7 +69,6 @@ var Buffer = function(Core, that) {
 
         Object.keys(obj).forEach(function(key) {
 
-
             pipeline.push(prepare({
                 name: shaderMap[key],
                 value: obj[key],
@@ -82,10 +80,10 @@ var Buffer = function(Core, that) {
 
         that.sides = vertexDataSize / bufferPerVertex;
 
-        that.exec = function() {
+        that.loadAttributes = function() {
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
-            for(var vertexAttrib in pipeline){
+            for (var vertexAttrib in pipeline) {
                 pipeline[vertexAttrib](bufferPerVertex * Float32Array.BYTES_PER_ELEMENT);
             }
         }
@@ -94,7 +92,7 @@ var Buffer = function(Core, that) {
     }
 
     return that;
-};
+}
 
 
 module.exports = new Factory(Buffer);

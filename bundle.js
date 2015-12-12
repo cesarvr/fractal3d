@@ -13112,11 +13112,11 @@
 
 	    that.sides = 0;
 
-	    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
 	    var save = function(list, bufferType) {
 	        vertexDataSize = list.length;
 
+	        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
 	            new Float32Array(list),
@@ -13132,7 +13132,7 @@
 
 	    var prepare = function(_obj) {
 	        var object = _obj;
-	        console.log('offset ->', object.offset);
+
 	        return function(stride) {
 	            gl.vertexAttribPointer(
 	                object.name,
@@ -13143,8 +13143,7 @@
 	                object.offset // starting from. 
 	            );
 	        }
-	    };
-
+	    }
 
 	    that.load = function(list) {
 	        save(list, gl.STATIC_DRAW);
@@ -13168,7 +13167,6 @@
 
 	        Object.keys(obj).forEach(function(key) {
 
-
 	            pipeline.push(prepare({
 	                name: shaderMap[key],
 	                value: obj[key],
@@ -13180,10 +13178,10 @@
 
 	        that.sides = vertexDataSize / bufferPerVertex;
 
-	        that.exec = function() {
+	        that.loadAttributes = function() {
 	            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
-	            for(var vertexAttrib in pipeline){
+	            for (var vertexAttrib in pipeline) {
 	                pipeline[vertexAttrib](bufferPerVertex * Float32Array.BYTES_PER_ELEMENT);
 	            }
 	        }
@@ -13192,7 +13190,7 @@
 	    }
 
 	    return that;
-	};
+	}
 
 
 	module.exports = new Factory(Buffer);
@@ -13224,10 +13222,13 @@
 	'use strict'
 
 	var Factory = __webpack_require__(10);
+	var Buffer = __webpack_require__(9);
 
 	var Shader = function(Core, that) {
 	    var gl = Core;
 	    var program = null;
+	    var buffers = [];
+
 	    that.vars = {};
 	    that.cache = {};
 
@@ -13479,33 +13480,33 @@
 	    this.setX = function(n) {
 	        this.x = n;
 	        return this;
-	    };
+	    }
 
 	    this.setY = function(n) {
 	        this.y = n;
 	        return this;
-	    };
+	    }
 
 	    this.setZ = function(n) {
 	        this.z = n;
 	        return this;
-	    };
+	    }
 
 	    this.getX = function() {
 	        return this.x;
-	    };
+	    }
 
 	    this.getY = function() {
 	        return this.y;
-	    };
+	    }
 
 	    this.getZ = function() {
 	        return this.z;
-	    };
+	    }
 
 	    this.copy = function() {
 	        return new Vector3(this.x, this.y, this.z );
-	    };
+	    }
 
 	    this.setValues = function(x,y,z) {
 	        this.x = x;
@@ -13513,9 +13514,7 @@
 	        this.z = z;
 
 	        return this;
-	    };
-
-
+	    }
 
 	    this.add = function(v) {
 	        this.x += v.x;
@@ -13523,18 +13522,18 @@
 	        this.z += v.z;
 
 	        return this;
-	    };
+	    }
 
 	    this.sub = function(v) {
 	        this.x -= v.x;
 	        this.y -= v.y;
 	        this.z -= v.z;
 	        return this;
-	    };
+	    }
 
 	    this.dot = function(v) {
 	        return (this.x * v.x) + (this.y * v.y) + (this.z * v.z);
-	    };
+	    }
 
 	    this.inverse = function() {
 	        this.x = -this.x;
@@ -13542,15 +13541,15 @@
 	        this.z = -this.z;
 
 	        return this;
-	    };
+	    }
 
 	    this.magnitude = function() {
 	        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-	    };
+	    }
 
 	    this.len = function() {
 	        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-	    };
+	    }
 
 	    this.normalize = function() {
 	        var m = this.magnitude();
@@ -13560,7 +13559,7 @@
 	            this.z / m);
 
 	        return tmp;
-	    };
+	    }
 
 	    this.norm = function() {
 	        var m = this.magnitude();
@@ -13570,34 +13569,34 @@
 	            this.z / m);
 
 	        return tmp;
-	    };
+	    }
 	    
 	    this.scalarMultiply = function(e) {
 	        this.x *= e;
 	        this.y *= e;
 	        this.z *= e;
 	        return this;
-	    };
+	    }
 
 	    this.multiplyByScalar = function(scalar) {
 	        return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
-	    };
+	    }
 
 	    this.cross = function(v) {
 	        return new Vector3((this.y * v.z - this.z * v.y), (this.z * v.x - this.x * v.z), (this.x * v.y - this.y * v.x));
-	    };
+	    }
 
 	    this.copy = function() {
 	        return new Vector3(this.x, this.y, this.z);
-	    };
+	    }
 
 	    this.project = function(b) {
 	        var ab = this.dot(b);
 	        var proj = ab / b.magnitude();
 	        var vnorm = b.normalize();
 	        return vnorm.multiplyByScalar(proj);
-	    };
-	};
+	    }
+	}
 
 	var Vector4 = function(x, y, z, w) {
 	    this.x = x || 0.0;
@@ -13612,17 +13611,17 @@
 	        this.w = w || 0.0;
 
 
-	    };
+	    }
 
 
 	    this.copy = function() {
 	        return new Vector4(this.x, this.y, this.z, this.w);
-	    };
+	    }
 
 
 	    this.dot = function(v) {
 	        return ((this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w));
-	    };
+	    }
 
 
 	    this.add = function(v) {
@@ -13632,7 +13631,7 @@
 	        this.w += v.w;
 
 	        return this;
-	    };
+	    }
 
 	    this.sub = function(v) {
 	        this.x -= v.x;
@@ -13641,8 +13640,8 @@
 	        this.w -= v.w;
 
 	        return this;
-	    };
-	};
+	    }
+	}
 
 
 
@@ -13657,7 +13656,7 @@
 	        var f = (1 - Math.cos(ft)) * .5;
 	        return v0.scalar_mul(1.0 - f).add(v1.multiplyByScalar(f));
 	    },
-	};
+	}
 
 
 
@@ -13665,53 +13664,53 @@
 
 	/* functional version */
 
-	var v3 = function() {};
+	var v3 = function() {}
 
 	v3.deg_rad = function(angle) {
 	    return angle * Math.PI / 180;
-	};
+	}
 
 	v3.add_scalar = function(v, scalar) {
 	    return new Float32Array([v[0] + scalar, v[1] + scalar, v[2] + scalar]);
-	};
+	}
 
 	v3.sub_scalar = function(v, scalar) {
 	    return new Float32Array([v[0] - scalar, v[1] - scalar, v[2] - scalar]);
-	};
+	}
 
 	v3.mul_scalar = function(v, scalar) {
 	    return new Float32Array([v[0] * scalar, v[1] * scalar, v[2] * scalar]);
-	};
+	}
 
 	v3.div_scalar = function(v, scalar) {
 	    return new Float32Array([v[0] / scalar, v[1] / scalar, v[2] / scalar]);
-	};
+	}
 
 	v3.add = function(v1, v2) {
 	    return new Float32Array([v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]);
-	};
+	}
 
 	v3.sub = function(v1, v2) {
 	    return new Float32Array([v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]);
-	};
+	}
 
 	v3.mul = function(v1, v2) {
 	    return new Float32Array([v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2]]);
-	};
+	}
 
 	v3.len = function(v) {
 	    return Math.sqrt(((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2])));
-	};
+	}
 
 	v3.normalize = function(v) {
 	    var n = this.len(v);
 	    return new Float32Array([v[0] / n, v[1] / n, v[2] / n]);
-	};
+	}
 
 	v3.lerp = function(v1, v2, t) {
 	    //v0.alar_mul(1.0 - t).add(v1.multiplyByScalar(t));
 	    return v3.add(v3.mul_scalar(v1, 1.0 - t), v3.mul_scalar(v2, t));
-	};
+	}
 
 	module.exports = {
 
@@ -13729,7 +13728,7 @@
 
 	    Vec3Fn: v3,
 	    Lerp: LerpFn,
-	};
+	}
 
 
 /***/ },
@@ -13808,7 +13807,7 @@
 	                this.row1.z, this.row2.z, this.row3.z, this.row4.z,
 	                this.row1.w, this.row2.w, this.row3.w, this.row4.w
 	            ]);
-	    };
+	    }
 
 	    this.setIdentity = function() {
 	        this.row1 = Vec4.New(1.0, 0.0, 0.0, 0.0);
@@ -13817,7 +13816,7 @@
 	        this.row4 = Vec4.New(0.0, 0.0, 0.0, 1.0);
 
 	        return this;
-	    };
+	    }
 
 	    this.setMatrix = function(m) {
 	        this.row1 = m.row1;
@@ -13826,7 +13825,7 @@
 	        this.row4 = m.row4;
 
 	        return this;
-	    };
+	    }
 
 	    this.set = function(r1, r2, r3, r4) {
 	        this.row1 = r1 || this.row1;
@@ -13834,7 +13833,7 @@
 	        this.row3 = r3 || this.row3;
 	        this.row4 = r4 || this.row4;
 	        return this;
-	    };
+	    }
 
 	    this.getTransponse = function() {
 	        var mtx = MatrixFactory.New();
@@ -13843,11 +13842,11 @@
 	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);
 	        mtx.row4.set(this.row1.w, this.row2.w, this.row3.w, this.row4.w);
 	        return mtx;
-	    };
+	    }
 
 	    this.copy = function(){
 	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
-	    };
+	    }
 
 
 
@@ -13882,8 +13881,8 @@
 	            this.row4.dot(rhs.row4));
 
 	        return this.setMatrix(mtx);
-	    };
-	};
+	    }
+	}
 
 
 
@@ -13906,7 +13905,7 @@
 	                this.row1.y, this.row2.y, this.row3.y,
 	                this.row1.z, this.row2.z, this.row3.z
 	            ]);
-	    };
+	    }
 
 	    this.setIdentity = function() {
 	        this.row1 = Vec3.New(1.0, 0.0, 0.0);
@@ -13914,7 +13913,7 @@
 	        this.row3 = Vec3.New(0.0, 0.0, 1.0);
 
 	        return this;
-	    };
+	    }
 
 	    this.setMatrix = function(m) {
 	        this.row1 = m.row1;
@@ -13922,7 +13921,7 @@
 	        this.row3 = m.row3;
 
 	        return this;
-	    };
+	    }
 
 	    this.set = function(r1, r2, r3) {
 	        this.row1 = r1 || this.row1;
@@ -13930,7 +13929,7 @@
 	        this.row3 = r3 || this.row3;
 
 	        return this;
-	    };
+	    }
 
 	    this.getTransponse = function() {
 	        var mtx = new Matrix3();
@@ -13938,7 +13937,7 @@
 	        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y);
 	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z);
 	        return mtx;
-	    };
+	    }
 
 	    this.multiply = function(m) {
 	        var mtx = MatrixFactory.New();
@@ -13969,8 +13968,8 @@
 	            this.row4.dot(rhs.row4));
 
 	        return this.setMatrix(mtx);
-	    };
-	};
+	    }
+	}
 
 
 
@@ -13996,7 +13995,7 @@
 	        var o = new Matrix4();
 	        return o.set(r1, r2, r3, r4);
 	    }
-	};
+	}
 
 	module.exports = MatrixFactory;
 
@@ -14107,18 +14106,18 @@
 	    var shader = null;
 	    var camera = null;
 
-	    
+
 	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	    gl.enable(gl.DEPTH_TEST);
 
 	    /* this method can be override for custom functionality. */
 
-	    that.setViewPort = function(Width, Height){
-	      gl.viewport(0, 0, Width, Height);
+	    that.setViewPort = function(Width, Height) {
+	        gl.viewport(0, 0, Width, Height);
 	    }
 
-	    that.setClearColor = function(clear){
-	        gl.clearColor(clear.r , clear.g , clear.b, 1.0);
+	    that.setClearColor = function(clear) {
+	        gl.clearColor(clear.r, clear.g, clear.b, 1.0);
 	    }
 
 	    that.clean = function() {
@@ -14126,12 +14125,8 @@
 	    }
 
 	    that.prepare = function(entity) {
-	       /* this.shader.prepare({
-	            'MV': this.camera,
-	            'P': entity.model
-	        });
-	*/
-	        entity.buffer.exec(); 
+
+	       entity.buffer.loadAttributes();
 	    };
 
 	    that.draw = function(entity) {
@@ -14496,7 +14491,7 @@
 	                this.row1.y, this.row2.y, this.row3.y,
 	                this.row1.z, this.row2.z, this.row3.z
 	            ]);
-	    };
+	    }
 
 	    this.setIdentity = function() {
 	        this.row1 = Vec3.New(1.0, 0.0, 0.0);
@@ -14504,7 +14499,7 @@
 	        this.row3 = Vec3.New(0.0, 0.0, 1.0);
 
 	        return this;
-	    };
+	    }
 
 	    this.setMatrix = function(m) {
 	        this.row1 = m.row1;
@@ -14512,7 +14507,7 @@
 	        this.row3 = m.row3;
 
 	        return this;
-	    };
+	    }
 
 	    this.set = function(r1, r2, r3) {
 	        this.row1 = r1 || this.row1;
@@ -14520,17 +14515,17 @@
 	        this.row3 = r3 || this.row3;
 
 	        return this;
-	    };
+	    }
 
 	    this.copy = function(){
 	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy());
-	    };
+	    }
 
 	    this.multiplyByScalar = function(s){
 	       this.row1.scalarMultiply(s);
 	       this.row2.scalarMultiply(s);
 	       this.row3.scalarMultiply(s);
-	    };
+	    }
 
 	    this.getTransponse = function() {
 	        var mtx = new Matrix3();
@@ -14538,7 +14533,7 @@
 	        mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
 	        mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
 	        return mtx;
-	    };
+	    }
 
 	    this.multiply = function(m) {
 	        var mtx = MatrixFactory.New();
@@ -14560,8 +14555,8 @@
 	            this.row3.dot(rhs.row3));
 
 	        return this.setMatrix(mtx);
-	    };
-	};
+	    }
+	}
 
 	var MatrixFactory = {
 
@@ -14579,7 +14574,7 @@
 	        var o = new Matrix3();
 	        return o.set(r1, r2, r3);
 	    }
-	};
+	}
 
 	module.exports = MatrixFactory;
 
@@ -15024,13 +15019,14 @@
 	            element: document.getElementById('webgl-div')
 	        });
 
-	        var planeBuffer = core.createBuffer();
+	        //var planeBuffer = core.createBuffer();
 	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
 
+	        var shader = core.createShader();
 	        var post = core.createShader();
 
 	        var texture = core.createTexture();
+
 	        var Vec3 = core.MLib.Vec3;
 
 	        var scene = core.createScene();
@@ -15046,14 +15042,12 @@
 	            scene.setViewPort(x, y);
 	        });
 
-	        scene.shader = shader;
 	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
 	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-	        scene.camera = perspective.multiply(camera).getMatrix();
 
 	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
-	        var postCode = Utils.util.loadCode(tmpl(), ['post-vs', 'post-fs']);
+	      /*  var postCode = Utils.util.loadCode(tmpl(), ['post-vs', 'post-fs']);
 
 	        post.create({
 	            vertex: postCode['post-vs'],
@@ -15067,7 +15061,7 @@
 	                    .uniform('blurify');
 	            }
 	        });
-
+	*/
 	        shaderCode.init = function(shader) {
 	            shader.use();
 	            shader
@@ -15086,7 +15080,7 @@
 
 
 
-	        shader.create(shaderCode);
+	         shader.create(shaderCode);
 	        var geometry = Polygon.New();
 
 	        /* Generarting XOR Texture */
@@ -15114,23 +15108,23 @@
 
 
 
-	        planeBuffer.load([-0.5, 0, 0, 0, 0,
+	        /* planeBuffer.load([-0.5, 0, 0, 0, 0,
 	            0.5, 0, 0, 1, 0, -0.5, 0.5, 0, 0, 1,
 	            0.5, 0.5, 0, 1, 1,
 	        ]).order(post.vars, {
 	            'position': 3,
 	            'texture': 2
 	        });
+	*/
 
-
-	       /* buffer
+	        buffer
 	            .load(geometry.cube(5, dz).getModel())
 	            .order(shader.vars, {
 	                'position': 3,
 	                'colors': 4,
 	                'texture': 2
 	            });
-	*/
+
 
 
 	        // framebuffer.create(512, 512)
@@ -15140,51 +15134,34 @@
 	            dx += 0.3;
 	            dz += 0.1;
 	            if (dz > 359) dz = 0.5;
+
 	            var T = core.MLib.Transform.New();
 	            var entity1 = {
 	                buffer: buffer,
-	                model: T.translate(19, 5, -50).getMatrix(),
+	                model: T.translate(0, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
 	                drawType: geometry.getDrawType(),
 	                texture: texture,
-	            };
-
-	            var T = core.MLib.Transform.New();
-	            var entity2 = {
-	                buffer: buffer,
-	                model: T.translate(5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
-	                drawType: geometry.getDrawType(),
-	                texture: texture,
+	                shader: shader,
 	            };
 
 
 	            shader.prepare({
-	                'blurify': 0.2
+	                'blurify': 0.2,
+	                'MV': camera.getMatrix(),
+	                'P': entity1.model
 	            });
 
 	            scene.clean();
 	            scene.render(entity1);
-	            scene.render(entity2);
-
-
 	        }
-
-	        var T = core.MLib.Transform.New();
-	        var entity = {
-	            buffer: planeBuffer,
-	            model: T.translate(5, 10, -40).rotateX(dx).rotateY(dx).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
 	            window.requestID = window.requestAnimationFrame(render);
 	            //framebuffer.render(renderEntities);
 
-	            scene.clean();
-	            scene.render(entity);
+	            renderEntities();
+	            // scene.render(entity);
 	        }
 
 	        render();

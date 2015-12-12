@@ -1,10 +1,13 @@
 'use strict'
 
 var Factory = require('../utils/factory');
+var Buffer = require('./buffer');
 
 var Shader = function(Core, that) {
     var gl = Core;
     var program = null;
+    var buffers = [];
+
     that.vars = {};
     that.cache = {};
 
