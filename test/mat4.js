@@ -1,17 +1,50 @@
 var assert = require('assert');
-var Matrix = require('../js/mathv2/matrix4');
+var mat4 = require('../js/f4d/math/matrix4');
 var assert = require('chai').assert;
+
+
+function p(m) {
+
+    console.log('Matrix4:Debug');
+
+    var a = m.row1;
+    console.log(a.x, a.y, a.z, a.w);
+
+    var a = m.row2;
+    console.log(a.x, a.y, a.z, a.w);
+
+    var a = m.row3;
+    console.log(a.x, a.y, a.z, a.w);
+
+    var a = m.row4;
+    console.log(a.x, a.y, a.z, a.w);
+}
+
+function p3(m) {
+
+    console.log('Matrix3:Debug');
+
+    var a = m.row1;
+    console.log(a.x, a.y, a.z);
+
+    var a = m.row2;
+    console.log(a.x, a.y, a.z);
+
+    var a = m.row3;
+    console.log(a.x, a.y, a.z);
+
+}
+
 
 describe('Matrix4', function() {
 
     it('checking the packages', function() {
-      assert.isObject(Matrix, 'Matrix is an object');
-      assert.isFunction(Matrix.New, 'Matrix is an function');
-      assert.isFunction(Matrix.Identity, 'Matrix is an function');
+      assert.isFunction(mat4, 'Matrix is an object');
     });
   
     it('Identity Matrix', function() {
-      var m = Matrix.Identity();
+      var m = new mat4();
+      m.setIdentity();
       assert.isObject(m, 'Matrix is an object');
         
         var a = m.row1;
@@ -40,7 +73,7 @@ describe('Matrix4', function() {
     });
 
     it('Zero Matrix', function() {
-      var m = Matrix.New();
+      var m = new mat4();
       assert.isObject(m, 'Matrix is an object');
         
         var a = m.row1;
@@ -70,7 +103,7 @@ describe('Matrix4', function() {
 
     it('Matrix4 # set', function() {
     
-      var m = Matrix.New();
+      var m = new mat4();
       assert.isObject(m, 'Matrix is an object');
       m.row1.set(1,0,0,0);
       m.row2.set(0,1,0,9);
@@ -105,8 +138,8 @@ describe('Matrix4', function() {
 
 
     it('transponse Matrix', function() {
-      var m = Matrix.Identity().getTransponse();
-      assert.isObject(m, 'Matrix is an object');
+      var x = new mat4();
+       var m = x.setIdentity().getTransponse();
 
         var a = m.row1;
 
@@ -169,8 +202,9 @@ describe('Matrix4', function() {
 
     it('Matrix4 # multiply', function() {
     
-      var m = Matrix.New();
-      var tm = Matrix.New();
+      var m = new mat4();
+      var tm = new mat4();
+
       assert.isObject(m, 'Matrix is an object');
       m.row1.set(1,0,0,0);
       m.row2.set(0,1,0,9);
@@ -178,7 +212,7 @@ describe('Matrix4', function() {
       m.row4.set(0,2,0,0);
       
 
-      var identity = Matrix.Identity(); 
+      var identity = new mat4().setIdentity(); 
         m.multiply(identity);
 
         var a = m.row1;

@@ -1,5 +1,5 @@
-var Vec4 = require('./vector').Vec4;
-var Vec3 = require('./vector').Vec3;
+var Vec4 = require('./vector');
+var Vec3 = require('./vector');
 
 
 /*
@@ -50,10 +50,10 @@ function p3(m) {
 
 var Matrix4 = function() {
 
-    this.row1 = Vec4.New();
-    this.row2 = Vec4.New();
-    this.row3 = Vec4.New();
-    this.row4 = Vec4.New();
+    this.row1 = new Vec4();
+    this.row2 = new Vec4();
+    this.row3 = new Vec4();
+    this.row4 = new Vec4();
 
     /*
      * [ 0 4  8 12 ]
@@ -99,7 +99,7 @@ var Matrix4 = function() {
     }
 
     this.getTransponse = function() {
-        var mtx = MatrixFactory.New();
+        var mtx = new Mat4();
         mtx.row1.set(this.row1.x, this.row2.x, this.row3.x, this.row4.x);
         mtx.row2.set(this.row1.y, this.row2.y, this.row3.y, this.row4.y);
         mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);

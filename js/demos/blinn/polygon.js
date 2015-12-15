@@ -1,9 +1,9 @@
 var Factory = require('../../utils/factory');
-var Vec3 = require('../../mathv2/vector').Vec3;
-var Vec4 = require('../../mathv2/vector').Vec4;
-var Mat4 = require('../../mathv2/matrix4');
-var Mat3 = require('../../mathv2/matrix3');
-var Transform = require('../../mathv2/transform');
+var vec3 = require('../../f4d/math/vector3');
+var vec4 = require('../../f4d/math/vector4');
+var mat4 = require('../../f4d/math/matrix4');
+var mat3 = require('../../f4d/math/matrix3');
+var transform = require('../../mathv2/transform');
 
 
 
@@ -15,8 +15,9 @@ var Point = function(vertex, colors, uv) {
 };
 
 
-var Poly = function(Core, that) {
+var Poly = function() {
 
+    var that = {};
     that.drawType = 'TRIANGLE_STRIPS';
     that.geometry = [];
 
@@ -42,7 +43,7 @@ var Poly = function(Core, that) {
     };
 
     that.setGeometry = function(m) {
-        var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
+        var color = new vec4(0.8, 0.8, 0.8, 1.0);
 
         that.geometry.push(new Point(m.row1, color, {
             u: 0,
@@ -68,7 +69,7 @@ var Poly = function(Core, that) {
 
 
     that.roty = function(angle) {
-        var roty = Mat3.Identity();
+        var roty = new mat3().setIdentity();
         roty.row1.setValues(Math.cos(dgToRad(angle)), 0, Math.sin(dgToRad(angle)));
         roty.row3.setValues(-Math.sin(dgToRad(angle)), 0, Math.cos(dgToRad(angle)));
 
@@ -76,7 +77,7 @@ var Poly = function(Core, that) {
     };
 
     that.rotx = function(angle) {
-        var rot = Mat3.Identity();
+        var rot = new mat3().setIdentity();
         rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
         rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
 
@@ -85,7 +86,7 @@ var Poly = function(Core, that) {
 
 
     that.rotz = function(angle) {
-        var rot = Mat3.Identity();
+        var rot = new mat3().setIdentity();
         rot.row1.setValues(Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
         rot.row2.setValues(Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)), 0);
         rot.row3.setValues(0, 0, 1);
@@ -117,9 +118,9 @@ var Poly = function(Core, that) {
         var _z = z;
 
         return function(m) {
-            m.row1.add(Vec3.New(_x, _y, _z));
-            m.row2.add(Vec3.New(_x, _y, _z));
-            m.row3.add(Vec3.New(_x, _y, _z));
+            m.row1.add(new vec3(_x, _y, _z));
+            m.row2.add(new vec3(_x, _y, _z));
+            m.row3.add(new vec3(_x, _y, _z));
             return m;
         }
     };
@@ -185,7 +186,7 @@ var Poly = function(Core, that) {
         that.drawType = 'TRIANGLES';
       
         var cube = Faces();
-        var m1 = Mat3.New();
+        var m1 = new mat3();
 
         m1.row1.setValues(-1, 1, 0);
         m1.row2.setValues(0, 1, 0);
@@ -235,7 +236,7 @@ var Poly = function(Core, that) {
         that.drawType = 'TRIANGLES';
       
         var cube = Faces();
-        var m1 = Mat3.New();
+        var m1 = new mat3();
 
         m1.row1.setValues(-1, 1, 0);
         m1.row2.setValues(0, 1, 0);
@@ -285,4 +286,4 @@ var Poly = function(Core, that) {
     return that;
 }
 
-module.exports = new Factory(Poly);
+module.exports = Poly;

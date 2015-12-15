@@ -51,68 +51,25 @@
 
 	var DemoRouter = Backbone.Router.extend({
 	    routes: {
-	        'xor': 'xorDemo',
-	        'prime': 'primeDemo',
-	        'cube' : 'cube',
-	        'blink' : 'tunel',
 	        'new': 'noname',
 	        '*path': 'index',
 	    },
-	    
+
 	    demos: [],
-	    
-	    clear: function(){
-	        this.demos.forEach(function(demos){
+
+	    clear: function() {
+	        this.demos.forEach(function(demos) {
 	            demos.stop();
 	        });
 	    },
-	     
-	    index: function(){
+
+	    noname: function() {
 	        this.clear();
 	        var demo = __webpack_require__(4);
 	        demo.init();
 	        this.demos.push(demo);
 	    },
 
-	    noname: function(){
-	        this.clear();
-	        var demo = __webpack_require__(24);
-	        demo.init();
-	        this.demos.push(demo);
-	    },
-
-
-	    xorDemo: function(){
-
-	       this.clear();
-	       var demo = __webpack_require__(26)
-	       demo.init();
-	       this.demos.push(demo);
-	    },
-
-	    primeDemo: function(){
-	  
-	       this.clear();
-	      var demo =__webpack_require__(28);
-	       demo.init();
-	       this.demos.push(demo);
-	    },
-
-	    cube: function(){
-
-	       this.clear();
-	     var demo = __webpack_require__(30);
-	     demo.init();
-	     this.demos.push(demo);
-	    },
-
-	    tunel: function(){
-
-	       this.clear();
-	     var demo =  __webpack_require__(32);
-	     demo.init();
-	     this.demos.push(demo);
-	    },
 
 	});
 
@@ -12800,125 +12757,69 @@
 	module.exports = {
 
 	    init: function() {
-	        var tmpl = __webpack_require__(5);
-	        var tmpl_menu = __webpack_require__(6);
-	        var Core = __webpack_require__(7);
-	        var Noise = __webpack_require__(22);
-	        var Polygon = __webpack_require__(23);
-
-	        var div = document.createElement('div');
-	        div.className = 'wrapper';
-	        div.innerHTML = tmpl_menu();
-
-	        document.body.appendChild(div);
-	        
-	        div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
 
 
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
+	        var tmpl = __webpack_require__(23);
+	        var canvas = __webpack_require__(6);
+	        var entity = __webpack_require__(7);
+	        var utils = __webpack_require__(10);
+	        var polygon = __webpack_require__(11);
+	        var poly = new polygon();
 
 
+	        var display = new canvas(true);
+	        var entity = entity(display.getWebGL());
+	        var scene = __webpack_require__(20)(display.getWebGL());
 
-	        /* config */
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-	 
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+	        var Code = utils.createEL(tmpl());
 
-	        scene.camera = perspective.multiply(camera).getMatrix(); 
-	        scene.setClearColor({r:1, g:1,b:1});
+	        entity.load_shader(
+	            Code.querySelector('#vertex-shader'),
+	            Code.querySelector('#fragment-shader')
+	        );
 
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = Polygon.New();
-
-	        buffer.geometry({
-	            points: geometry.plane(5,5).getModel(),
-	            size: 9
-	        });
+	        entity.vertex(poly.cube(5, 1).getModel()).load_attrs();
 
 	        /* Generarting XOR Texture */
 	        var textureSize = 128;
 	        var pix = [];
 	        var noi = [];
-	        /*
-	        var noise = new Noise();
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                 noi.push(  noise.perlin(x,y,4)  )*8;
-	            }
-	        }
 
-
-	        console.log(noi);
-	        noi.forEach(function(noise){
-	            pix.push(noise); //r
-	            pix.push(noise); //g
-	            pix.push(noise); //b
-	        });
-	        */
 
 	        for (var x = 0; x < textureSize; x++) {
 	            for (var y = 0; y < textureSize; y++) {
 	                var xor = x ^ y;
-	                pix.push(xor+34) // r
+	                pix.push(xor) // r
 	                pix.push(xor) // g
 	                pix.push(xor) // b
 	            }
 	        }
 
-
-	        /* */
-
+	        var text = __webpack_require__(22);
+	        var texture = text(display.getWebGL());
 	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
-	        var dx = 0.1;
-	          
+
+	        scene.texture = texture;
+
+	        scene.add_entity(entity);
+
+
+	        var rs = 0.1;
+
 	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	        window.requestID =  window.requestAnimationFrame(render);
+	            rs += 0.4;
+	            entity.rotate(rs);
 
-	        var Transform = core.MLib.Transform.New();
-	            dx += 0.5;
-	        buffer.geometry({
-	            points: geometry.plane(5).getModel(),
-	            size: 9
-	        });
+	            window.requestID = window.requestAnimationFrame(render);
 
-
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(4,4,-20).rotateY(dx).getMatrix(),
-	            drawType: geometry.getDrawType(),
-	            texture: texture,
-	        };
-
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
+	            scene.draw();
+	        }
 
 	        render();
-
 	    },
 
-	    stop: function(){
+	    stop: function() {
 	        window.cancelAnimationFrame(window.requestID);
 	    }
 
@@ -12926,100 +12827,8 @@
 
 
 /***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        vec4 c =  texture2D(uSampler, oTexture); \n\n        gl_FragColor =oColors;\n    }\n\n</script>\n';
-	return __p
-	}
-
-/***/ },
+/* 5 */,
 /* 6 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '\n\n<ul>\n    <li><a href="#cube" >cube </a> <p> first 3d shape. using the engine. yee! </p> </li>\n    <li><a href="#blink" >kaleidoscope </a> <p> cube build by kaleidoscope technique. JBlinn. </p> </li>\n\n    <li><a href="#xor" > xor texture test </a> <p> Testing texture class. with old school XOR texture. </p> </li>    \n     \n\n\n</ul>\n';
-	return __p
-	}
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-
-	var Core = function(options) {
-	    var CanvasGL = __webpack_require__(8);
-
-	    this.Buffer = __webpack_require__(9);
-	    this.Shader = __webpack_require__(11);
-	    this.Texture = __webpack_require__(12);
-	    this.Camera = __webpack_require__(13);
-	    this.Scene = __webpack_require__(17);
-	    this.Geometry = __webpack_require__(18);
-	    this.FrameBuffer = __webpack_require__(19);
-
-	    var core = new CanvasGL(options.fullscreen, options.element);
-	    var webGL = core.getWebGL();
-
-
-	    this.canvas = core;
-	    this.createBuffer = function() {
-	        return this.Buffer.New(webGL);
-	    };
-
-	    this.createShader = function() {
-	        return this.Shader.New(webGL);
-	    };
-
-	    this.createTexture = function() {
-	        return this.Texture.New(webGL);
-	    };
-
-	    this.createFrameBuffer = function(){
-	        return this.FrameBuffer.New(webGL); 
-	    };
-
-	    this.createScene = function() {
-	        return this.Scene.New(webGL);
-	    };
-
-	    this.createGeometry = function() {
-	        return this.Geometry.New();
-	    };
-	   
-
-	    this.getUtils = function() {
-	        return {
-	            camera: this.Camera.New(),
-	            util: __webpack_require__(20).New()
-	        };
-	    };
-
-
-	    this.MLib = {
-	        Vec3: __webpack_require__(14).Vec3,
-	        Vec4: __webpack_require__(14).Vec4,
-	        Mat4: __webpack_require__(15),
-	        Mat3: __webpack_require__(21),
-	        Transform: __webpack_require__(16),
-	    };
-	};
-
-
-
-
-
-
-	module.exports = Core;
-
-
-/***/ },
-/* 8 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13027,7 +12836,7 @@
 	var Canvas = function(fullscreen, el) {
 	    var _createCanvas = function() {
 	        _canvas = document.getElementsByTagName('CANVAS')[0];
-	        if(!_canvas)
+	        if (!_canvas)
 	            _canvas = document.createElement('CANVAS');
 
 	        _canvas.setAttribute('width', 800);
@@ -13045,9 +12854,9 @@
 	        _canvas.style.height = window.innerHeight + "px";
 	        _canvas.width = window.innerWidth;
 	        _canvas.height = window.innerHeight;
-	       
-	        if(that.resizeViewPort)
-	        that.resizeViewPort(_canvas.width, _canvas.height); 
+
+	        if (that.resizeViewPort)
+	            that.resizeViewPort(_canvas.width, _canvas.height);
 	    };
 
 
@@ -13072,16 +12881,23 @@
 	        console.log(e);
 	    }
 
+	    gl.viewport(0, 0, _canvas.width, _canvas.height);
+
 	    return {
 	        getWebGL: function() {
 	            return gl;
 	        },
+
+	        setViewPort: function(Width, Height) {
+	            gl.viewport(0, 0, Width, Height);
+	        },
+
 	        canvas: {
 	            x: _canvas.width,
 	            y: _canvas.height
 	        },
-	        
-	        setResize: function(cb){
+
+	        setResize: function(cb) {
 	            that.resizeViewPort = cb;
 	        },
 
@@ -13093,111 +12909,660 @@
 
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict'
+	'use strict';
 
-	var Factory = __webpack_require__(10);
+	var buffer = __webpack_require__(8);
+	var shader = __webpack_require__(9);
+	var transform = __webpack_require__(21);
+	var matrix4 = __webpack_require__(15);
 
-	var Buffer = function(Core, that) {
+	var geometry = function(gl) {
 
-	    var gl = Core;
-	    var buffer = gl.createBuffer();
-	    var vertexDataSize = 0,
-	        bufferPerVertex = 0;
+	    var that = {};
+	    var gl = gl;
+	    var padding = {};
 
-	    var that = that || {};
-	    var pipeline = [];
+	    var sho = shader(gl);
+	    var vbo = buffer(gl);
 
-	    that.sides = 0;
+	    var t = transform();
+	    var model = new matrix4().setIdentity();
+
+	    t.translate(model, {
+	        x: 4,
+	        y: 4,
+	        z: -30
+	    });
 
 
-	    var save = function(list, bufferType) {
-	        vertexDataSize = list.length;
+	    that.draw_type = 'TRIANGLES';
 
-	        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	    that.load_shader = function(vertex, fragment, callback) {
+	        sho.create(vertex, fragment, callback);
+	        return that;
+	    };
+
+	    that.vertex = function(vertex_list, options) {
+	        padding = options;
+	        vbo.save(vertex_list);
+	        return that;
+	    };
+
+	    that.shader = sho;
+	    that.vertex_buffer = vbo;
+
+
+	    that.uniform = function(var_name, value) {
+	        if (sho.uniforms[var_name]) {
+	            sho.set_uniform(var_name, value);
+	        }
+	    };
+
+	    that.rotate = function(x){
+	      t.rotatex(model, x);
+	    } 
+
+	    that.model = model;
+
+	    that.load_attrs = function() {
+	        var fns = sho.get_vertex_attrib();
+
+	        that.sides = vbo.len / sho.per_vertex_size;
+
+	        that.prepare = function(fns) {
+	            return function() {
+	                sho.use();
+	                // vbo.use();
+
+	                for (var i = -1; ++i < fns.length;)
+	                    fns[i]();
+	            }
+
+	        }(fns);
+	    };
+
+
+	    return that;
+	}
+
+	module.exports = geometry;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var buffer = function(gl) {
+	    var that = {};
+	    var gl = gl,
+	        vertex_buffer = null,
+	        size = 0;
+
+	    that.buffer = gl.createBuffer();
+
+	    that.create = function(list, draw_type) {
+	        that.len = list.length;
+
+	        gl.bindBuffer(gl.ARRAY_BUFFER, that.buffer);
+
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
 	            new Float32Array(list),
-	            bufferType
+	            draw_type
 	        );
-	    }
+	    };
 
-	    /*
-	     * obj
-	     *  name: shader attribute name.
-	     *  value: number of values per attribute.
-	     */
-
-	    var prepare = function(_obj) {
-	        var object = _obj;
-
-	        return function(stride) {
-	            gl.vertexAttribPointer(
-	                object.name,
-	                object.value,
-	                gl.FLOAT,
-	                false,
-	                stride,
-	                object.offset // starting from. 
-	            );
-	        }
-	    }
-
-	    that.load = function(list) {
-	        save(list, gl.STATIC_DRAW);
-	        return that;
-	    }
+	    that.use = function() {
+	        gl.bindBuffer(gl.ARRAY_BUFFER, that.buffer);
+	    };
 
 	    that.update = function(list) {
-	        save(list, gl.DYNAMIC_DRAW);
-	        return that;
-	    }
+	        that.create(list, gl.DYNAMIC_DRAW);
+	    };
 
-	    /* @order 
-	     * organize the interleave order.
-	     * obj
-	     *    name: shader attribute name.
-	     *    value: number of values per attribute.
-	     *
-	     */
-	    that.order = function(shaderMap, obj) {
-	        var bufferPerVertex = 0;
+	    that.save = function(list) {
+	        that.create(list, gl.DYNAMIC_DRAW);
+	    };
 
-	        Object.keys(obj).forEach(function(key) {
+	    return that;
+	}
 
-	            pipeline.push(prepare({
-	                name: shaderMap[key],
-	                value: obj[key],
-	                offset: (bufferPerVertex * Float32Array.BYTES_PER_ELEMENT),
-	            }));
+	module.exports = buffer;
 
-	            bufferPerVertex += obj[key];
-	        });
 
-	        that.sides = vertexDataSize / bufferPerVertex;
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
 
-	        that.loadAttributes = function() {
-	            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	'use strict';
+	var shader = function(gl) {
 
-	            for (var vertexAttrib in pipeline) {
-	                pipeline[vertexAttrib](bufferPerVertex * Float32Array.BYTES_PER_ELEMENT);
-	            }
+	    var that = {};
+	    var gl = gl;
+	    var shader_type = {
+	        'fragment': gl.FRAGMENT_SHADER,
+	        'vertex': gl.VERTEX_SHADER
+	    };
+
+	    that.attrs = {};
+	    that.uniforms = {};
+	    that.uniform_fn = {};
+	    that.program = null;
+
+	    var parse = function(code) {
+	        if (code instanceof HTMLElement) {
+	            return code.innerHTML;
 	        }
 
-	        return that;
+	        return code;
+	    };
+
+	    var attrib_length = function(type) {
+
+	        if (type === gl.FLOAT_VEC2)
+	            return 2;
+
+	        if (type === gl.FLOAT_VEC3)
+	            return 3;
+
+	        if (type === gl.FLOAT_VEC4)
+	            return 4;
+	    };
+
+	    var attrib_byte_length = function(shader_var) {
+	        return attrib_length(shader_var.info.type) * Float32Array.BYTES_PER_ELEMENT;
+	    };
+
+	    var sum = function(fn) {
+	        var sum = 0;
+
+	        return function(o) {
+	            sum += fn(o);
+	            return sum;
+	        };
+	    };
+
+
+	    var look_up = function(gl_callback, type, locator_fn) {
+
+	        var cnt = gl.getProgramParameter(that.program, type);
+
+	        var shader_vars = {};
+	        var gl_variants = {};
+
+	        for (var i = 0; i < cnt; i++) {
+
+	            gl_variants = gl_callback.call(gl, that.program, i);
+	            var value = locator_fn.call(gl, that.program, gl_variants.name);
+
+	            shader_vars[gl_variants.name] = {
+	                info: gl_variants,
+	                value: value,
+	            };
+
+	        };
+
+	        return shader_vars;
+	    };
+
+	    var each_attrib = function(cb) {
+	        var tmp = null;
+	        Object.keys(that.attrs).forEach(function(key) {
+	            var shader_var = that.attrs[key];
+	            tmp = cb(shader_var);
+	        });
+
+	        return tmp;
+	    };
+
+	    var make_attribute = function(index, vector_size,  size, offset) {
+
+	        console.log('index-> ', index, ' vector_size-> ', vector_size,   ' size->', size, ' ofsset->', offset );
+
+	        gl.enableVertexAttribArray(index);
+
+	        return function() {
+
+
+	            gl.vertexAttribPointer(
+	                index,
+	                vector_size,
+	                gl.FLOAT,
+	                false,
+	                size,
+	                offset // starting from. 
+	            );
+	        };
+	    };
+
+	    that.get_vertex_attrib = function() {
+	        var cache = [];
+	        var size = each_attrib(sum(attrib_byte_length));
+	        var offset = 0;
+
+	        each_attrib(function(shader_vars) {
+	            cache.push( make_attribute(shader_vars.value, attrib_length(shader_vars.info.type)  ,size, offset) );
+	            offset += attrib_byte_length(shader_vars);
+	        });
+
+	        that.per_vertex_size = size / Float32Array.BYTES_PER_ELEMENT; 
+	        return cache;
+	    };
+
+	    that.get_shader_vars = function() {
+
+	        console.log(' ===== loading attrs ====');
+	        that.attrs = look_up(gl.getActiveAttrib, gl.ACTIVE_ATTRIBUTES, gl.getAttribLocation);
+	        console.log(' ==========================');
+
+	        console.log(' ===== loading uniform ====');
+	        that.uniforms = look_up(gl.getActiveUniform, gl.ACTIVE_UNIFORMS, gl.getUniformLocation);
+	        console.log(' ==========================');
+	    };
+
+	    that.use = function() {
+	        gl.useProgram(that.program);
+	    };
+
+	    that.create = function(vertex, fragment) {
+
+	        if (vertex && fragment) {
+	            that.program = that.link(parse(vertex), parse(fragment));
+	            that.get_shader_vars();
+	        }
+	    };
+
+
+
+	    that.compile = function(shaderCode, type) {
+
+	        var shader = gl.createShader(shader_type[type]);
+
+	        gl.shaderSource(shader, shaderCode);
+	        gl.compileShader(shader);
+
+	        var error = gl.getShaderInfoLog(shader);
+
+	        if (error.length > 0) {
+	            throw error;
+	        }
+	        console.log('[compiled] ok');
+
+	        return shader;
+	    };
+
+
+	    that.link = function(vertex, fragment) {
+	        var program = gl.createProgram();
+
+	        gl.attachShader(program, that.compile(vertex, 'vertex'));
+	        gl.attachShader(program, that.compile(fragment, 'fragment'));
+	        gl.linkProgram(program);
+
+	        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+	            throw 'error linking shaders: ' + gl.getProgramInfoLog(program);
+	        }
+
+	        console.log('[linked] ok');
+	        return program;
+	    };
+
+
+	    that.set_uniform = function(var_name, value) {
+
+	        if (that.uniform_fn[var_name]) {
+	            that.uniform_fn[var_name](value);
+	            return;
+	        }
+
+	        /* generate the function */
+	        if (that.uniforms[var_name].info.type === gl.FLOAT_MAT4) {
+
+	            var u = that.uniforms[var_name].value;
+	            var size = that.uniforms[var_name].info.size;
+
+	            var fn = gl.uniformMatrix4fv;
+	            that.uniform_fn[var_name] = fn.bind(gl, u, false);
+
+	            that.uniform_fn[var_name](value);
+	            return;
+	        }
+	    };
+
+	    that.attributes = function(attrs) {
+	        attrs.forEach(attribute);
+	    }
+
+	    that.add_uniforms = function(list) {
+	        list.forEach(uniform);
 	    }
 
 	    return that;
 	}
 
 
-	module.exports = new Factory(Buffer);
+	module.exports = shader;
 
 
 /***/ },
 /* 10 */
+/***/ function(module, exports) {
+
+	var util = {
+
+	  createEL: function(str){ 
+	    var div = document.createElement('div');
+	    div.innerHTML = str;
+	    return div;
+	  },
+
+	};
+
+	module.exports = util;
+
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Factory = __webpack_require__(12);
+	var vec3 = __webpack_require__(13);
+	var vec4 = __webpack_require__(14);
+	var mat4 = __webpack_require__(15);
+	var mat3 = __webpack_require__(16);
+	var transform = __webpack_require__(17);
+
+
+
+	var Point = function(vertex, colors, uv) {
+
+	    this.vertex = vertex;
+	    this.color = colors;
+	    this.uv = uv;
+	};
+
+
+	var Poly = function() {
+
+	    var that = {};
+	    that.drawType = 'TRIANGLE_STRIPS';
+	    that.geometry = [];
+
+	    that.getModel = function() {
+	        var tmp = [];
+	        that.geometry.forEach(function(renderable) {
+	            tmp.push(
+	                renderable.vertex.x,
+	                renderable.vertex.y,
+	                renderable.vertex.z,
+
+	                renderable.color.x,
+	                renderable.color.y,
+	                renderable.color.z,
+	                renderable.color.w,
+
+	                renderable.uv.u,
+	                renderable.uv.v
+	            );
+	        });
+
+	        return new Float32Array(tmp);
+	    };
+
+	    that.setGeometry = function(m) {
+	        var color = new vec4(0.8, 0.8, 0.8, 1.0);
+
+	        that.geometry.push(new Point(m.row1, color, {
+	            u: 0,
+	            v: 1
+	        }));
+	        that.geometry.push(new Point(m.row2, color, {
+	            u: 1,
+	            v: 1
+	        }));
+	        that.geometry.push(new Point(m.row3, color, {
+	            u: 1,
+	            v: 0
+	        }));
+
+	    };
+
+	    /*
+	     * Degree to radian.
+	     */
+	    function dgToRad(angle) {
+	        return (angle * Math.PI) / 180;
+	    };
+
+
+	    that.roty = function(angle) {
+	        var roty = new mat3().setIdentity();
+	        roty.row1.setValues(Math.cos(dgToRad(angle)), 0, Math.sin(dgToRad(angle)));
+	        roty.row3.setValues(-Math.sin(dgToRad(angle)), 0, Math.cos(dgToRad(angle)));
+
+	        return roty;
+	    };
+
+	    that.rotx = function(angle) {
+	        var rot = new mat3().setIdentity();
+	        rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
+	        rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
+
+	        return rot;
+	    };
+
+
+	    that.rotz = function(angle) {
+	        var rot = new mat3().setIdentity();
+	        rot.row1.setValues(Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
+	        rot.row2.setValues(Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)), 0);
+	        rot.row3.setValues(0, 0, 1);
+
+	        return rot;
+	    };
+
+	    function makeModule(seed, reflectRot, rotationFn, dx) {
+	        var mod = [];
+	        mod.push(seed.copy());
+	        var reflect = seed.copy().multiply(reflectRot(180)).copy(); //reflection of the seed.
+	        mod.push(reflect.copy());
+
+	        /* seed and his reflection rotate around z-axis create a face. */
+	        for (var m = 90; m <= 360; m += 90) {
+	          mod.push(seed.multiply(rotationFn(m)).copy());
+	          mod.push(reflect.multiply(rotationFn(m)).copy());
+	        }
+
+	        return mod;
+	    };
+
+
+
+	    function translate(x, y, z) {
+
+	        var _x = x;
+	        var _y = y;
+	        var _z = z;
+
+	        return function(m) {
+	            m.row1.add(new vec3(_x, _y, _z));
+	            m.row2.add(new vec3(_x, _y, _z));
+	            m.row3.add(new vec3(_x, _y, _z));
+	            return m;
+	        }
+	    };
+
+
+	    function mirrorModule(mtxs, transform, rot, dx) {
+	        var modul3 = [];
+	        
+	        mtxs.forEach(function(mtx) {
+	            modul3.push(transform(mtx.copy().multiply(rot(90))));
+	        });
+
+	        return modul3; 
+	    }
+
+
+	    function setFace(mtxs) {
+	        mtxs.forEach(function(mtx) {
+	            that.setGeometry(mtx);
+	        });
+	    }
+
+	    function Faces(){
+	        var matrices = [];
+
+	        return {
+	            add: function(mtx){
+	               matrices = matrices.concat(mtx);
+	            },
+
+	            each: function(cb){
+	                matrices.forEach(cb); 
+	            },
+
+	            inflate: function(dx){
+	                matrices.forEach(function(m){
+	                    if(m.row3.z > 0){
+	                    m.row3.z += dx;
+	                    m.row1.z += dx;
+	                    m.row2.z += dx;
+	                    }else{
+	                    m.row3.z -= dx;}
+
+	                    if(m.row3.y > 0){
+	                    m.row3.y += dx;
+	                    }else{
+	                    m.row3.y -= dx;}
+
+	                });
+	            },
+
+	            get: function(){
+	                return matrices;
+	            }
+
+	        };
+	    }
+
+
+	    that.cube = function(size, dx) {
+
+	        that.geometry = [];
+	        that.drawType = 'TRIANGLES';
+	      
+	        var cube = Faces();
+	        var m1 = new mat3();
+
+	        m1.row1.setValues(-1, 1, 0);
+	        m1.row2.setValues(0, 1, 0);
+	        m1.row3.setValues(0, 0, 0);
+
+
+	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
+	        var body = 5;
+	        m1.multiplyByScalar(size);
+
+
+
+	        var tleft = translate(-body, 0, body);
+	        var tright = translate(body, 0, body);
+
+	        var tup = translate(0, body, body);
+	        var tdown = translate(0, -body, body);
+
+	        var tfront = translate(0, 0, 10);
+
+	        var m = makeModule(m1, that.roty, that.rotz, dx);
+
+
+	        cube.add(m);
+
+	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
+
+	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
+	        cube.add( mirrorModule(m, tright, that.roty, dx) );
+
+	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
+	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
+
+	   
+	       setFace(cube.get());
+
+	        return that;
+	    };
+
+
+
+
+
+	    that.plane = function(size, dx) {
+
+	        that.geometry = [];
+	        that.drawType = 'TRIANGLES';
+	      
+	        var cube = Faces();
+	        var m1 = new mat3();
+
+	        m1.row1.setValues(-1, 1, 0);
+	        m1.row2.setValues(0, 1, 0);
+	        m1.row3.setValues(0, 0, 0);
+
+
+	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
+	        var body = 5;
+	        m1.multiplyByScalar(size);
+
+
+
+	        var tleft = translate(-body, 0, body);
+	        var tright = translate(body, 0, body);
+
+	        var tup = translate(0, body, body);
+	        var tdown = translate(0, -body, body);
+
+	        var tfront = translate(0, 0, 10);
+
+	        var m = makeModule(m1, that.roty, that.rotz, dx);
+
+
+	        cube.add(m);
+
+	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
+
+	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
+	        cube.add( mirrorModule(m, tright, that.roty, dx) );
+
+	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
+	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
+
+	    
+	        if(inflation)
+	            cube.inflate(inflation);
+
+	        setFace(cube.get());
+
+	        return that;
+	    };
+
+	    that.getDrawType = function() {
+	        return that.drawType;
+	    };
+
+	    return that;
+	}
+
+	module.exports = Poly;
+
+
+/***/ },
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -13216,259 +13581,531 @@
 
 
 /***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-	var Buffer = __webpack_require__(9);
-
-	var Shader = function(Core, that) {
-	    var gl = Core;
-	    var program = null;
-	    var buffers = [];
-
-	    that.vars = {};
-	    that.cache = {};
-
-	    var parse = function(code) {
-	        if (code instanceof HTMLElement) {
-	            return code.innerHTML;
-	        }
-
-	        return code;
-	    }
-
-	    that.add = function(shaderCode, type) {
-	        var shader = null;
-
-	        if (type === 'fragment')
-	            shader = gl.createShader(gl.FRAGMENT_SHADER);
-
-	        if (type === 'vertex')
-	            shader = gl.createShader(gl.VERTEX_SHADER);
-
-	        gl.shaderSource(shader, shaderCode);
-	        gl.compileShader(shader);
-
-	        var error = gl.getShaderInfoLog(shader);
-
-	        if (error.length > 0) {
-	            throw error;
-	        }
-
-	        return shader;
-	    }
-
-	    that.use = function() {
-	        gl.useProgram(program);
-	    }
-
-	    that.attribute = function(param) {
-	        that.vars[param] = gl.getAttribLocation(program, param);
-	        if (that.vars[param] < 0) throw " Error attribute " + param + " not found.";
-	        gl.enableVertexAttribArray(that.vars[param]);
-	        return this;
-	    }
-
-	    that.uniform = function(param) {
-	        that.vars[param] = gl.getUniformLocation(program, param);
-	        if (!that.vars[param]) throw " Error uniform " + param + " not found.";
-	        return this;
-	    }
-
-	    that.create = function(code) {
-
-	        if (code && code.vertex && code.fragment) {
-	            that.link(parse(code.vertex), parse(code.fragment));
-	            code.init(that);
-	        }
-	    }
-
-
-
-
-
-	    that.link = function(vertex, fragment) {
-	        program = gl.createProgram();
-
-	        gl.attachShader(program, that.add(vertex, 'vertex'));
-	        gl.attachShader(program, that.add(fragment, 'fragment'));
-	        gl.linkProgram(program);
-
-	        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-	            throw 'error linking shaders: ' + gl.getProgramInfoLog(program);
-	        }
-	    }
-
-	    var unify = function(_obj) {
-	        var obj = _obj;
-	        var param = obj.param;
-
-	        return function(value) {
-	            obj.args[param] = value;
-	            obj.method.apply(gl, obj.args);
-	        }
-	    }
-
-	    var saveIntoCache = function(shaderId, key, val) {
-	        if (val instanceof Float32Array) {
-	            that.cache[key] = unify({
-	                method: gl.uniformMatrix4fv,
-	                args: [shaderId, false, val],
-	                param: 2
-	            });
-	        }
-
-	        if (typeof val === 'number') {
-	            that.cache[key] = unify({
-	                method: gl.uniform1f,
-	                args: [shaderId, val],
-	                param: 1
-	            });
-	        }
-	    }
-
-	    that.prepare = function(shaderVariables) {
-	        for (var key in shaderVariables) {
-	            if (that.cache[key]) {
-	                that.cache[key](shaderVariables[key]);
-	            } else {
-	                saveIntoCache(that.vars[key], key, shaderVariables[key]);
-	            }
-	        }
-	    }
-
-	    return that;
-	}
-
-	module.exports = new Factory(Shader);
-
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-
-	var Texture = function(Core, that) {
-	    var gl = Core;
-	    that.texture = gl.createTexture();
-
-
-	    that.setTexture = function( pixels, width, height) {
-
-	        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-	        gl.bindTexture(gl.TEXTURE_2D, that.texture);
-	        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
-	            gl.UNSIGNED_BYTE, pixels);
-
-	        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-	    };
-
-	    that.prepare = function(vars) {
-	        if (!this.initialize) return;
-
-	        gl.activeTexture(gl.TEXTURE0);
-	        gl.bindTexture(gl.TEXTURE_2D, that.texture);
-	        gl.uniform1i(vars['uSampler'], 0);
-	    };
-
-	    return that;
-	};
-
-
-
-	module.exports = new Factory(Texture);
-
-
-/***/ },
 /* 13 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict'
+	'use strict';
 
-	var Factory = __webpack_require__(10);
-	var Vec4  = __webpack_require__(14).Vec4;
-	var Matrix  = __webpack_require__(15);
-	var Transform = __webpack_require__(16);
+	var vec3 = function(x, y, z) {
 
+	    this.x = x || 0.0;
+	    this.y = y || 0.0;
+	    this.z = z || 0.0;
 
-	var Camera = function(){
+	    this.setX = function(n) {
+	        this.x = n;
+	        return this;
+	    };
+
+	    this.setY = function(n) {
+	        this.y = n;
+	        return this;
+	    };
+
+	    this.setZ = function(n) {
+	        this.z = n;
+	        return this;
+	    };
+
+	    this.getX = function() {
+	        return this.x;
+	    };
+
+	    this.getY = function() {
+	        return this.y;
+	    };
+
+	    this.getZ = function() {
+	        return this.z;
+	    };
+
+	    this.copy = function() {
+	        return new vec3(this.x, this.y, this.z );
+	    };
+
+	    this.setValues = function(x,y,z) {
+	        this.x = x;
+	        this.y = y;
+	        this.z = z;
+
+	        return this;
+	    };
+
+	    this.add = function(v) {
+	        this.x += v.x;
+	        this.y += v.y;
+	        this.z += v.z;
+
+	        return this;
+	    };
+
+	    this.sub = function(v) {
+	        this.x -= v.x;
+	        this.y -= v.y;
+	        this.z -= v.z;
+	        return this;
+	    };
+
+	    this.dot = function(v) {
+	        return (this.x * v.x) + (this.y * v.y) + (this.z * v.z);
+	    };
+
+	    this.inverse = function() {
+	        this.x = -this.x;
+	        this.y = -this.y;
+	        this.z = -this.z;
+
+	        return this;
+	    };
+
+	    this.magnitude = function() {
+	        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+	    };
+
+	    this.len = function() {
+	        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+	    };
+
+	    this.normalize = function() {
+	        var m = this.magnitude();
+	        var tmp = new vec3(
+	            this.x / m,
+	            this.y / m,
+	            this.z / m);
+
+	        return tmp;
+	    };
+
+	    this.norm = function() {
+	        var m = this.magnitude();
+	        var tmp = new vec3(
+	            this.x / m,
+	            this.y / m,
+	            this.z / m);
+
+	        return tmp;
+	    };
+	    
+	    this.scalarMultiply = function(e) {
+	        this.x *= e;
+	        this.y *= e;
+	        this.z *= e;
+	        return this;
+	    };
+
+	    this.multiplyByScalar = function(scalar) {
+	        return new vec3(this.x * scalar, this.y * scalar, this.z * scalar);
+	    };
+
+	    this.cross = function(v) {
+	        return new vec3((this.y * v.z - this.z * v.y), (this.z * v.x - this.x * v.z), (this.x * v.y - this.y * v.x));
+	    };
+
+	    this.copy = function() {
+	        return new vec3(this.x, this.y, this.z);
+	    };
+
+	    this.project = function(b) {
+	        var ab = this.dot(b);
+	        var proj = ab / b.magnitude();
+	        var vnorm = b.normalize();
+	        return vnorm.multiplyByScalar(proj);
+	    };
 	};
 
-	Camera.prototype.MakeOrtho = function(left, right, bottom, top, nearz, farz) {
-	    var m = new Float32Array(16);
-	    m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = 0.0;
 
-	    m[0] = 2.0 / (right - left);
-	    m[5] = 2.0 / (top - bottom)
-	    m[12] = -(right + left) / (right - left);
-	    m[13] = -(top + bottom) / (top - bottom);
-	    m[14] = -(farz + nearz) / (farz - nearz);
-	    m[15] = 1.0;
-	    return m;
+	var LerpFn = {
+
+	    Lerp: function(v0, v1, t) {
+	        return v0.scalar_mul(1.0 - t).add(v1.multiplyByScalar(t));
+	    },
+
+	    CosLerp: function(v0, v1, t) {
+	        var ft = t * Math.PI;
+	        var f = (1 - Math.cos(ft)) * .5;
+	        return v0.scalar_mul(1.0 - f).add(v1.multiplyByScalar(f));
+	    },
 	}
 
 
-
-	/*
-
-	  Make a LookAt Matrix.
-
-	  Inspirated by
-	  http://www.cs.virginia.edu/~gfx/Courses/1999/intro.fall99.html/lookat.html
-
-	*/
-	Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
-
-	  var F = v3Center.sub(v3Eye).normalize();
-	  var U = v3Up.normalize();
-	  var S = F.cross(U).normalize();
-
-	  U = S.cross(F);
-
-	  var M = Matrix.Identity().set(S,  U, F.inverse());
-
-
-	  var negEye = v3Eye.inverse();
-
-	  return Transform.Apply(M).translate(negEye.getX(), negEye.getY(), negEye.getZ(),1).getMatrixObject();
-	};
-
-	/*
-	  Perspective
-	*/
-
-	Camera.prototype.MakePerspective = function(fieldOfView, aspectRatio, nearZ, farZ){
-	  var M = Matrix.Identity();
-	  var cotan = 1.0 / Math.tan(fieldOfView / 2.0);
-	  return M.set(
-	    Vec4.New(cotan/aspectRatio),
-	    Vec4.New(0.0, cotan),
-	    Vec4.New(0.0,0.0,( (farZ + nearZ) / (nearZ - farZ)), ( (2.0 * farZ * nearZ) / (nearZ - farZ)) ),
-	    Vec4.New(0.0,0.0,-1.0,0.0)
-	   );
-	};
-
-
-
-
-
-
-
-
-
-	module.exports = new Factory(Camera);
+	module.exports = vec3;
 
 
 /***/ },
 /* 14 */
+/***/ function(module, exports) {
+
+	
+	var vec4 = function(x, y, z, w) {
+	    this.x = x || 0.0;
+	    this.y = y || 0.0;
+	    this.z = z || 0.0;
+	    this.w = w || 0.0;
+
+	    this.set = function(x, y, z, w) {
+	        this.x = x || 0.0;
+	        this.y = y || 0.0;
+	        this.z = z || 0.0;
+	        this.w = w || 0.0;
+
+
+	    }
+
+
+	    this.copy = function() {
+	        return new vec4(this.x, this.y, this.z, this.w);
+	    }
+
+
+	    this.dot = function(v) {
+	        return ((this.x * v.x) + (this.y * v.y) + (this.z * v.z) + (this.w * v.w));
+	    }
+
+
+	    this.add = function(v) {
+	        this.x += v.x;
+	        this.y += v.y;
+	        this.z += v.z;
+	        this.w += v.w;
+
+	        return this;
+	    }
+
+	    this.sub = function(v) {
+	        this.x -= v.x;
+	        this.y -= v.y;
+	        this.z -= v.z;
+	        this.w -= v.w;
+
+	        return this;
+	    }
+	}
+
+	module.exports = vec4;
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Vec3 = __webpack_require__(13);
+	var Vec4 = __webpack_require__(14);
+
+
+	/*
+	 * [ 0 4  8 12 ]   [ 0 4  8 12 ]
+	 * [ 1 5  9 13 ] x [ 1 5  9 13 ]
+	 * [ 2 6 10 14 ]   [ 2 6 10 14 ]
+	 * [ 3 7 11 15 ]   [ 3 7 11 15 ]
+	 *
+	 *
+	 * */
+
+	var Matrix4 = function() {
+
+	    var mtx4 = null;
+
+	    this.row1 = new Vec4();
+	    this.row2 = new Vec4();
+	    this.row3 = new Vec4();
+	    this.row4 = new Vec4();
+
+	    /*
+	     * [ 0 4  8 12 ]
+	     * [ 1 5  9 13 ]
+	     * [ 2 6 10 14 ]
+	     * [ 3 7 11 15 ]
+	     *
+	     * */
+
+	    this.getMatrix = function() {
+
+	        if (mtx4 === null) {
+	            mtx4 = new Float32Array(16);
+	        };
+
+	        mtx4.set([
+	            this.row1.x, this.row2.x, this.row3.x, this.row4.x,
+	            this.row1.y, this.row2.y, this.row3.y, this.row4.y,
+	            this.row1.z, this.row2.z, this.row3.z, this.row4.z,
+	            this.row1.w, this.row2.w, this.row3.w, this.row4.w
+	        ]);
+
+	        return mtx4;
+	    };
+
+	    this.setIdentity = function() {
+	        this.row1 = new Vec4(1.0, 0.0, 0.0, 0.0);
+	        this.row2 = new Vec4(0.0, 1.0, 0.0, 0.0);
+	        this.row3 = new Vec4(0.0, 0.0, 1.0, 0.0);
+	        this.row4 = new Vec4(0.0, 0.0, 0.0, 1.0);
+
+	        return this;
+	    };
+
+	    this.setMatrix = function(m) {
+	        this.row1 = m.row1;
+	        this.row2 = m.row2;
+	        this.row3 = m.row3;
+	        this.row4 = m.row4;
+
+	        return this;
+	    };
+
+	    this.set = function(r1, r2, r3, r4) {
+	        this.row1 = r1 || this.row1;
+	        this.row2 = r2 || this.row2;
+	        this.row3 = r3 || this.row3;
+	        this.row4 = r4 || this.row4;
+	        return this;
+	    };
+
+	    this.getTransponse = function() {
+	        var mtx = new Matrix4();
+	        mtx.row1.set(this.row1.x, this.row2.x, this.row3.x, this.row4.x);
+	        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y, this.row4.y);
+	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);
+	        mtx.row4.set(this.row1.w, this.row2.w, this.row3.w, this.row4.w);
+	        return mtx;
+	    };
+
+	    this.copy = function() {
+	        return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
+	    };
+
+	    this.multiply = function(m) {
+	        var mtx = new Matrix4();
+	        var rhs = m.getTransponse();
+
+	        mtx.row1.set(
+	            this.row1.dot(rhs.row1),
+	            this.row1.dot(rhs.row2),
+	            this.row1.dot(rhs.row3),
+	            this.row1.dot(rhs.row4));
+
+	        mtx.row2.set(
+	            this.row2.dot(rhs.row1),
+	            this.row2.dot(rhs.row2),
+	            this.row2.dot(rhs.row3),
+	            this.row2.dot(rhs.row4));
+
+	        mtx.row3.set(
+	            this.row3.dot(rhs.row1),
+	            this.row3.dot(rhs.row2),
+	            this.row3.dot(rhs.row3),
+	            this.row3.dot(rhs.row4));
+
+	        mtx.row4.set(
+	            this.row4.dot(rhs.row1),
+	            this.row4.dot(rhs.row2),
+	            this.row4.dot(rhs.row3),
+	            this.row4.dot(rhs.row4));
+
+	        return this.setMatrix(mtx);
+	    };
+	};
+
+
+	module.exports = Matrix4;
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var vec3 = __webpack_require__(13);
+
+
+	var matrix3 = function() {
+
+	    var mtx = null;
+
+	    this.row1 = new vec3();
+	    this.row2 = new vec3();
+	    this.row3 = new vec3();
+
+	    /*
+	     * [ 0 3  6 ]
+	     * [ 1 4  7 ]
+	     * [ 2 5  8 ]
+	     *
+	     */
+
+	    this.getMatrix = function() {
+
+	        if (mtx === null) {
+	            mtx = new Float32Array(16);
+	        }
+	        mtx.set([
+	            this.row1.x, this.row2.x, this.row3.x,
+	            this.row1.y, this.row2.y, this.row3.y,
+	            this.row1.z, this.row2.z, this.row3.z
+	        ]);
+
+	        return mtx;
+	    };
+
+	    this.setIdentity = function() {
+	        this.row1 = new vec3(1.0, 0.0, 0.0);
+	        this.row2 = new vec3(0.0, 1.0, 0.0);
+	        this.row3 = new vec3(0.0, 0.0, 1.0);
+
+	        return this;
+	    };
+
+	    this.setMatrix = function(m) {
+	        this.row1 = m.row1;
+	        this.row2 = m.row2;
+	        this.row3 = m.row3;
+
+	        return this;
+	    };
+
+	    this.set = function(r1, r2, r3) {
+	        this.row1 = r1 || this.row1;
+	        this.row2 = r2 || this.row2;
+	        this.row3 = r3 || this.row3;
+
+	        return this;
+	    };
+
+	    this.copy = function() {
+	        return new matrix3().set(this.row1.copy(), this.row2.copy(), this.row3.copy());
+	    };
+
+	    this.multiplyByScalar = function(s) {
+	        this.row1.scalarMultiply(s);
+	        this.row2.scalarMultiply(s);
+	        this.row3.scalarMultiply(s);
+	    };
+
+	    this.getTransponse = function() {
+	        var mtx = new matrix3();
+	        mtx.row1.setValues(this.row1.x, this.row2.x, this.row3.x);
+	        mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
+	        mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
+	        return mtx;
+	    };
+
+	    this.multiply = function(m) {
+	        var mtx = new matrix3();
+	        var rhs = m.getTransponse();
+
+	        mtx.row1.setValues(
+	            this.row1.dot(rhs.row1),
+	            this.row1.dot(rhs.row2),
+	            this.row1.dot(rhs.row3));
+
+	        mtx.row2.setValues(
+	            this.row2.dot(rhs.row1),
+	            this.row2.dot(rhs.row2),
+	            this.row2.dot(rhs.row3));
+
+	        mtx.row3.setValues(
+	            this.row3.dot(rhs.row1),
+	            this.row3.dot(rhs.row2),
+	            this.row3.dot(rhs.row3));
+
+	        return this.setMatrix(mtx);
+	    };
+	};
+
+	module.exports = matrix3;
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Vec4 = __webpack_require__(18).Vec4;
+	var Mat4 = __webpack_require__(19);
+
+	/*
+	 * Degree to radian.
+	 */
+	function dgToRad(angle){
+	    return (angle*Math.PI) / 180;
+	};
+
+	var Transform = function(m) {
+
+	    var _m = m;
+	    var cos = Math.cos;
+	    var sin = Math.sin;
+	    var I = Mat4.Identity();
+
+	    this.translate = function(x, y, z) {
+	        _m.row1.w = x || 0.0;
+	        _m.row2.w = y || 0.0;
+	        _m.row3.w = z || 0.0;
+	        return this;
+	    }
+
+	    this.scale = function(x, y, z) {
+	        _m.row1.x = x || 0.0;
+	        _m.row2.y = y || 0.0;
+	        _m.row3.z = z || 0.0;
+	        return this;
+	    }
+
+	    this.rotateX = function(angle) {
+	        var m = I.copy(); 
+	        var tetha = dgToRad(angle);
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        m.row2.y =  _cos || 0.0;
+	        m.row2.z = -_sin || 0.0; 
+
+	        m.row3.y = _sin || 0.0;
+	        m.row3.z = _cos || 0.0;
+
+	        _m.multiply(m);
+
+	        return this;
+	    }
+
+	    
+	    this.rotateY = function(angle){
+	        var m = I.copy(); 
+	        var tetha = dgToRad(angle);
+
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        m.row1.x =  _cos;
+	        m.row1.z =  _sin; 
+	        m.row3.x = -_sin;
+	        m.row3.z = _cos;
+
+	        _m.multiply(m);
+
+	        return this;
+	    }
+
+	    this.getMatrix = function(){
+	      return _m.getMatrix();
+	    }
+
+	    this.getMatrixObject = function(){
+	        return _m;
+	    } 
+
+	}
+
+	module.exports = {
+	    Apply: function(m) {
+	        return new Transform(m);
+	    },
+	    New: function(){
+	      return new Transform( Mat4.Identity() );
+	    },
+	};
+
+
+/***/ },
+/* 18 */
 /***/ function(module, exports) {
 
 	
@@ -13732,11 +14369,11 @@
 
 
 /***/ },
-/* 15 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(14).Vec4;
-	var Vec3 = __webpack_require__(14).Vec3;
+	var Vec4 = __webpack_require__(18);
+	var Vec3 = __webpack_require__(18);
 
 
 	/*
@@ -13787,10 +14424,10 @@
 
 	var Matrix4 = function() {
 
-	    this.row1 = Vec4.New();
-	    this.row2 = Vec4.New();
-	    this.row3 = Vec4.New();
-	    this.row4 = Vec4.New();
+	    this.row1 = new Vec4();
+	    this.row2 = new Vec4();
+	    this.row3 = new Vec4();
+	    this.row4 = new Vec4();
 
 	    /*
 	     * [ 0 4  8 12 ]
@@ -13836,7 +14473,7 @@
 	    }
 
 	    this.getTransponse = function() {
-	        var mtx = MatrixFactory.New();
+	        var mtx = new Mat4();
 	        mtx.row1.set(this.row1.x, this.row2.x, this.row3.x, this.row4.x);
 	        mtx.row2.set(this.row1.y, this.row2.y, this.row3.y, this.row4.y);
 	        mtx.row3.set(this.row1.z, this.row2.z, this.row3.z, this.row4.z);
@@ -14001,11 +14638,73 @@
 
 
 /***/ },
-/* 16 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vec4 = __webpack_require__(14).Vec4;
-	var Mat4 = __webpack_require__(15);
+	'use strict';
+
+	var transform = __webpack_require__(21);
+	var vec3 = __webpack_require__(13);
+
+	var scene = function(gl) {
+
+	    var that = {};
+	    var entities = [];
+
+	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	    gl.enable(gl.DEPTH_TEST);
+
+	    var look_at = transform().look_at(new vec3(0, 0, 3), new vec3(0, 0, -60), new vec3(0, 1, -50));
+	    var perspective = transform().make_perspective(45.0, 4.0 / 3.0, 0.1, 300.0);
+	  
+
+
+	    that.camera = perspective.multiply(look_at).getMatrix();
+
+	    that.add_entity = function(entity) {
+	        entities.push(entity);
+	    };
+
+	    that.clean = function() {
+	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	    };
+
+	    that.draw = function() {
+	      that.clean();
+
+	        for (var i = -1; ++i < entities.length;) {
+
+	            var e = entities[i];
+
+	            e.prepare();
+	            e.uniform('MV', that.camera);
+	            e.uniform('P',  e.model.getMatrix());
+
+	            if(that.texture)
+	             that.texture.prepare(); 
+
+	            if (typeof gl[e.draw_type] === 'number')
+	                gl.drawArrays(gl[e.draw_type], 0, e.sides);
+	            else
+	                gl.drawArrays(gl.TRIANGLE_STRIP, 0, e.sides);
+	        }
+	    };
+
+	    return that;
+	};
+
+
+	module.exports = scene;
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var vector4 = __webpack_require__(14);
+	var matrix4 = __webpack_require__(15);
 
 	/*
 	 * Degree to radian.
@@ -14014,1673 +14713,169 @@
 	    return (angle*Math.PI) / 180;
 	};
 
-	var Transform = function(m) {
+	var transform = function(m) {
 
-	    var _m = m;
+	    var that = {};
+	    var _m = m || new matrix4().setIdentity();
 	    var cos = Math.cos;
 	    var sin = Math.sin;
-	    var I = Mat4.Identity();
+	  
 
-	    this.translate = function(x, y, z) {
-	        _m.row1.w = x || 0.0;
-	        _m.row2.w = y || 0.0;
-	        _m.row3.w = z || 0.0;
-	        return this;
+	    that.translate = function(m, vec3) {
+	        m.row1.w = vec3.x || 0.0;
+	        m.row2.w = vec3.y || 0.0;
+	        m.row3.w = vec3.z || 0.0;
+
+	        return m;
 	    }
 
-	    this.scale = function(x, y, z) {
+	    that.scale = function(x, y, z) {
 	        _m.row1.x = x || 0.0;
 	        _m.row2.y = y || 0.0;
 	        _m.row3.z = z || 0.0;
-	        return this;
+
+	        return that;
 	    }
 
-	    this.rotateX = function(angle) {
-	        var m = I.copy(); 
+	    that.rotatex = function(_m, angle) {
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
-	        m.row2.y =  _cos || 0.0;
-	        m.row2.z = -_sin || 0.0; 
+	        _m.row2.y = _cos || 0.0;
+	        _m.row2.z = -_sin || 0.0;
+	        _m.row3.y = _sin || 0.0;
+	        _m.row3.z = _cos || 0.0;
 
-	        m.row3.y = _sin || 0.0;
-	        m.row3.z = _cos || 0.0;
-
-	        _m.multiply(m);
-
-	        return this;
+	        return that;
 	    }
 
-	    
-	    this.rotateY = function(angle){
-	        var m = I.copy(); 
+
+	    that.rotateY = function(angle) {
 	        var tetha = dgToRad(angle);
 
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
-	        m.row1.x =  _cos;
-	        m.row1.z =  _sin; 
-	        m.row3.x = -_sin;
-	        m.row3.z = _cos;
+	        _m.row1.x = _cos;
+	        _m.row1.z = _sin;
+	        _m.row3.x = -_sin;
+	        _m.row3.z = _cos;
 
-	        _m.multiply(m);
-
-	        return this;
-	    }
-
-	    this.getMatrix = function(){
-	      return _m.getMatrix();
-	    }
-
-	    this.getMatrixObject = function(){
-	        return _m;
-	    } 
-
-	}
-
-	module.exports = {
-	    Apply: function(m) {
-	        return new Transform(m);
-	    },
-	    New: function(){
-	      return new Transform( Mat4.Identity() );
-	    },
-	};
-
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-
-	var Scene = function(Core, that) {
-
-	    var that = that || {};
-	    var gl = Core;
-
-	    var shader = null;
-	    var camera = null;
-
-
-	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	    gl.enable(gl.DEPTH_TEST);
-
-	    /* this method can be override for custom functionality. */
-
-	    that.setViewPort = function(Width, Height) {
-	        gl.viewport(0, 0, Width, Height);
-	    }
-
-	    that.setClearColor = function(clear) {
-	        gl.clearColor(clear.r, clear.g, clear.b, 1.0);
-	    }
-
-	    that.clean = function() {
-	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	    }
-
-	    that.prepare = function(entity) {
-
-	       entity.buffer.loadAttributes();
-	    };
-
-	    that.draw = function(entity) {
-	        if (typeof gl[entity.drawType] === 'number')
-	            gl.drawArrays(gl[entity.drawType], 0, entity.buffer.sides);
-	        else
-	            gl.drawArrays(gl.TRIANGLE_STRIP, 0, entity.buffer.sides);
-	    }
-
-	    that.render = function(e) {
-	        that.prepare(e);
-	        that.draw(e);
-	    }
-
-	    return that;
-	}
-
-
-	module.exports = new Factory(Scene);
-
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-	var Vec3 = __webpack_require__(14).Vec3;
-	var Vec4 = __webpack_require__(14).Vec4;
-	var Mat4 = __webpack_require__(15);
-	var Transform = __webpack_require__(16);
-
-	var Renderable = function(geometry, color, texture) {
-	    this.geometry = geometry || Vec3.New();
-	    this.color = color || Vec4.New(0.9, 0.9, 0.9, 1.0);
-	    this.texture = setUV(this.geometry) || {
-	        u: 0,
-	        v: 0
-	    };
-	};
-
-
-	var setUV = function(vec2) {
-	    var texture = {
-	        u: 0,
-	        v: 0
-	    };
-
-	    var tmp = vec2.normalize();
-
-	    return {
-	        u: Math.ceil(tmp.x),
-	        v: Math.ceil(tmp.y)
-	    };
-	};
-
-	var Polygon = function(Core, that) {
-
-	    that.geometry = [];
-
-	    that.getModel = function() {
-
-	        var tmp = [];
-	        that.geometry.forEach(function(renderable) {
-	            tmp.push(
-	                renderable.geometry.x,
-	                renderable.geometry.y,
-	                renderable.geometry.z,
-
-	                renderable.color.x,
-	                renderable.color.y,
-	                renderable.color.z,
-	                renderable.color.w,
-
-	                renderable.texture.u,
-	                renderable.texture.v
-	            );
-	        });
-
-	        return new Float32Array(tmp);
-	    };
-
-
-	    that.getDrawType = function(){
-	        return this.drawType;
-	    };
-
-	    that.plane = function(width, height) {
-	        that.geometry.push(new Renderable(Vec3.New(-width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(width, -height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(-width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(width, height), Vec4.New(0.8, 0.8, 0.8, 1.0)));
 	        return that;
-	    };
+	    }
 
-	 that.plane3d = function(y, x, z) {
-	        that.geometry.push(new Renderable(Vec3.New(-x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(x, -y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(-x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        that.geometry.push(new Renderable(Vec3.New(x, y, z), Vec4.New(0.8, 0.8, 0.8, 1.0)));
-	        return that;
-	    };
+	    that.rotateZ = function(angle) {
+	        var tetha = dgToRad(angle);
+
+	        var _cos = cos(tetha);
+	        var _sin = sin(tetha);
+
+	        _m.row1.x = _cos;
+	        _m.row1.y = -_sin;
+	        _m.row2.x = _sin;
+	        _m.row2.z = _cos;
 
 
-	    that.cube = function(x, y) {
-
-
-	        that.plane3d(x, y, 5);
-	        that.plane3d(x, y, -5);
 	        return that;
 	    }
 
-	    that.cilinder = function() {
-	        this.drawType = 'TRIANGLE_STRIP';
-	        that.plane3d(15, 5, 5);
-	        that.circle3d(5, 5, function(x, y) {
 
-	            that.plane3d(x, y, 5);
-
-	        });
-	        return that;
+	    that.matrix = function(){
+	      return _m;
 	    }
 
-	    that.circle3d = function(_sides, radius, cb) {
-
-	        var cos = Math.cos;
-	        var sin = Math.sin;
-	        var PI = Math.PI;
-
-	        var sides = _sides || 5;
-	        var ucircle = (2 * PI);
-	        that.geometry = [];
-
-	        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
-	            cb(radius * cos(x), radius * sin(x));
-	        }
-
-	        return that;
-	    };
-
-
-
-	    that.circle = function(_sides, radius) {
-
-	        var cos = Math.cos;
-	        var sin = Math.sin;
-	        var PI = Math.PI;
-
-	        var sides = _sides || 5;
-	        var ucircle = (2 * PI);
-	        that.geometry = [];
-
-	        for (var x = 0; x <= ucircle; x += (ucircle / sides)) {
-	            var vertex = Vec3.New(radius * cos(x), radius * sin(x));
-	            console.log('->', vertex);
-	            that.geometry.push(new Renderable(vertex, Vec4.New(0.8, 0.8, 0.8, 1.0), setUV(vertex)));
-
-	            // that.geometry.push( new Renderable( Vec3.New(), Vec4.New(), setUV(Vec3.New()) ) ); //center.
-	        }
-
-	        return that;
-	    };
-
-	    return that;
-	};
-
-
-	module.exports = new Factory(Polygon);
-
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-
-	var Texture = function(gl) {
-	    this.texture = gl.createTexture();
-	    this.gl = gl;
-	}
-
-	Texture.prototype.create = function(width, height) {
-	    var gl = this.gl;
-
-	    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-	    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
-	        gl.UNSIGNED_SHORT_5_6_5, null);
-
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	}
-
-	var FrameBuffer = function(Core, that) {
-
-	    var that = that || {};
-	    var gl = Core;
-	    var width = 512;
-	    var height = 512;
-
-	    that.framebuffer = gl.createFramebuffer();
-	    that.depthbuffer = gl.createRenderbuffer();
-
-
-	    that.create = function(_width, _height) {
-
-	        var texture = new Texture(gl);
-	        texture.create(_width || width, _height || width); //default 512 x 512. 
-
-	        gl.bindFramebuffer(gl.FRAMEBUFFER, that.framebuffer);
-	        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
-
-	        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-
-
-	        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
-	            gl.TEXTURE_2D, texture.texture, 0);
-
-	        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, that.depthbuffer);
-	    }
-
-	    that.render = function(renderCb) {
-	        gl.bindRenderbuffer(gl.RENDERBUFFER, that.depthbuffer);
-
-	        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE) {
-	            renderCb();
-	        }
-	    }
-
-	    return that;
-	};
-
-
-	module.exports = new Factory(FrameBuffer);
-
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var Factory = __webpack_require__(10);
-
-	var Utils = function() {
-
-	    /* loading HTML5 rendering API */
-	    this.getNextFrame = (function() {
-	        return window.requestAnimationFrame ||
-	            window.webkitRequestAnimationFrame ||
-	            window.mozRequestAnimationFrame ||
-	            function(callback) {
-	                window.setTimeout(callback, 1000 / 60);
-	            };
-	    }());
 
 	    /*
-	     *  Fetch: this class load all the maps async.
-	     */
-	    this.Fetch = function(images, callback) {
-	        var imgObjects = [];
-	        images.forEach(function(image) {
-	            var img = new Image();
-	            img.onload = function() {
-	                imgObjects.push(img);
-	                if (imgObjects.length === images.length)
-	                    callback(imgObjects);
-	            }
-	            img.src = image;
-	        });
+
+	      Make a LookAt Matrix.
+
+	      http://www.cs.virginia.edu/~gfx/Courses/1999/intro.fall99.html/lookat.html
+
+	    */
+
+	    that.look_at = function(eye, center, up) {
+	        var F = center.sub(eye).normalize();
+	        var U = up.normalize();
+	        var S = F.cross(U).normalize();
+
+	        U = S.cross(F);
+
+	        var M = new matrix4().setIdentity().set(S, U, F.inverse());
+
+	        var negEye = eye.inverse();
+
+	        return that.translate(M, eye, 1);
 	    };
 
-	    this.getCode = function(EL, from) {
-	        return EL.querySelector(from).innerHTML;
+	    that.make_perspective = function(fieldOfView, aspectRatio, nearZ, farZ) {
+	        var M = new matrix4().setIdentity();
+	        var cotan = 1.0 / Math.tan(fieldOfView / 2.0);
+	        return M.set(
+	            new vector4(cotan / aspectRatio),
+	            new vector4(0.0, cotan),
+	            new vector4(0.0, 0.0, ((farZ + nearZ) / (nearZ - farZ)), ((2.0 * farZ * nearZ) / (nearZ - farZ))),
+	            new vector4(0.0, 0.0, -1.0, 0.0)
+	        );
 	    };
 
-
-	    this.loadShader = function(tmpl) {
-	        var el = document.createElement('div');
-	        el.innerHTML = tmpl;
-	        return el;
-	    };
-
-
-	    this.loadCode = function(tmpl, list) {
-	        var el = document.createElement('div');
-	        el.innerHTML = tmpl;
-	        var obj = {}; 
-	        list.forEach(function(id){ obj[id] = el.querySelector('#' + id); });
-
-	        return obj;
-	    };
-
-	    this.getshaderUsingTemplate = function(tmpl) {
-	        var EL = this.loadShader(tmpl);
-	        var shader = {};
-
-	        shader.vertex = this.getCode(EL, '#vertex-shader');
-	        shader.fragment = this.getCode(EL, '#fragment-shader');
-
-	        shader.init = function(shader) {
-	            shader.use();
-	            shader
-	                .attribute('position')
-	                .attribute('texture')
-	                .attribute('colors')
-	                .uniform('MV')
-	                .uniform('uSampler')
-	                .uniform('P');
-	        }
-
-	        return shader;
-	    };
+	    return that;
 	}
 
 
 
-	module.exports = new Factory(Utils);
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Vec4 = __webpack_require__(14).Vec4;
-	var Vec3 = __webpack_require__(14).Vec3;
-
-	function p3(m) {
-	    console.log('Matrix3:Debug');
-
-	    var a = m.row1;
-	    console.log(a.x, a.y, a.z);
-
-	    var a = m.row2;
-	    console.log(a.x, a.y, a.z);
-
-	    var a = m.row3;
-	    console.log(a.x, a.y, a.z);
-	}
-
-	var Matrix3 = function() {
-
-	    this.row1 = Vec3.New();
-	    this.row2 = Vec3.New();
-	    this.row3 = Vec3.New();
-
-	    /*
-	     * [ 0 3  6 ]
-	     * [ 1 4  7 ]
-	     * [ 2 5  8 ]
-	     *
-	     */
-
-	    this.getMatrix = function() {
-	        return new Float32Array(
-	            [   this.row1.x, this.row2.x, this.row3.x,
-	                this.row1.y, this.row2.y, this.row3.y,
-	                this.row1.z, this.row2.z, this.row3.z
-	            ]);
-	    }
-
-	    this.setIdentity = function() {
-	        this.row1 = Vec3.New(1.0, 0.0, 0.0);
-	        this.row2 = Vec3.New(0.0, 1.0, 0.0);
-	        this.row3 = Vec3.New(0.0, 0.0, 1.0);
-
-	        return this;
-	    }
-
-	    this.setMatrix = function(m) {
-	        this.row1 = m.row1;
-	        this.row2 = m.row2;
-	        this.row3 = m.row3;
-
-	        return this;
-	    }
-
-	    this.set = function(r1, r2, r3) {
-	        this.row1 = r1 || this.row1;
-	        this.row2 = r2 || this.row2;
-	        this.row3 = r3 || this.row3;
-
-	        return this;
-	    }
-
-	    this.copy = function(){
-	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy());
-	    }
-
-	    this.multiplyByScalar = function(s){
-	       this.row1.scalarMultiply(s);
-	       this.row2.scalarMultiply(s);
-	       this.row3.scalarMultiply(s);
-	    }
-
-	    this.getTransponse = function() {
-	        var mtx = new Matrix3();
-	        mtx.row1.setValues(this.row1.x, this.row2.x, this.row3.x);
-	        mtx.row2.setValues(this.row1.y, this.row2.y, this.row3.y);
-	        mtx.row3.setValues(this.row1.z, this.row2.z, this.row3.z);
-	        return mtx;
-	    }
-
-	    this.multiply = function(m) {
-	        var mtx = MatrixFactory.New();
-	        var rhs = m.getTransponse();
-
-	        mtx.row1.setValues(
-	            this.row1.dot(rhs.row1),
-	            this.row1.dot(rhs.row2),
-	            this.row1.dot(rhs.row3));
-
-	        mtx.row2.setValues(
-	            this.row2.dot(rhs.row1),
-	            this.row2.dot(rhs.row2),
-	            this.row2.dot(rhs.row3));
-
-	        mtx.row3.setValues(
-	            this.row3.dot(rhs.row1),
-	            this.row3.dot(rhs.row2),
-	            this.row3.dot(rhs.row3));
-
-	        return this.setMatrix(mtx);
-	    }
-	}
-
-	var MatrixFactory = {
-
-	    New: function() {
-	        return new Matrix3();
-	    },
-
-	    Identity: function() {
-	        var o = new Matrix3();
-	        o.setIdentity();
-	        return o;
-	    },
-
-	    Set: function(r1, r2, r3) {
-	        var o = new Matrix3();
-	        return o.set(r1, r2, r3);
-	    }
-	}
-
-	module.exports = MatrixFactory;
+	module.exports = transform;
 
 
 /***/ },
 /* 22 */
 /***/ function(module, exports) {
 
-	var Noise = function() {
+	'use strict'
 
-	    var p = [];
-	    var permutation = [151, 160, 137, 91, 90, 15, // Hash lookup table as defined by Ken Perlin.  This is a randomly
-	        131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, // arranged array of all numbers from 0-255 inclusive.
-	        190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
-	        88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
-	        77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-	        102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-	        135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-	        5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-	        223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-	        129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-	        251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-	        49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-	        138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
-	    ];
-
-	    var plen = permutation.length;
-	    for (var i = 0; i < 512; i++) {
-	        p[i] = permutation[i % 256];
-	    }
+	var texture = function(gl) {
+	    var that = {};
+	    var gl = gl;
+	    that.texture = gl.createTexture();
 
 
+	    that.setTexture = function(pixels, width, height) {
 
-	    function lerp(t, a, b) {
-	        return a + t * (b - a);
-	    }
+	        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+	        gl.bindTexture(gl.TEXTURE_2D, that.texture);
+	        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
+	            gl.UNSIGNED_BYTE, pixels);
 
-	    /* curve equation */
-	    function fade(t) {
-	        return t * t * t * (t * (t * 6 - 15) + 10);
-	    }
+	        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-	    function grad(hash, x, y,z) {
-	        
-
-	        switch(hash & 0xF)
-	        {
-	            case 0x0: return  x + y;
-	            case 0x1: return -x + y;
-	            case 0x2: return  x - y;
-	            case 0x3: return -x - y;
-	            case 0x4: return  x + z;
-	            case 0x5: return -x + z;
-	            case 0x6: return  x - z;
-	            case 0x7: return -x - z;
-	            case 0x8: return  y + z;
-	            case 0x9: return -y + z;
-	            case 0xA: return  y - z;
-	            case 0xB: return -y - z;
-	            case 0xC: return  y + x;
-	            case 0xD: return -y + z;
-	            case 0xE: return  y - x;
-	            case 0xF: return -y - z;
-	            default: return 0; // never happens
-	        }
-
-	    }
-
-
-
-	    this.perlin = function(x, y, z) {
-	        var X = Math.round(x) & 255;
-	        var Y = Math.round(y) & 255;
-	        var Z = Math.round(z) & 255;
-
-	        var fx = x - X; //fractional part.
-	        var fy = y - Y;
-	        var fz = z - Z;
-
-	        var u = fade(fx);
-	        var v = fade(fy);
-	        var w = fade(fz);
-	        /*
-	            AA               BA
-	            +---------------+
-	            |               |
-	            |               |
-	            |  p(x,y)       |
-	            |               |
-	            |               | 
-	            +---------------+
-	            BA               BB
-
-	            
-	            some pseudo-random magic.
-
-	        */
-
-	        var AA, BB, AB, BA;
-
-	        var A = p[X] + Y;
-	        var B = p[X + 1] + Y;
-	        AA = p[A] + Z;
-	        BA = p[B] + Z;
-	        AB = p[A + 1] + Z;
-	        BB = p[B + 1] + Z;
-
-	       /* var aa = grad(p[AA], x, y);
-	        var ba = grad(p[BA], x - 1, y);
-	        var ab = grad(p[AB], x, y - 1);
-	        var bb = grad(p[BB], x - 1, y - 1);
-
-	        var aaba = lerp(u, aa, ba);
-	        var abbb = lerp(u, ab, bb);*/
-
-	        return lerp(w, lerp(v, lerp(u, grad(p[AA  ], x  , y  , z   ),  // AND ADD
-	                                     grad(p[BA  ], x-1, y  , z   )), // BLENDED
-	                             lerp(u, grad(p[AB  ], x  , y-1, z   ),  // RESULTS
-	                                     grad(p[BB  ], x-1, y-1, z   ))),// FROM  8
-	                     lerp(v, lerp(u, grad(p[AA+1], x  , y  , z-1 ),  // CORNERS
-	                                     grad(p[BA+1], x-1, y  , z-1 )), // OF CUBE
-	                             lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
-	                                     grad(p[BB+1], x-1, y-1, z-1 ))));;
 	    };
+
+	    that.prepare = function(vars) {
+	        if (!this.initialize) return;
+
+	        gl.activeTexture(gl.TEXTURE0);
+	        gl.bindTexture(gl.TEXTURE_2D, that.texture);
+	        gl.uniform1i(vars['uSampler'], 0);
+	    };
+
+	    return that;
 	};
 
 
 
-	module.exports = Noise;
+	module.exports = texture;
 
 
 /***/ },
 /* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Factory = __webpack_require__(10);
-	var Vec3 = __webpack_require__(14).Vec3;
-	var Vec4 = __webpack_require__(14).Vec4;
-	var Mat4 = __webpack_require__(15);
-	var Mat3 = __webpack_require__(21);
-	var Transform = __webpack_require__(16);
-
-
-
-	var Point = function(vertex, colors, uv) {
-
-	    this.vertex = vertex;
-	    this.color = colors;
-	    this.uv = uv;
-	};
-
-
-	var Poly = function(Core, that) {
-
-	    that.drawType = 'TRIANGLE_STRIPS';
-	    that.geometry = [];
-
-	    that.getModel = function() {
-	        var tmp = [];
-	        that.geometry.forEach(function(renderable) {
-	            tmp.push(
-	                renderable.vertex.x,
-	                renderable.vertex.y,
-	                renderable.vertex.z,
-
-	                renderable.color.x,
-	                renderable.color.y,
-	                renderable.color.z,
-	                renderable.color.w,
-
-	                renderable.uv.u,
-	                renderable.uv.v
-	            );
-	        });
-
-	        return new Float32Array(tmp);
-	    };
-
-	    that.setGeometry = function(m) {
-	        var color = Vec4.New(0.8, 0.8, 0.8, 1.0);
-
-	        that.geometry.push(new Point(m.row1, color, {
-	            u: 0,
-	            v: 1
-	        }));
-	        that.geometry.push(new Point(m.row2, color, {
-	            u: 1,
-	            v: 1
-	        }));
-	        that.geometry.push(new Point(m.row3, color, {
-	            u: 1,
-	            v: 0
-	        }));
-
-	    };
-
-	    /*
-	     * Degree to radian.
-	     */
-	    function dgToRad(angle) {
-	        return (angle * Math.PI) / 180;
-	    };
-
-
-	    that.roty = function(angle) {
-	        var roty = Mat3.Identity();
-	        roty.row1.setValues(Math.cos(dgToRad(angle)), 0, Math.sin(dgToRad(angle)));
-	        roty.row3.setValues(-Math.sin(dgToRad(angle)), 0, Math.cos(dgToRad(angle)));
-
-	        return roty;
-	    };
-
-	    that.rotx = function(angle) {
-	        var rot = Mat3.Identity();
-	        rot.row2.setValues(0, Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)));
-	        rot.row3.setValues(0, Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)));
-
-	        return rot;
-	    };
-
-
-	    that.rotz = function(angle) {
-	        var rot = Mat3.Identity();
-	        rot.row1.setValues(Math.cos(dgToRad(angle)), -Math.sin(dgToRad(angle)), 0);
-	        rot.row2.setValues(Math.sin(dgToRad(angle)), Math.cos(dgToRad(angle)), 0);
-	        rot.row3.setValues(0, 0, 1);
-
-	        return rot;
-	    };
-
-	    function makeModule(seed, reflectRot, rotationFn, dx) {
-	        var mod = [];
-	        mod.push(seed.copy());
-	        var reflect = seed.copy().multiply(reflectRot(180)).copy(); //reflection of the seed.
-	        mod.push(reflect.copy());
-
-	        /* seed and his reflection rotate around z-axis create a face. */
-	        for (var m = 90; m <= 360; m += 90) {
-	          mod.push(seed.multiply(rotationFn(m)).copy());
-	          mod.push(reflect.multiply(rotationFn(m)).copy());
-	        }
-
-	        return mod;
-	    };
-
-
-
-	    function translate(x, y, z) {
-
-	        var _x = x;
-	        var _y = y;
-	        var _z = z;
-
-	        return function(m) {
-	            m.row1.add(Vec3.New(_x, _y, _z));
-	            m.row2.add(Vec3.New(_x, _y, _z));
-	            m.row3.add(Vec3.New(_x, _y, _z));
-	            return m;
-	        }
-	    };
-
-
-	    function mirrorModule(mtxs, transform, rot, dx) {
-	        var modul3 = [];
-	        
-	        mtxs.forEach(function(mtx) {
-	            modul3.push(transform(mtx.copy().multiply(rot(90))));
-	        });
-
-	        return modul3; 
-	    }
-
-
-	    function setFace(mtxs) {
-	        mtxs.forEach(function(mtx) {
-	            that.setGeometry(mtx);
-	        });
-	    }
-
-	    function Faces(){
-	        var matrices = [];
-
-	        return {
-	            add: function(mtx){
-	               matrices = matrices.concat(mtx);
-	            },
-
-	            each: function(cb){
-	                matrices.forEach(cb); 
-	            },
-
-	            inflate: function(dx){
-	                matrices.forEach(function(m){
-	                    if(m.row3.z > 0){
-	                    m.row3.z += dx;
-	                    m.row1.z += dx;
-	                    m.row2.z += dx;
-	                    }else{
-	                    m.row3.z -= dx;}
-
-	                    if(m.row3.y > 0){
-	                    m.row3.y += dx;
-	                    }else{
-	                    m.row3.y -= dx;}
-
-	                });
-	            },
-
-	            get: function(){
-	                return matrices;
-	            }
-
-	        };
-	    }
-
-
-	    that.cube = function(size, dx) {
-
-	        that.geometry = [];
-	        that.drawType = 'TRIANGLES';
-	      
-	        var cube = Faces();
-	        var m1 = Mat3.New();
-
-	        m1.row1.setValues(-1, 1, 0);
-	        m1.row2.setValues(0, 1, 0);
-	        m1.row3.setValues(0, 0, 0);
-
-
-	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
-	        var body = 5;
-	        m1.multiplyByScalar(size);
-
-
-
-	        var tleft = translate(-body, 0, body);
-	        var tright = translate(body, 0, body);
-
-	        var tup = translate(0, body, body);
-	        var tdown = translate(0, -body, body);
-
-	        var tfront = translate(0, 0, 10);
-
-	        var m = makeModule(m1, that.roty, that.rotz, dx);
-
-
-	        cube.add(m);
-
-	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
-
-	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
-	        cube.add( mirrorModule(m, tright, that.roty, dx) );
-
-	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
-	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
-
-	   
-	       setFace(cube.get());
-
-	        return that;
-	    };
-
-
-
-
-
-	    that.plane = function(size, dx) {
-
-	        that.geometry = [];
-	        that.drawType = 'TRIANGLES';
-	      
-	        var cube = Faces();
-	        var m1 = Mat3.New();
-
-	        m1.row1.setValues(-1, 1, 0);
-	        m1.row2.setValues(0, 1, 0);
-	        m1.row3.setValues(0, 0, 0);
-
-
-	        var inflation = Math.abs( Math.sin((dx)) * 1.5 );
-	        var body = 5;
-	        m1.multiplyByScalar(size);
-
-
-
-	        var tleft = translate(-body, 0, body);
-	        var tright = translate(body, 0, body);
-
-	        var tup = translate(0, body, body);
-	        var tdown = translate(0, -body, body);
-
-	        var tfront = translate(0, 0, 10);
-
-	        var m = makeModule(m1, that.roty, that.rotz, dx);
-
-
-	        cube.add(m);
-
-	        cube.add( mirrorModule(m, tfront,  that.rotz, dx) );
-
-	        cube.add( mirrorModule(m, tleft,  that.roty, dx) );
-	        cube.add( mirrorModule(m, tright, that.roty, dx) );
-
-	        cube.add( mirrorModule(m, tup, that.rotx, dx) );
-	        cube.add( mirrorModule(m, tdown, that.rotx, dx) );
-
-	    
-	        if(inflation)
-	            cube.inflate(inflation);
-
-	        setFace(cube.get());
-
-	        return that;
-	    };
-
-	    that.getDrawType = function() {
-	        return that.drawType;
-	    };
-
-	    return that;
-	}
-
-	module.exports = new Factory(Poly);
-
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(25);
-	        var Core = __webpack_require__(7);
-	        var Noise = __webpack_require__(22);
-	        var Polygon = __webpack_require__(23);
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        //var planeBuffer = core.createBuffer();
-	        var buffer = core.createBuffer();
-
-	        var shader = core.createShader();
-	        var post = core.createShader();
-
-	        var texture = core.createTexture();
-
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-	        var framebuffer = core.createFrameBuffer();
-
-
-
-	        /* config */
-
-	        scene.setViewPort(window.innerWidth, window.innerHeight);
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-
-	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
-	      /*  var postCode = Utils.util.loadCode(tmpl(), ['post-vs', 'post-fs']);
-
-	        post.create({
-	            vertex: postCode['post-vs'],
-	            fragment: postCode['post-fs'],
-	            init: function(shader) {
-	                shader.use();
-	                shader
-	                    .attribute('position')
-	                    .attribute('texture')
-	                    .uniform('uSampler')
-	                    .uniform('blurify');
-	            }
-	        });
-	*/
-	        shaderCode.init = function(shader) {
-	            shader.use();
-	            shader
-	                .attribute('position')
-	                .attribute('texture')
-	                .attribute('colors')
-	                .uniform('MV')
-	                .uniform('uSampler')
-	                .uniform('blurify')
-	                .uniform('P');
-	        }
-
-
-
-
-
-
-
-	         shader.create(shaderCode);
-	        var geometry = Polygon.New();
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-
-	        /* */
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-
-	        var dx = 0.1;
-	        var dz = 0.001;
-	        var t = 0.1;
-
-
-
-	        /* planeBuffer.load([-0.5, 0, 0, 0, 0,
-	            0.5, 0, 0, 1, 0, -0.5, 0.5, 0, 0, 1,
-	            0.5, 0.5, 0, 1, 1,
-	        ]).order(post.vars, {
-	            'position': 3,
-	            'texture': 2
-	        });
-	*/
-
-	        buffer
-	            .load(geometry.cube(5, dz).getModel())
-	            .order(shader.vars, {
-	                'position': 3,
-	                'colors': 4,
-	                'texture': 2
-	            });
-
-
-
-	        // framebuffer.create(512, 512)
-
-
-	        var renderEntities = function() {
-	            dx += 0.3;
-	            dz += 0.1;
-	            if (dz > 359) dz = 0.5;
-
-	            var T = core.MLib.Transform.New();
-	            var entity1 = {
-	                buffer: buffer,
-	                model: T.translate(0, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
-	                drawType: geometry.getDrawType(),
-	                texture: texture,
-	                shader: shader,
-	            };
-
-
-	            shader.prepare({
-	                'blurify': 0.2,
-	                'MV': camera.getMatrix(),
-	                'P': entity1.model
-	            });
-
-	            scene.clean();
-	            scene.render(entity1);
-	        }
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
-	            //framebuffer.render(renderEntities);
-
-	            renderEntities();
-	            // scene.render(entity);
-	        }
-
-	        render();
-
-	    },
-
-	    stop: function() {
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 25 */
 /***/ function(module, exports) {
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n\n\n\n<script id="post-vs" type="vertex">\n\n   attribute vec3 position;\n   attribute vec2 texture;\n   varying vec2 oTexture;\n\n   void main(void) {\n    gl_Position = vec4(position, 1.0);\n    oTexture = texture;\n   }\n\n</script>\n\n\n<script id="post-fs" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        //gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n        gl_FragColor = vec4(1,1,1,1);\n        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);\n\n    }\n\n</script>\n\n\n\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        vec4 c = texture2D(uSampler, oTexture) * oColors;\n        gl_FragColor = c;//vec4(1.0, 0.0, 0.0, 1.0);\n    }\n\n</script>\n';
 	return __p
 	}
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(27);
-	        var Core = __webpack_require__(7);
-	        var Noise = __webpack_require__(22);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-
-	        /* config */
-
-	    
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-	        scene.shader = shader;
-	        scene.camera = Utils.camera.MakeOrtho(0, 50, 50, 0, 1, -1);
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = core.createGeometry();
-
-	        buffer.geometry({
-	            points: geometry.plane(10, 15).getModel(),
-	            size: 9
-	        });
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-	        /*
-	        var noise = new Noise();
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                 noi.push(  noise.perlin(x,y,4)  )*8;
-	            }
-	        } 
-
-
-	        console.log(noi);
-	        noi.forEach(function(noise){
-	            pix.push(noise); //r
-	            pix.push(noise); //g
-	            pix.push(noise); //b
-	        });
-	        */
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b 
-	            }
-	        }
-
-
-	        /* */
-
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-	        var Transform = core.MLib.Transform.New();
-	        var entity = {
-	            buffer: buffer,
-	            model: Transform.translate(25, 25).getMatrix(),
-	            drawType: 'TRIANGLE_STRIP',
-	            texture: texture,
-	        };
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            //window.requestAnimationFrame(render);
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function(){
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;  \n     attribute vec4 colors;  \n\n     uniform mat4 MV;\n     uniform mat4 P;\n     \n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) { \n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n    \n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n\n';
-	return __p
-	}
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Thread = __webpack_require__(29);
-
-
-	module.exports = {
-	    init: function() {
-	        console.log('hello world');
-	        console.log('thread', Thread);
-
-	        var serve = Thread.Server();
-	        serve.loadFile('/module/noise.js');
-	        serve.subscribe({
-	            notify: function(o) {
-	                console.log('notify-->', o);
-	            }
-	        });
-
-	        var wrk = serve.spawn();
-	        wrk.execute('prime', 44900);
-
-	        var wrk2 = serve.spawn();
-	        wrk2.execute('prime', 33900);
-
-
-
-
-
-	    }
-	};
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports) {
-
-	    var thread = function(_object) {
-	        var that = {};
-
-	        that.object = _object;
-
-	        self.addEventListener('message', function(e) {
-	            that.execute(e.data);
-	        });
-
-	        that.execute = function(msg) {
-	            that.end({
-	                cmd: msg.cmd,
-	                ret: that.object[msg.cmd](msg.args) || true
-	            });
-	        }
-
-	        that.end = function(args) {
-	            that.finishedTask = true;
-	            self.postMessage(args);
-	        }
-
-	        return that;
-	    };
-
-	        
-	    
-	   var server = function(_that) {
-	        var that = _that || {};
-	        var workers = [];
-	        var observers = [];
-	        var processFile = null;
-	        var _execute = function(method, args) {
-	            this.postMessage({
-	                cmd: method,
-	                args: args
-	            });
-	        };
-
-
-	        that.clear = function() {
-	            var len = workers.length;
-	            for (var i = 0; i < len; i++) {
-	                workers[i].terminate();
-	            }
-
-	            workers = [];
-	        };
-
-	        that.getWorkersCount = function() {
-	            return workers.length;
-	        };
-
-	        that.workAll = function(method, args) {
-	            workers.forEach(function(worker) {
-	                worker.execute(method, args);
-	            });
-	        };
-
-	        that.changeBehavior = function(fn) {
-	            _execute = fn;
-	        };
-
-	        that.subscribe = function(object) {
-	            object.server = that;
-	            observers.push(object);
-	        };
-
-	        that.loadFile = function(filename) {
-	            processFile = filename;
-	        };
-
-	        that.spawn = function() {
-
-	            var wrk = new Worker(processFile);
-
-	            wrk.addEventListener('message', that.notify);
-	            wrk.execute = _execute;
-	            wrk.idle = false;
-
-	            workers.push(wrk);
-	            return wrk;
-	        };
-
-	        that.notify = function(args) {
-	            that.idle = true;
-
-	            observers.forEach(function(observer) {
-	                observer.notify(args.data);
-	            });
-	        };
-
-	        return that;
-	    };
-
-
-
-	    
-
-	    var SWorker = {
-	        Thread: thread,
-	        Server: server
-	    };
-
-	    if(typeof DedicatedWorkerGlobalScope ==='undefined' ){
-	       
-	        module.exports = SWorker;
-	    }
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(31);
-	        var Core = __webpack_require__(7);
-	        var Noise = __webpack_require__(22);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-	        /* config */
-
-	        scene.setViewPort(window.innerWidth, window.innerHeight);
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix();
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = core.createGeometry();
-
-	        buffer
-	            .load(geometry.cube(5, 5).getModel())
-	            .order(shader.vars, {
-	                'position': 3,
-	                'colors': 4,
-	                'texture': 2
-	            });
-
-	        /* Generarting XOR Texture */
-
-	        var textureSize = 128;
-	        var pix = [];
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-	        /* */
-
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-	        var entity = {
-	            buffer: buffer,
-	            drawType: 'TRIANGLE_STRIP',
-	            texture: texture,
-	        };
-
-
-	        var dx = 1;
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
-	            dx += 0.5;
-
-
-	            var Transform = core.MLib.Transform.New();
-	            var entity = {
-	                buffer: buffer,
-	                model: Transform.translate(4, 4, -30).rotateY(dx).rotateX(dx).getMatrix(),
-	                drawType: 'TRIANGLE_STRIPS',
-	                texture: texture,
-	            };
-
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function() {
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports) {
-
-	module.exports = function (data) {
-	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n\n    void main(void) {\n        gl_FragColor = texture2D(uSampler, oTexture) * oColors;\n    }\n\n</script>\n';
-	return __p
-	}
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = {
-
-	    init: function() {
-	        var tmpl = __webpack_require__(31);
-	        var Core = __webpack_require__(7);
-	        var Noise = __webpack_require__(22);
-	        var Polygon = __webpack_require__(23);
-
-
-	        var core = new Core({
-	            fullscreen: true,
-	            element: document.getElementById('webgl-div')
-	        });
-
-	        var buffer = core.createBuffer();
-	        var shader = core.createShader();
-	        var texture = core.createTexture();
-	        var Vec3 = core.MLib.Vec3;
-
-	        var scene = core.createScene();
-	        var Utils = core.getUtils();
-
-
-
-	        /* config */
-
-	        core.canvas.setResize(function(x, y) {
-	            scene.setViewPort(x, y);
-	        });
-	        scene.shader = shader;
-	        var camera = Utils.camera.MakeLookAt(Vec3.New(0, 0, 3), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
-	        var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
-
-	        scene.camera = perspective.multiply(camera).getMatrix();
-
-	        shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-	        /*         */
-
-	        var geometry = Polygon.New();
-
-	        buffer.geometry({
-	            points: geometry.plane(5, 5).getModel(),
-	            size: 9
-	        });
-
-	        /* Generarting XOR Texture */
-	        var textureSize = 128;
-	        var pix = [];
-	        var noi = [];
-
-	        for (var x = 0; x < textureSize; x++) {
-	            for (var y = 0; y < textureSize; y++) {
-	                var xor = x ^ y;
-	                pix.push(xor + 34) // r
-	                pix.push(xor) // g
-	                pix.push(xor) // b
-	            }
-	        }
-
-
-	        /* */
-	        texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
-
-	        var dx = 0.1;
-	        var dz = 0.1;
-
-	        function render() {
-	            //Utils.getNextFrame.call(this, render);
-	            window.requestID = window.requestAnimationFrame(render);
-	            dx += 0.3;
-	            dz += 0.1;
-	            if (dz > 359) dz = 0.5;
-
-	            buffer.geometry({
-	                points: geometry.plane(5, dz).getModel(),
-	                size: 9
-	            });
-
-	            var T = core.MLib.Transform.New();
-
-	            var entity = {
-	                buffer: buffer,
-	                model: T.translate(0, 0, -30).rotateX(dx).rotateY(dx).getMatrix(),
-	                drawType: geometry.getDrawType(),
-	                texture: texture,
-	            };
-
-	            shader.prepare({'blurify':20} );
-
-	            scene.clean();
-	            scene.render(entity);
-	        };
-
-	        render();
-
-	    },
-
-	    stop: function() {
-	        window.cancelAnimationFrame(window.requestID);
-	    }
-
-	};
-
 
 /***/ }
 /******/ ]);
