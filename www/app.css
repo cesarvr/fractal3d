@@ -1,0 +1,32 @@
+li {
+   font-family: 'Open Sans';
+   font-size: 27px;
+   font-style: normal;
+   font-variant: normal; 
+   list-style-type: none;
+}
+
+p {
+   font-family: 'Open Sans';
+   font-size: 15px;
+}
+
+.active {
+    color: #eeeeee;
+
+}
+
+.active a {
+    color: #eeeeee;
+}
+
+
+a {
+   text-decoration: none; 
+   color: #333333;
+}
+.wrapper {
+   position: absolute;
+
+  
+}
