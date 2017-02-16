@@ -14,10 +14,8 @@ module.exports = {
         div.innerHTML = tmpl_menu();
 
         document.body.appendChild(div);
-        
+
         div.addEventListener('click', function(){ div.className = 'wrapper active';  }, false);
-
-
 
         var core = new Core({
             fullscreen: true,
@@ -32,22 +30,19 @@ module.exports = {
         var scene = core.createScene();
         var Utils = core.getUtils();
 
-
-
         /* config */
         core.canvas.setResize(function(x, y) {
             scene.setViewPort(x, y);
         });
- 
+
         scene.shader = shader;
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 5, 13), Vec3.New(0, 0, -60), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-        scene.camera = perspective.multiply(camera).getMatrix(); 
-        scene.setClearColor({r:1, g:1,b:1});
+        scene.camera = perspective.multiply(camera).getMatrix();
+        scene.setClearColor({r:1, g:1, b:1});
 
         shader.create(Utils.util.getshaderUsingTemplate(tmpl()));
-        /*         */
 
         var geometry = Polygon.New();
 
@@ -92,7 +87,7 @@ module.exports = {
         texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
 
         var dx = 0.1;
-          
+
         function render() {
             //Utils.getNextFrame.call(this, render);
         window.requestID =  window.requestAnimationFrame(render);

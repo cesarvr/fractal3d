@@ -41,12 +41,7 @@ function p3(m) {
 
     var a = m.row3;
     console.log(a.x, a.y, a.z);
-
 }
-
-
-
-
 
 var Matrix4 = function() {
 
@@ -64,8 +59,7 @@ var Matrix4 = function() {
      * */
 
     this.getMatrix = function() {
-        return new Float32Array(
-            [this.row1.x, this.row2.x, this.row3.x, this.row4.x,
+        return new Float32Array([this.row1.x, this.row2.x, this.row3.x, this.row4.x,
                 this.row1.y, this.row2.y, this.row3.y, this.row4.y,
                 this.row1.z, this.row2.z, this.row3.z, this.row4.z,
                 this.row1.w, this.row2.w, this.row3.w, this.row4.w
@@ -234,18 +228,10 @@ var Matrix3 = function() {
     };
 };
 
-
-
-
-
-
-
-
-
 var MatrixFactory = {
 
     New: function() {
-        return new Matrix4();
+      return new Matrix4();
     },
 
     Identity: function() {

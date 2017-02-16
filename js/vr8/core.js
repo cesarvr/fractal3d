@@ -14,8 +14,8 @@ var Core = function(options) {
     var core = new CanvasGL(options.fullscreen, options.element);
     var webGL = core.getWebGL();
 
-
     this.canvas = core;
+
     this.createBuffer = function() {
         return this.Buffer.New(webGL);
     };
@@ -43,7 +43,6 @@ var Core = function(options) {
         };
     };
 
-
     this.MLib = {
         Vec3: require('../mathv2/vector').Vec3,
         Vec4: require('../mathv2/vector').Vec4,
@@ -52,10 +51,5 @@ var Core = function(options) {
         Transform: require('../mathv2/transform'),
     };
 };
-
-
-
-
-
 
 module.exports = Core;

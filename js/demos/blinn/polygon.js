@@ -5,15 +5,12 @@ var Mat4 = require('../../mathv2/matrix4');
 var Mat3 = require('../../mathv2/matrix3');
 var Transform = require('../../mathv2/transform');
 
-
-
 var Point = function(vertex, colors, uv) {
 
     this.vertex = vertex;
     this.color = colors;
     this.uv = uv;
 };
-
 
 var Poly = function(Core, that) {
 
@@ -22,6 +19,7 @@ var Poly = function(Core, that) {
 
     that.getModel = function() {
         var tmp = [];
+
         that.geometry.forEach(function(renderable) {
             tmp.push(
                 renderable.vertex.x,
@@ -48,10 +46,12 @@ var Poly = function(Core, that) {
             u: 0,
             v: 1
         }));
+
         that.geometry.push(new Point(m.row2, color, {
             u: 1,
             v: 1
         }));
+
         that.geometry.push(new Point(m.row3, color, {
             u: 1,
             v: 0
@@ -108,8 +108,6 @@ var Poly = function(Core, that) {
         return mod;
     };
 
-
-
     function translate(x, y, z) {
 
         var _x = x;
@@ -127,12 +125,12 @@ var Poly = function(Core, that) {
 
     function mirrorModule(mtxs, transform, rot, dx) {
         var modul3 = [];
-        
+
         mtxs.forEach(function(mtx) {
             modul3.push(transform(mtx.copy().multiply(rot(90))));
         });
 
-        return modul3; 
+        return modul3;
     }
 
 
@@ -151,22 +149,24 @@ var Poly = function(Core, that) {
             },
 
             each: function(cb){
-                matrices.forEach(cb); 
+                matrices.forEach(cb);
             },
 
             inflate: function(dx){
                 matrices.forEach(function(m){
                     if(m.row3.z > 0){
-                    m.row3.z += dx;
-                    m.row1.z += dx;
-                    m.row2.z += dx;
+                      m.row3.z += dx;
+                      m.row1.z += dx;
+                      m.row2.z += dx;
                     }else{
-                    m.row3.z -= dx;}
+                      m.row3.z -= dx;
+                    }
 
                     if(m.row3.y > 0){
-                    m.row3.y += dx;
+                      m.row3.y += dx;
                     }else{
-                    m.row3.y -= dx;}
+                      m.row3.y -= dx;
+                    }
 
                 });
             },
@@ -183,7 +183,7 @@ var Poly = function(Core, that) {
 
         that.geometry = [];
         that.drawType = 'TRIANGLES';
-      
+
         var cube = Faces();
         var m1 = Mat3.New();
 
@@ -219,7 +219,7 @@ var Poly = function(Core, that) {
         cube.add( mirrorModule(m, tup, that.rotx, dx) );
         cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-   
+
        setFace(cube.get());
 
         return that;
@@ -233,7 +233,7 @@ var Poly = function(Core, that) {
 
         that.geometry = [];
         that.drawType = 'TRIANGLES';
-      
+
         var cube = Faces();
         var m1 = Mat3.New();
 
@@ -269,7 +269,7 @@ var Poly = function(Core, that) {
         cube.add( mirrorModule(m, tup, that.rotx, dx) );
         cube.add( mirrorModule(m, tdown, that.rotx, dx) );
 
-    
+
         if(inflation)
             cube.inflate(inflation);
 

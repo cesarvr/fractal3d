@@ -40,8 +40,6 @@
         sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );
 
         gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;
-        //gl_FragColor =  vec4(blurify, blurify, blurify, 1.0);
-
     }
 
 </script>

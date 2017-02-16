@@ -79,7 +79,7 @@ module.exports = {
         var dz = 0.001;
         var t = 0.1;
 
-       
+
 
             buffer.update({
                 points: geometry.cube(5, dz).getModel(),
@@ -91,21 +91,22 @@ module.exports = {
         function render() {
             //Utils.getNextFrame.call(this, render);
             window.requestID = window.requestAnimationFrame(render);
+
             dx += 0.3;
-            dz += 0.1;
-            if (dz > 359) dz = 0.5;
-            var T = core.MLib.Transform.New();
+            dz += 0.01;
+            if (dz > 359) dz = 0.01;
+            var Transform = core.MLib.Transform.New();
 
             var entity1 = {
                 buffer: buffer,
-                model: T.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
+                model: Transform.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
 
             var entity2 = {
                 buffer: buffer,
-                model: T.translate(-30, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
+                model: Transform.translate(-20, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
