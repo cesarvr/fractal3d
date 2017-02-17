@@ -12,7 +12,6 @@ var FrameBuffer = function(Core, that) {
     that.framebuffer = gl.createFramebuffer();
     that.depthbuffer = gl.createRenderbuffer();
 
-
     var settingTexture = function() {
         that.texture = gl.createTexture();
 
@@ -32,7 +31,6 @@ var FrameBuffer = function(Core, that) {
       gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 
     }();
-
 
     return that;
 };

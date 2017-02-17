@@ -12,8 +12,6 @@ describe('Vector', function() {
         assert.isObject(vector, 'Vector is an object');
         assert.isObject(vector.Vec3, 'Vec3 is an function');
         assert.isObject(vector.Vec4, 'Vec4 is an function');
-        assert.isFunction(vector.Vec3Fn, 'Vec3Fn is an function');
-        assert.isObject(vector.Lerp, 'Linear interpolation function is an object');
     });
 
    it('Vector # Without arguments', function() {
@@ -24,9 +22,6 @@ describe('Vector', function() {
         assert.strictEqual(a.y, 0, 'equal 0');
         assert.strictEqual(a.z, 0, 'equal 0');
     });
-
-
-
 
     it('Vector # Add function', function() {
         var Vec3 = vector.Vec3;

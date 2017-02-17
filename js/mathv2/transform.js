@@ -1,3 +1,5 @@
+'use strict';
+
 var Vec4 = require('./vector').Vec4;
 var Mat4 = require('./matrix4');
 
@@ -30,13 +32,13 @@ var Transform = function(m) {
 
     this.rotateX = function(angle) {
 
-        var m = I.copy(); 
+        var m = I.copy();
         var tetha = dgToRad(angle);
         var _cos = cos(tetha);
         var _sin = sin(tetha);
 
         m.row2.y =  _cos || 0.0;
-        m.row2.z = -_sin || 0.0; 
+        m.row2.z = -_sin || 0.0;
 
         m.row3.y = _sin || 0.0;
         m.row3.z = _cos || 0.0;
@@ -46,16 +48,16 @@ var Transform = function(m) {
         return this;
     };
 
-    
+
     this.rotateY = function(angle){
-    
-        var m = I.copy(); 
+
+        var m = I.copy();
         var tetha = dgToRad(angle);
         var _cos = cos(tetha);
         var _sin = sin(tetha);
 
         m.row1.x =  _cos || 0.0;
-        m.row1.z =  _sin || 0.0; 
+        m.row1.z =  _sin || 0.0;
 
         m.row3.x = -_sin || 0.0;
         m.row3.z = _cos || 0.0;
@@ -65,16 +67,13 @@ var Transform = function(m) {
         return this;
     };
 
-
-
-
     this.getMatrix = function(){
       return _m.getMatrix();
     };
 
     this.getMatrixObject = function(){
         return _m;
-    }; 
+    };
 
 };
 

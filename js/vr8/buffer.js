@@ -3,9 +3,7 @@
 var Factory = require('../utils/factory');
 
 Buffer = function(Core, that) {
-
     var that = that || {};
-
     var gl = Core;
 
     var buffer = null;
@@ -21,9 +19,7 @@ Buffer = function(Core, that) {
     var no_color_data = false;
     var no_texture = false;
 
-
-
-    if (buffer === null){
+    if (buffer === null) {
         buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     }
@@ -48,14 +44,13 @@ Buffer = function(Core, that) {
     that.setBufferType = function(type) {
         if (gl[type] > 0)
             bufferType = gl[type];
-    }
+    };
 
     that.prepare = function(){
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     };
 
     that.update = function(g) {
-
         gl.bufferData(
             gl.ARRAY_BUFFER,
             new Float32Array(g.points),
@@ -63,7 +58,7 @@ Buffer = function(Core, that) {
         );
 
         that.memoryLayout(g);
-    }
+    };
 
     that.upload_vertex = function(shader_position) {
         gl.vertexAttribPointer(shader_position,
@@ -72,7 +67,7 @@ Buffer = function(Core, that) {
             false,
             stride,
             0);
-    }
+    };
 
     that.upload_texture = function(shader_texture) {
         if (no_texture)
@@ -91,7 +86,7 @@ Buffer = function(Core, that) {
             stride,
             offset
         );
-    }
+    };
 
     that.upload_colors = function(shader_color) {
 
@@ -105,7 +100,7 @@ Buffer = function(Core, that) {
             stride,
             vertex_size * Float32Array.BYTES_PER_ELEMENT
         );
-    }
+    };
 
     return that;
 };

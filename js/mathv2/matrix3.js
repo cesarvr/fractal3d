@@ -1,3 +1,5 @@
+'use strict';
+
 var Vec4 = require('./vector').Vec4;
 var Vec3 = require('./vector').Vec3;
 

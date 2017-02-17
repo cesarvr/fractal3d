@@ -13586,6 +13586,8 @@
 	    this.Camera = __webpack_require__(17);
 	    this.Scene = __webpack_require__(21);
 	    this.Geometry = __webpack_require__(22);
+	    var NShader = __webpack_require__(37);
+	    var NBuffer = __webpack_require__(38);
 
 	    var core = new CanvasGL(options.fullscreen, options.element);
 	    var webGL = core.getWebGL();
@@ -13593,15 +13595,23 @@
 	    this.canvas = core;
 
 	    this.createBuffer = function() {
-	        return this.Buffer.New(webGL);
+	      return this.Buffer.New(webGL);
+	    };
+
+	    this.createv2Shader = function(){
+	      return new NShader(webGL);
+	    };
+
+	    this.createv2Buffer = function(){
+	      return new NBuffer(webGL);
 	    };
 
 	    this.createShader = function() {
-	        return this.Shader.New(webGL);
+	      return this.Shader.New(webGL);
 	    };
 
 	    this.createTexture = function() {
-	        return this.Texture.New(webGL);
+	      return this.Texture.New(webGL);
 	    };
 
 	    this.createScene = function() {
@@ -13716,9 +13726,7 @@
 	var Factory = __webpack_require__(14);
 
 	Buffer = function(Core, that) {
-
 	    var that = that || {};
-
 	    var gl = Core;
 
 	    var buffer = null;
@@ -13734,9 +13742,7 @@
 	    var no_color_data = false;
 	    var no_texture = false;
 
-
-
-	    if (buffer === null){
+	    if (buffer === null) {
 	        buffer = gl.createBuffer();
 	        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	    }
@@ -13761,14 +13767,13 @@
 	    that.setBufferType = function(type) {
 	        if (gl[type] > 0)
 	            bufferType = gl[type];
-	    }
+	    };
 
 	    that.prepare = function(){
 	      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	    };
 
 	    that.update = function(g) {
-
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
 	            new Float32Array(g.points),
@@ -13776,7 +13781,7 @@
 	        );
 
 	        that.memoryLayout(g);
-	    }
+	    };
 
 	    that.upload_vertex = function(shader_position) {
 	        gl.vertexAttribPointer(shader_position,
@@ -13785,7 +13790,7 @@
 	            false,
 	            stride,
 	            0);
-	    }
+	    };
 
 	    that.upload_texture = function(shader_texture) {
 	        if (no_texture)
@@ -13804,7 +13809,7 @@
 	            stride,
 	            offset
 	        );
-	    }
+	    };
 
 	    that.upload_colors = function(shader_color) {
 
@@ -13818,7 +13823,7 @@
 	            stride,
 	            vertex_size * Float32Array.BYTES_PER_ELEMENT
 	        );
-	    }
+	    };
 
 	    return that;
 	};
@@ -16124,7 +16129,8 @@
 /* 18 */
 /***/ function(module, exports) {
 
-	
+	'use strict';
+
 	var Vector3 = function(x, y, z) {
 	    this.x = x || 0.0;
 	    this.y = y || 0.0;
@@ -16158,7 +16164,6 @@
 	    };
 
 	    this.copy = function() {
-
 	        return new Vector3(this.x, this.y, this.z );
 	    };
 
@@ -16169,8 +16174,6 @@
 
 	        return this;
 	    };
-
-
 
 	    this.add = function(v) {
 	        this.x += v.x;
@@ -16226,7 +16229,7 @@
 
 	        return tmp;
 	    };
-	    
+
 	    this.scalarMultiply = function(e) {
 	        this.x *= e;
 	        this.y *= e;
@@ -16300,74 +16303,6 @@
 	};
 
 
-
-	var LerpFn = {
-
-	    Lerp: function(v0, v1, t) {
-	        return v0.scalar_mul(1.0 - t).add(v1.multiplyByScalar(t));
-	    },
-
-	    CosLerp: function(v0, v1, t) {
-	        var ft = t * Math.PI;
-	        var f = (1 - Math.cos(ft)) * .5;
-	        return v0.scalar_mul(1.0 - f).add(v1.multiplyByScalar(f));
-	    },
-	};
-
-
-
-
-
-	/* functional version */
-
-	var v3 = function() {};
-
-	v3.deg_rad = function(angle) {
-	    return angle * Math.PI / 180;
-	};
-
-	v3.add_scalar = function(v, scalar) {
-	    return new Float32Array([v[0] + scalar, v[1] + scalar, v[2] + scalar]);
-	};
-
-	v3.sub_scalar = function(v, scalar) {
-	    return new Float32Array([v[0] - scalar, v[1] - scalar, v[2] - scalar]);
-	};
-
-	v3.mul_scalar = function(v, scalar) {
-	    return new Float32Array([v[0] * scalar, v[1] * scalar, v[2] * scalar]);
-	};
-
-	v3.div_scalar = function(v, scalar) {
-	    return new Float32Array([v[0] / scalar, v[1] / scalar, v[2] / scalar]);
-	};
-
-	v3.add = function(v1, v2) {
-	    return new Float32Array([v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]);
-	};
-
-	v3.sub = function(v1, v2) {
-	    return new Float32Array([v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]);
-	};
-
-	v3.mul = function(v1, v2) {
-	    return new Float32Array([v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2]]);
-	};
-
-	v3.len = function(v) {
-	    return Math.sqrt(((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2])));
-	};
-
-	v3.normalize = function(v) {
-	    var n = this.len(v);
-	    return new Float32Array([v[0] / n, v[1] / n, v[2] / n]);
-	};
-
-	v3.lerp = function(v1, v2, t) {
-	    //v0.alar_mul(1.0 - t).add(v1.multiplyByScalar(t));
-	    return v3.add(v3.mul_scalar(v1, 1.0 - t), v3.mul_scalar(v2, t));
-	};
-
 	module.exports = {
 
 	    Vec3: {
@@ -16375,21 +16310,20 @@
 	            return new Vector3(x, y, z);
 	        }
 	    },
-
+	    
 	    Vec4: {
 	        New: function(x, y, z, w) {
 	            return new Vector4(x, y, z, w);
 	        }
-	    },
-
-	    Vec3Fn: v3,
-	    Lerp: LerpFn,
+	    }
 	};
 
 
 /***/ },
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
 
 	var Vec4 = __webpack_require__(18).Vec4;
 	var Vec3 = __webpack_require__(18).Vec3;
@@ -16497,10 +16431,6 @@
 	    this.copy = function(){
 	      return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
 	    };
-
-
-
-
 
 	    this.multiply = function(m) {
 	        var mtx = MatrixFactory.New();
@@ -16646,6 +16576,8 @@
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
 	var Vec4 = __webpack_require__(18).Vec4;
 	var Mat4 = __webpack_require__(19);
 
@@ -16678,13 +16610,13 @@
 
 	    this.rotateX = function(angle) {
 
-	        var m = I.copy(); 
+	        var m = I.copy();
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
 	        m.row2.y =  _cos || 0.0;
-	        m.row2.z = -_sin || 0.0; 
+	        m.row2.z = -_sin || 0.0;
 
 	        m.row3.y = _sin || 0.0;
 	        m.row3.z = _cos || 0.0;
@@ -16694,16 +16626,16 @@
 	        return this;
 	    };
 
-	    
+
 	    this.rotateY = function(angle){
-	    
-	        var m = I.copy(); 
+
+	        var m = I.copy();
 	        var tetha = dgToRad(angle);
 	        var _cos = cos(tetha);
 	        var _sin = sin(tetha);
 
 	        m.row1.x =  _cos || 0.0;
-	        m.row1.z =  _sin || 0.0; 
+	        m.row1.z =  _sin || 0.0;
 
 	        m.row3.x = -_sin || 0.0;
 	        m.row3.z = _cos || 0.0;
@@ -16713,16 +16645,13 @@
 	        return this;
 	    };
 
-
-
-
 	    this.getMatrix = function(){
 	      return _m.getMatrix();
 	    };
 
 	    this.getMatrixObject = function(){
 	        return _m;
-	    }; 
+	    };
 
 	};
 
@@ -17031,6 +16960,8 @@
 /***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
 
 	var Vec4 = __webpack_require__(18).Vec4;
 	var Vec3 = __webpack_require__(18).Vec3;
@@ -17590,11 +17521,13 @@
 	        var Noise = __webpack_require__(25);
 	        var Polygon = __webpack_require__(26);
 
-
 	        var core = new Core({
 	            fullscreen: true,
 	            element: document.getElementById('webgl-div')
 	        });
+
+	        var nshader = core.createv2Shader();
+	        var nbuffer = core.createv2Buffer();
 
 	        var buffer = core.createBuffer();
 	        var shader = core.createShader();
@@ -17603,8 +17536,6 @@
 
 	        var scene = core.createScene();
 	        var Utils = core.getUtils();
-
-
 
 	        /* config */
 
@@ -17618,6 +17549,8 @@
 	        scene.camera = perspective.multiply(camera).getMatrix();
 
 	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
+
+	        nshader.create(tmpl());
 
 	        shaderCode.init = function(shader) {
 	            shader.use();
@@ -17661,20 +17594,19 @@
 	        var dz = 0.001;
 	        var t = 0.1;
 
+	        buffer.update({
+	          points: geometry.cube(4, dz).getModel(),
+	          size: 9
+	        });
 
-
-	            buffer.update({
-	                points: geometry.cube(5, dz).getModel(),
-	                size: 9
-	            });
-
-
+	        nbuffer.upload(geometry.cube(4, dz).getModel());
+	        nbuffer.pack(nshader.getVertexInfo());
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
 	            window.requestID = window.requestAnimationFrame(render);
 
-	            dx += 0.3;
+	            dx += 0.03;
 	            dz += 0.01;
 	            if (dz > 359) dz = 0.01;
 	            var Transform = core.MLib.Transform.New();
@@ -17694,6 +17626,15 @@
 	            };
 
 
+	            var entity3 = {
+	                buffer: buffer,
+	                model: Transform.translate(0, 0, -80).rotateX(dx).rotateY(dx).getMatrix(),
+	                drawType: geometry.getDrawType(),
+	                texture: texture,
+	            };
+
+
+
 	            shader.prepare({
 	                'blurify': Math.sin(dz)
 	            });
@@ -17701,6 +17642,7 @@
 	            scene.clean();
 	            scene.render(entity1);
 	            scene.render(entity2);
+	            scene.render(entity3);
 
 	        };
 
@@ -17721,7 +17663,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 +sam1 + sam2 + sam3)/ 4.0;\n    }\n\n</script>\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 + sam1 + sam2 + sam3)/ 4.0;\n    }\n\n</script>\n';
 	return __p
 	}
 
@@ -18233,6 +18175,234 @@
 	    }
 
 	};
+
+
+/***/ },
+/* 36 */,
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var _ = __webpack_require__(2);
+
+	var LINKER_ERROR = "Error linking shaders.";
+	var SHADER_CREATION_ERROR = "Error while creating the shader.";
+	var COMPILE_ERROR = "Error while compiling the shader code.";
+
+	var Shader = function(gl) {
+
+	    const SHADER_TYPE = {
+	        "shader": gl.FRAGMENT_SHADER,
+	        "vertex": gl.VERTEX_SHADER
+	    };
+
+	    var VECTOR_MAP = {}; 
+
+	    VECTOR_MAP[gl.FLOAT_VEC2] = 2;
+	    VECTOR_MAP[gl.FLOAT_VEC3] = 3;
+	    VECTOR_MAP[gl.FLOAT_VEC4] = 4;
+
+
+	    var program = gl.createProgram();
+
+	    var attrib  = _.partial(gl.getAttribLocation.bind(gl), program);
+	    var uniform = _.partial(gl.getUniformLocation.bind(gl), program);
+	    var attach  = _.partial(gl.attachShader.bind(gl), program);
+	    var vertexInfo  = gl.getActiveAttrib.bind(gl);
+	    var uniformInfo = gl.getActiveUniform.bind(gl);
+
+	    // compile the glsl source code. 
+	    function compile(source) {
+
+	        var shader = gl.createShader(SHADER_TYPE[source.type]);
+
+	        if (!shader) {
+	            throw SHADER_CREATION_ERROR;
+	            console.error(SHADER_CREATION_ERROR + JSON.stringify(source));
+	        }
+
+	        gl.shaderSource(shader, source.code);
+	        gl.compileShader(shader);
+
+	        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+	            throw COMPILE_ERROR;
+	            console.error(COMPILE_ERROR);
+	        }
+
+	        return shader;
+	    };
+
+	    // fetch code from the dom. 
+
+	    function fetch_code(template) {
+	        var d = document.createElement('div');
+	        d.innerHTML = template;
+
+	        return [{
+	            type: 'shader',
+	            code: d.querySelector('#fragment-shader').innerHTML.trim()
+	        }, {
+	            type: 'vertex',
+	            code: d.querySelector('#vertex-shader').innerHTML.trim()
+	        }];
+	    };
+
+	    function link() {
+	        gl.linkProgram(program);
+
+	        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+	            console.error(LINKER_ERROR)
+	            throw LINKER_ERROR;
+	        }
+	    }
+
+	    function gl_info(webGLActiveInfo, hash) {
+	        var tmp = {}; 
+
+	        tmp[webGLActiveInfo.name] = {
+	          value:  gl.getAttribLocation(program, webGLActiveInfo.name),
+	          size:   VECTOR_MAP[webGLActiveInfo.type],
+	          length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
+	        };
+
+	        return _.extend(hash, tmp);
+	    }
+
+	    function discovery(retrieveAPI, _glvars, _index) {
+	        var index  = _index || 0;
+	        var glvars = _glvars || {};
+	        var active = retrieveAPI(program, index);
+
+	        if (active !== null) {
+	            glvars = gl_info(active, glvars);
+	            return discovery(retrieveAPI, glvars, ++index);
+	        } else
+	            return glvars;
+	    }
+
+	    var compileAndAttach = _.compose(attach, compile);
+
+	    this.create = function(template) {
+
+	        var code = fetch_code(template);
+
+	        code.forEach(compileAndAttach);
+
+	        link();
+	    }
+	    
+	    this.getVertexInfo = function(){
+	      return discovery(vertexInfo);
+	    };
+
+	    this.getUniformInfo = function(){
+	      return discovery(uniformInfo);
+	    };
+	};
+
+	module.exports = Shader;
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	const _ = __webpack_require__(2);
+
+	var Buffer = function(gl) {
+
+	    var buffer = gl.createBuffer();
+	    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+	    function stride(memo, attrib) {
+	        return attrib.size + memo;
+	    }
+
+	    function vapWrapper(attr, size, stride, offset) {
+	        return function() {
+	            gl.vertexAttribPointer(
+	                attr,
+	                size,
+	                gl.FLOAT,
+	                false,
+	                stride,
+	                offset
+	            );
+	        };
+	    }
+
+
+
+	    //  
+	    //  one package is equivalent to one vertex example: 
+	    //
+	    //            position    texture
+	    //  vertex = [x, y, z, w]  [u,v]  <= package 
+	    //  
+	    //  attrib pointer size for position is 4
+	    //  stride for position is 6  
+	    //  offset for position is 0 
+	    //
+	    //  attrib pointer size for texture is 2
+	    //  stride for position is 6 
+	    //  offset for position is 4 
+	    //
+	    //  vertex_data 
+	    //   @attrib: shader vertex attribute pointer. 
+	    //   @size: attribute length 
+	    //   @stride: package size 
+	    //   @offset: position inside the package. 
+
+	    this.pack = function(vx_attributes) {
+	        debugger;
+	        var packet = {};
+
+	        packet.stride = _.reduce(vx_attributes, stride, 0);
+	        packet.attributes = vx_attributes;
+
+	        return packet;
+	    };
+
+
+
+
+	    this.upload = function(packet) {
+	        debugger;
+
+	        var attrs = packet.attributes;
+	        var attrs_batch = []; 
+	        var offset = 0;
+
+	        for (var key in attrs) {
+
+	          var _vc = vapWrapper(attrs[key].value,
+	                               attrs[key].size, 
+	                               packet.stride, 
+	                               offset);
+
+	          offset += attrs[key].size; 
+	        }
+
+	    };
+
+
+	    // Cache a matrix of floating points in to opengl ARRAY
+	    this.save = function(vertex) {
+	        gl.bufferData(
+	            gl.ARRAY_BUFFER,
+	            new Float32Array(vertex.points),
+	            gl.DYNAMIC_DRAW
+	        );
+	    };
+
+
+	};
+
+
+
+	module.exports = Buffer;
 
 
 /***/ }

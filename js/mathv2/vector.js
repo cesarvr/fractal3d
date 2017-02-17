@@ -1,3 +1,4 @@
+'use strict';
 
 var Vector3 = function(x, y, z) {
     this.x = x || 0.0;
@@ -32,7 +33,6 @@ var Vector3 = function(x, y, z) {
     };
 
     this.copy = function() {
-
         return new Vector3(this.x, this.y, this.z );
     };
 
@@ -43,8 +43,6 @@ var Vector3 = function(x, y, z) {
 
         return this;
     };
-
-
 
     this.add = function(v) {
         this.x += v.x;
@@ -100,7 +98,7 @@ var Vector3 = function(x, y, z) {
 
         return tmp;
     };
-    
+
     this.scalarMultiply = function(e) {
         this.x *= e;
         this.y *= e;
@@ -174,74 +172,6 @@ var Vector4 = function(x, y, z, w) {
 };
 
 
-
-var LerpFn = {
-
-    Lerp: function(v0, v1, t) {
-        return v0.scalar_mul(1.0 - t).add(v1.multiplyByScalar(t));
-    },
-
-    CosLerp: function(v0, v1, t) {
-        var ft = t * Math.PI;
-        var f = (1 - Math.cos(ft)) * .5;
-        return v0.scalar_mul(1.0 - f).add(v1.multiplyByScalar(f));
-    },
-};
-
-
-
-
-
-/* functional version */
-
-var v3 = function() {};
-
-v3.deg_rad = function(angle) {
-    return angle * Math.PI / 180;
-};
-
-v3.add_scalar = function(v, scalar) {
-    return new Float32Array([v[0] + scalar, v[1] + scalar, v[2] + scalar]);
-};
-
-v3.sub_scalar = function(v, scalar) {
-    return new Float32Array([v[0] - scalar, v[1] - scalar, v[2] - scalar]);
-};
-
-v3.mul_scalar = function(v, scalar) {
-    return new Float32Array([v[0] * scalar, v[1] * scalar, v[2] * scalar]);
-};
-
-v3.div_scalar = function(v, scalar) {
-    return new Float32Array([v[0] / scalar, v[1] / scalar, v[2] / scalar]);
-};
-
-v3.add = function(v1, v2) {
-    return new Float32Array([v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]]);
-};
-
-v3.sub = function(v1, v2) {
-    return new Float32Array([v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2]]);
-};
-
-v3.mul = function(v1, v2) {
-    return new Float32Array([v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2]]);
-};
-
-v3.len = function(v) {
-    return Math.sqrt(((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2])));
-};
-
-v3.normalize = function(v) {
-    var n = this.len(v);
-    return new Float32Array([v[0] / n, v[1] / n, v[2] / n]);
-};
-
-v3.lerp = function(v1, v2, t) {
-    //v0.alar_mul(1.0 - t).add(v1.multiplyByScalar(t));
-    return v3.add(v3.mul_scalar(v1, 1.0 - t), v3.mul_scalar(v2, t));
-};
-
 module.exports = {
 
     Vec3: {
@@ -249,13 +179,10 @@ module.exports = {
             return new Vector3(x, y, z);
         }
     },
-
+    
     Vec4: {
         New: function(x, y, z, w) {
             return new Vector4(x, y, z, w);
         }
-    },
-
-    Vec3Fn: v3,
-    Lerp: LerpFn,
+    }
 };

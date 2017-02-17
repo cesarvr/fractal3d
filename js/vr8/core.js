@@ -10,6 +10,8 @@ var Core = function(options) {
     this.Camera = require('./camera');
     this.Scene = require('./scene');
     this.Geometry = require('./geometry');
+    var NShader = require('./v2/shader');
+    var NBuffer = require('./v2/buffer');
 
     var core = new CanvasGL(options.fullscreen, options.element);
     var webGL = core.getWebGL();
@@ -17,15 +19,23 @@ var Core = function(options) {
     this.canvas = core;
 
     this.createBuffer = function() {
-        return this.Buffer.New(webGL);
+      return this.Buffer.New(webGL);
+    };
+
+    this.createv2Shader = function(){
+      return new NShader(webGL);
+    };
+
+    this.createv2Buffer = function(){
+      return new NBuffer(webGL);
     };
 
     this.createShader = function() {
-        return this.Shader.New(webGL);
+      return this.Shader.New(webGL);
     };
 
     this.createTexture = function() {
-        return this.Texture.New(webGL);
+      return this.Texture.New(webGL);
     };
 
     this.createScene = function() {

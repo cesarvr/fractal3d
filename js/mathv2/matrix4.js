@@ -1,3 +1,5 @@
+'use strict';
+
 var Vec4 = require('./vector').Vec4;
 var Vec3 = require('./vector').Vec3;
 
@@ -104,10 +106,6 @@ var Matrix4 = function() {
     this.copy = function(){
       return new MatrixFactory.Set(this.row1.copy(), this.row2.copy(), this.row3.copy(), this.row4.copy());
     };
-
-
-
-
 
     this.multiply = function(m) {
         var mtx = MatrixFactory.New();

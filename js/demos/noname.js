@@ -8,11 +8,13 @@ module.exports = {
         var Noise = require('./noise');
         var Polygon = require('./blinn/polygon');
 
-
         var core = new Core({
             fullscreen: true,
             element: document.getElementById('webgl-div')
         });
+
+        var nshader = core.createv2Shader();
+        var nbuffer = core.createv2Buffer();
 
         var buffer = core.createBuffer();
         var shader = core.createShader();
@@ -21,8 +23,6 @@ module.exports = {
 
         var scene = core.createScene();
         var Utils = core.getUtils();
-
-
 
         /* config */
 
@@ -36,6 +36,8 @@ module.exports = {
         scene.camera = perspective.multiply(camera).getMatrix();
 
         var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
+
+        nshader.create(tmpl());
 
         shaderCode.init = function(shader) {
             shader.use();
@@ -79,20 +81,19 @@ module.exports = {
         var dz = 0.001;
         var t = 0.1;
 
+        buffer.update({
+          points: geometry.cube(4, dz).getModel(),
+          size: 9
+        });
 
-
-            buffer.update({
-                points: geometry.cube(5, dz).getModel(),
-                size: 9
-            });
-
-
+        nbuffer.upload(geometry.cube(4, dz).getModel());
+        nbuffer.pack(nshader.getVertexInfo());
 
         function render() {
             //Utils.getNextFrame.call(this, render);
             window.requestID = window.requestAnimationFrame(render);
 
-            dx += 0.3;
+            dx += 0.03;
             dz += 0.01;
             if (dz > 359) dz = 0.01;
             var Transform = core.MLib.Transform.New();
@@ -112,6 +113,15 @@ module.exports = {
             };
 
 
+            var entity3 = {
+                buffer: buffer,
+                model: Transform.translate(0, 0, -80).rotateX(dx).rotateY(dx).getMatrix(),
+                drawType: geometry.getDrawType(),
+                texture: texture,
+            };
+
+
+
             shader.prepare({
                 'blurify': Math.sin(dz)
             });
@@ -119,6 +129,7 @@ module.exports = {
             scene.clean();
             scene.render(entity1);
             scene.render(entity2);
+            scene.render(entity3);
 
         };
 
