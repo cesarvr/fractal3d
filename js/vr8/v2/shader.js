@@ -7,27 +7,34 @@ var COMPILE_ERROR = "Error while compiling the shader code.";
 
 var Shader = function(gl) {
 
+    var program = gl.createProgram();
+    var attrib = _.partial(gl.getAttribLocation.bind(gl), program);
+    var uniform = _.partial(gl.getUniformLocation.bind(gl), program);
+    var attach = _.partial(gl.attachShader.bind(gl), program);
+    var vertexInfo = gl.getActiveAttrib.bind(gl);
+    var uniformInfo = gl.getActiveUniform.bind(gl);
+    var _uniforms = {};
+
     const SHADER_TYPE = {
         "shader": gl.FRAGMENT_SHADER,
         "vertex": gl.VERTEX_SHADER
     };
 
-    var VECTOR_MAP = {}; 
+    var TYPE_MAP = {};
+
+    TYPE_MAP[gl.FLOAT_MAT4] = function(glvar, matrix) {
+        gl.uniformMatrix4fv(glvar, false, matrix);
+    };
+
+    TYPE_MAP[gl.FLOAT] = gl.uniform1f.bind(gl);
+
+    var VECTOR_MAP = {};
 
     VECTOR_MAP[gl.FLOAT_VEC2] = 2;
     VECTOR_MAP[gl.FLOAT_VEC3] = 3;
     VECTOR_MAP[gl.FLOAT_VEC4] = 4;
 
-
-    var program = gl.createProgram();
-
-    var attrib  = _.partial(gl.getAttribLocation.bind(gl), program);
-    var uniform = _.partial(gl.getUniformLocation.bind(gl), program);
-    var attach  = _.partial(gl.attachShader.bind(gl), program);
-    var vertexInfo  = gl.getActiveAttrib.bind(gl);
-    var uniformInfo = gl.getActiveUniform.bind(gl);
-
-    // compile the glsl source code. 
+    // compile the glsl source code.
     function compile(source) {
 
         var shader = gl.createShader(SHADER_TYPE[source.type]);
@@ -48,7 +55,7 @@ var Shader = function(gl) {
         return shader;
     };
 
-    // fetch code from the dom. 
+    // fetch code from the dom.
 
     function fetch_code(template) {
         var d = document.createElement('div');
@@ -72,29 +79,39 @@ var Shader = function(gl) {
         }
     }
 
-    function gl_info(webGLActiveInfo, hash) {
-        var tmp = {}; 
+    function vertex_info(memo, webGLActiveInfo) {
+        var tmp = memo || {};
 
         tmp[webGLActiveInfo.name] = {
-          value:  gl.getAttribLocation(program, webGLActiveInfo.name),
-          size:   VECTOR_MAP[webGLActiveInfo.type],
-          length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
+            value: gl.getAttribLocation(program, webGLActiveInfo.name),
+            size: VECTOR_MAP[webGLActiveInfo.type],
+            length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
         };
 
-        return _.extend(hash, tmp);
-    }
+        return tmp;
+    };
 
-    function discovery(retrieveAPI, _glvars, _index) {
-        var index  = _index || 0;
-        var glvars = _glvars || {};
+    function map_uniform_to_function(memo, webGLActiveInfo) {
+        var _map = {};
+        _map[webGLActiveInfo.name] = {
+            value: gl.getUniformLocation(program, webGLActiveInfo.name),
+            fn: TYPE_MAP[webGLActiveInfo.type] || _.identity
+        }
+
+        return _.extend(memo, _map);
+    };
+
+    function glsl_variables(retrieveAPI, _glvars, _index) {
+        var index = _index || 0;
+        var glvars = _glvars || [];
         var active = retrieveAPI(program, index);
 
         if (active !== null) {
-            glvars = gl_info(active, glvars);
-            return discovery(retrieveAPI, glvars, ++index);
+            glvars.push(active);
+            return glsl_variables(retrieveAPI, glvars, ++index);
         } else
             return glvars;
-    }
+    };
 
     var compileAndAttach = _.compose(attach, compile);
 
@@ -105,15 +122,25 @@ var Shader = function(gl) {
         code.forEach(compileAndAttach);
 
         link();
-    }
-    
-    this.getVertexInfo = function(){
-      return discovery(vertexInfo);
+
+        _uniforms = _.reduce(glsl_variables(uniformInfo), map_uniform_to_function, {});
     };
 
-    this.getUniformInfo = function(){
-      return discovery(uniformInfo);
+    this.use = function() {
+        gl.useProgram(program);
+    }
+
+    this.set_value = function(glvar, value) {
+
+        var uniform = _uniforms[glvar];
+        uniform.fn(uniform.value, value);
     };
+
+    this.vertex_info = function() {
+      debugger;
+        return glsl_variables(vertexInfo).reduce(vertex_info, {});
+    };
+
 };
 
 module.exports = Shader;

@@ -53,6 +53,10 @@ var Core = function(options) {
         };
     };
 
+    this.getWebGL = function(){
+      return webGL;
+    };
+
     this.MLib = {
         Vec3: require('../mathv2/vector').Vec3,
         Vec4: require('../mathv2/vector').Vec4,

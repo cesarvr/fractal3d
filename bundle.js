@@ -13629,6 +13629,10 @@
 	        };
 	    };
 
+	    this.getWebGL = function(){
+	      return webGL;
+	    };
+
 	    this.MLib = {
 	        Vec3: __webpack_require__(18).Vec3,
 	        Vec4: __webpack_require__(18).Vec4,
@@ -16681,17 +16685,16 @@
 	    var shader = null;
 	    var camera = null;
 
-	    
 	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	    gl.enable(gl.DEPTH_TEST);
 
 	    /* this method can be override for custom functionality. */
 
-	    that.setViewPort = function(Width, Height){
+	    that.setViewPort = function(Width, Height) {
 	      gl.viewport(0, 0, Width, Height);
 	    }
 
-	    that.setClearColor = function(clear){
+	    that.setClearColor = function(clear) {
 	        gl.clearColor(clear.r , clear.g , clear.b, 1.0);
 	    }
 
@@ -17520,13 +17523,14 @@
 	        var Core = __webpack_require__(7);
 	        var Noise = __webpack_require__(25);
 	        var Polygon = __webpack_require__(26);
+	        var Render = __webpack_require__(39);
 
 	        var core = new Core({
 	            fullscreen: true,
 	            element: document.getElementById('webgl-div')
 	        });
 
-	        var nshader = core.createv2Shader();
+	        var box_shader = core.createv2Shader();
 	        var nbuffer = core.createv2Buffer();
 
 	        var buffer = core.createBuffer();
@@ -17550,7 +17554,7 @@
 
 	        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
 
-	        nshader.create(tmpl());
+	        box_shader.create(tmpl());
 
 	        shaderCode.init = function(shader) {
 	            shader.use();
@@ -17599,8 +17603,18 @@
 	          size: 9
 	        });
 
-	        nbuffer.upload(geometry.cube(4, dz).getModel());
-	        nbuffer.pack(nshader.getVertexInfo());
+
+	        nbuffer.save(geometry.cube(4, dz).getModel());
+
+	        var rdr = new Render({
+	          gl: core.getWebGL(),
+	          shader: box_shader,
+	          camera: perspective.multiply(camera).getMatrix()
+	         });
+
+	         var _buff = nbuffer.prepare(box_shader.vertex_info())
+
+
 
 	        function render() {
 	            //Utils.getNextFrame.call(this, render);
@@ -17608,16 +17622,17 @@
 
 	            dx += 0.03;
 	            dz += 0.01;
-	            if (dz > 359) dz = 0.01;
+	            if (dz > 359) dz = 0.1;
 	            var Transform = core.MLib.Transform.New();
 
-	            var entity1 = {
-	                buffer: buffer,
+	            var entity = {
+	              //  buffer: nbuffer.prepare(box_shader.vertex_info()),
 	                model: Transform.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
 	                drawType: geometry.getDrawType(),
 	                texture: texture,
 	            };
 
+	            /*
 	            var entity2 = {
 	                buffer: buffer,
 	                model: Transform.translate(-20, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
@@ -17638,13 +17653,28 @@
 	            shader.prepare({
 	                'blurify': Math.sin(dz)
 	            });
+	            */
 
+	            box_shader.use();
+
+	            rdr
+	              .clear()
+	              .prepare(entity.model, _buff);
+
+
+	            box_shader.set_value('blurify', Math.sin(dz));
+
+	            rdr.draw(geometry.getDrawType(), nbuffer.sides)
+
+
+	            /*
 	            scene.clean();
 	            scene.render(entity1);
 	            scene.render(entity2);
-	            scene.render(entity3);
+	            scene.render(entity3); */
 
 	        };
+
 
 	        render();
 
@@ -17663,7 +17693,7 @@
 
 	module.exports = function (data) {
 	var __t, __p = '';
-	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n     }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n\n       float step = blurify / 100.0;\n\n        sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n        sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n        sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n        sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n        gl_FragColor =  (sam0 + sam1 + sam2 + sam3)/ 4.0;\n    }\n\n</script>\n';
+	__p += '<script id="vertex-shader" type="vertex">\n\n     attribute vec3 position;\n     attribute vec2 texture;\n     attribute vec4 colors;\n\n     uniform mat4 MV;\n     uniform mat4 P;\n\n     varying vec2 oTexture;\n     varying vec4 oColors;\n\n    void main(void) {\n      gl_Position = MV * P * vec4(position, 1.0);\n      oTexture = texture;\n      oColors  = colors;\n    }\n\n</script>\n\n\n<script id="fragment-shader" type="fragment">\n\n    precision mediump float;\n    varying vec2 oTexture;\n    varying vec4 oColors;\n    uniform sampler2D uSampler;\n    uniform float blurify;\n\n    void main(void) {\n\n       vec4 sam0, sam1, sam2, sam3;\n\n       float step = blurify / 100.0;\n\n       sam0 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y - step ) );\n       sam1 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y + step ) );\n       sam2 = texture2D(uSampler, vec2(oTexture.x - step, oTexture.y + step ) );\n       sam3 = texture2D(uSampler, vec2(oTexture.x + step, oTexture.y - step ) );\n\n       gl_FragColor =  (sam0 + sam1 + sam2 + sam3)/ 4.0;\n    }\n\n</script>\n';
 	return __p
 	}
 
@@ -18191,27 +18221,34 @@
 
 	var Shader = function(gl) {
 
+	    var program = gl.createProgram();
+	    var attrib = _.partial(gl.getAttribLocation.bind(gl), program);
+	    var uniform = _.partial(gl.getUniformLocation.bind(gl), program);
+	    var attach = _.partial(gl.attachShader.bind(gl), program);
+	    var vertexInfo = gl.getActiveAttrib.bind(gl);
+	    var uniformInfo = gl.getActiveUniform.bind(gl);
+	    var _uniforms = {};
+
 	    const SHADER_TYPE = {
 	        "shader": gl.FRAGMENT_SHADER,
 	        "vertex": gl.VERTEX_SHADER
 	    };
 
-	    var VECTOR_MAP = {}; 
+	    var TYPE_MAP = {};
+
+	    TYPE_MAP[gl.FLOAT_MAT4] = function(glvar, matrix) {
+	        gl.uniformMatrix4fv(glvar, false, matrix);
+	    };
+
+	    TYPE_MAP[gl.FLOAT] = gl.uniform1f.bind(gl);
+
+	    var VECTOR_MAP = {};
 
 	    VECTOR_MAP[gl.FLOAT_VEC2] = 2;
 	    VECTOR_MAP[gl.FLOAT_VEC3] = 3;
 	    VECTOR_MAP[gl.FLOAT_VEC4] = 4;
 
-
-	    var program = gl.createProgram();
-
-	    var attrib  = _.partial(gl.getAttribLocation.bind(gl), program);
-	    var uniform = _.partial(gl.getUniformLocation.bind(gl), program);
-	    var attach  = _.partial(gl.attachShader.bind(gl), program);
-	    var vertexInfo  = gl.getActiveAttrib.bind(gl);
-	    var uniformInfo = gl.getActiveUniform.bind(gl);
-
-	    // compile the glsl source code. 
+	    // compile the glsl source code.
 	    function compile(source) {
 
 	        var shader = gl.createShader(SHADER_TYPE[source.type]);
@@ -18232,7 +18269,7 @@
 	        return shader;
 	    };
 
-	    // fetch code from the dom. 
+	    // fetch code from the dom.
 
 	    function fetch_code(template) {
 	        var d = document.createElement('div');
@@ -18256,29 +18293,39 @@
 	        }
 	    }
 
-	    function gl_info(webGLActiveInfo, hash) {
-	        var tmp = {}; 
+	    function vertex_info(memo, webGLActiveInfo) {
+	        var tmp = memo || {};
 
 	        tmp[webGLActiveInfo.name] = {
-	          value:  gl.getAttribLocation(program, webGLActiveInfo.name),
-	          size:   VECTOR_MAP[webGLActiveInfo.type],
-	          length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
+	            value: gl.getAttribLocation(program, webGLActiveInfo.name),
+	            size: VECTOR_MAP[webGLActiveInfo.type],
+	            length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
 	        };
 
-	        return _.extend(hash, tmp);
-	    }
+	        return tmp;
+	    };
 
-	    function discovery(retrieveAPI, _glvars, _index) {
-	        var index  = _index || 0;
-	        var glvars = _glvars || {};
+	    function map_uniform_to_function(memo, webGLActiveInfo) {
+	        var _map = {};
+	        _map[webGLActiveInfo.name] = {
+	            value: gl.getUniformLocation(program, webGLActiveInfo.name),
+	            fn: TYPE_MAP[webGLActiveInfo.type] || _.identity
+	        }
+
+	        return _.extend(memo, _map);
+	    };
+
+	    function glsl_variables(retrieveAPI, _glvars, _index) {
+	        var index = _index || 0;
+	        var glvars = _glvars || [];
 	        var active = retrieveAPI(program, index);
 
 	        if (active !== null) {
-	            glvars = gl_info(active, glvars);
-	            return discovery(retrieveAPI, glvars, ++index);
+	            glvars.push(active);
+	            return glsl_variables(retrieveAPI, glvars, ++index);
 	        } else
 	            return glvars;
-	    }
+	    };
 
 	    var compileAndAttach = _.compose(attach, compile);
 
@@ -18289,15 +18336,25 @@
 	        code.forEach(compileAndAttach);
 
 	        link();
-	    }
-	    
-	    this.getVertexInfo = function(){
-	      return discovery(vertexInfo);
+
+	        _uniforms = _.reduce(glsl_variables(uniformInfo), map_uniform_to_function, {});
 	    };
 
-	    this.getUniformInfo = function(){
-	      return discovery(uniformInfo);
+	    this.use = function() {
+	        gl.useProgram(program);
+	    }
+
+	    this.set_value = function(glvar, value) {
+
+	        var uniform = _uniforms[glvar];
+	        uniform.fn(uniform.value, value);
 	    };
+
+	    this.vertex_info = function() {
+	      debugger;
+	        return glsl_variables(vertexInfo).reduce(vertex_info, {});
+	    };
+
 	};
 
 	module.exports = Shader;
@@ -18318,91 +18375,142 @@
 
 	    function stride(memo, attrib) {
 	        return attrib.size + memo;
-	    }
+	    };
 
-	    function vapWrapper(attr, size, stride, offset) {
+	    function vaptr_wrapper(attr, size, stride, offset) {
+	        stride *= Float32Array.BYTES_PER_ELEMENT;
+	        offset *= Float32Array.BYTES_PER_ELEMENT
+
 	        return function() {
+
 	            gl.vertexAttribPointer(
 	                attr,
 	                size,
 	                gl.FLOAT,
 	                false,
 	                stride,
-	                offset
-	            );
+	                offset );
 	        };
-	    }
 
-
-
-	    //  
-	    //  one package is equivalent to one vertex example: 
-	    //
-	    //            position    texture
-	    //  vertex = [x, y, z, w]  [u,v]  <= package 
-	    //  
-	    //  attrib pointer size for position is 4
-	    //  stride for position is 6  
-	    //  offset for position is 0 
-	    //
-	    //  attrib pointer size for texture is 2
-	    //  stride for position is 6 
-	    //  offset for position is 4 
-	    //
-	    //  vertex_data 
-	    //   @attrib: shader vertex attribute pointer. 
-	    //   @size: attribute length 
-	    //   @stride: package size 
-	    //   @offset: position inside the package. 
-
-	    this.pack = function(vx_attributes) {
-	        debugger;
-	        var packet = {};
-
-	        packet.stride = _.reduce(vx_attributes, stride, 0);
-	        packet.attributes = vx_attributes;
-
-	        return packet;
 	    };
 
+	    //
+	    //  one package is equivalent to one vertex example:
+	    //
+	    //            position    texture
+	    //  vertex = [x, y, z, w]  [u,v]  <= package
+	    //
+	    //  attrib pointer size for position is 4
+	    //  stride for position is 6
+	    //  offset for position is 0
+	    //
+	    //  attrib pointer size for texture is 2
+	    //  stride for position is 6
+	    //  offset for position is 4
+	    //
+	    //  vertex_data
+	    //   @attrib: shader vertex attribute pointer.
+	    //   @size: attribute length
+	    //   @stride: package size
+	    //   @offset: position inside the package.
 
-
-
-	    this.upload = function(packet) {
-	        debugger;
-
-	        var attrs = packet.attributes;
-	        var attrs_batch = []; 
+	    this.prepare = function(attributes) {
+	        var _stride = _.reduce(attributes, stride, 0);
+	        var attrs = attributes;
+	        var attrs_batch = [];
 	        var offset = 0;
 
 	        for (var key in attrs) {
+	            var _vc = vaptr_wrapper(attrs[key].value,
+	                attrs[key].size,
+	                _stride,
+	                offset);
 
-	          var _vc = vapWrapper(attrs[key].value,
-	                               attrs[key].size, 
-	                               packet.stride, 
-	                               offset);
-
-	          offset += attrs[key].size; 
+	            offset += attrs[key].size;
+	            attrs_batch.push(_vc);
 	        }
 
+	        this.sides = this.len / _stride;
+	        return attrs_batch;
 	    };
-
 
 	    // Cache a matrix of floating points in to opengl ARRAY
 	    this.save = function(vertex) {
 	        gl.bufferData(
 	            gl.ARRAY_BUFFER,
-	            new Float32Array(vertex.points),
+	            new Float32Array(vertex),
 	            gl.DYNAMIC_DRAW
 	        );
+
+	        this.len = vertex.length;
+	        return this;
 	    };
-
-
 	};
 
 
 
 	module.exports = Buffer;
+
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _ = __webpack_require__(2);
+
+	/*
+	  opts
+	    gl: WebGL browser object,
+	    shader: vr8/Shader object,
+	    @width:  viewport width,
+	    @height: viewport height
+	*/
+
+	var Render = function(opts) {
+	    var gl = opts.gl;
+	    var shader = opts.shader;
+	    var camera = opts.camera;
+
+	    if (_.isUndefined(opts.gl)) throw 'gl library is missing!!.';
+	    if (_.isUndefined(opts.shader)) throw 'The shader is missing!!.';
+	    if (_.isUndefined(opts.camera)) throw 'The camera matrix is missing!!.';
+
+	    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	    gl.enable(gl.DEPTH_TEST);
+	    gl.viewport(0, 0, opts.width, opts.height);
+
+	    this.clear = function() {
+	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	        return this;
+	    };
+
+	    this.prepare = function(model, buffer) {
+	      debugger;
+	        shader.set_value('MV', camera);
+	        shader.set_value('P', model);
+
+	        if (buffer) {
+	            for (var batch in buffer)
+	                buffer[batch]();
+
+	        }
+
+	        return this;
+	    };
+
+	    /*
+	      Draw the stuff...
+	    */
+	    this.draw = function(type,  sides) {
+	      gl.drawArrays(type, 0, sides);
+	    };
+
+	};
+
+
+	module.exports = Render;
 
 
 /***/ }

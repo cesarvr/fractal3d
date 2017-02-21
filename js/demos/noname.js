@@ -7,13 +7,14 @@ module.exports = {
         var Core = require('../vr8/core');
         var Noise = require('./noise');
         var Polygon = require('./blinn/polygon');
+        var Render = require('../vr8/v2/render');
 
         var core = new Core({
             fullscreen: true,
             element: document.getElementById('webgl-div')
         });
 
-        var nshader = core.createv2Shader();
+        var box_shader = core.createv2Shader();
         var nbuffer = core.createv2Buffer();
 
         var buffer = core.createBuffer();
@@ -37,7 +38,7 @@ module.exports = {
 
         var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
 
-        nshader.create(tmpl());
+        box_shader.create(tmpl());
 
         shaderCode.init = function(shader) {
             shader.use();
@@ -86,8 +87,18 @@ module.exports = {
           size: 9
         });
 
-        nbuffer.upload(geometry.cube(4, dz).getModel());
-        nbuffer.pack(nshader.getVertexInfo());
+
+        nbuffer.save(geometry.cube(4, dz).getModel());
+
+        var rdr = new Render({
+          gl: core.getWebGL(),
+          shader: box_shader,
+          camera: perspective.multiply(camera).getMatrix()
+         });
+
+         var _buff = nbuffer.prepare(box_shader.vertex_info())
+
+
 
         function render() {
             //Utils.getNextFrame.call(this, render);
@@ -95,16 +106,17 @@ module.exports = {
 
             dx += 0.03;
             dz += 0.01;
-            if (dz > 359) dz = 0.01;
+            if (dz > 359) dz = 0.1;
             var Transform = core.MLib.Transform.New();
 
-            var entity1 = {
-                buffer: buffer,
+            var entity = {
+              //  buffer: nbuffer.prepare(box_shader.vertex_info()),
                 model: Transform.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
 
+            /*
             var entity2 = {
                 buffer: buffer,
                 model: Transform.translate(-20, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
@@ -125,13 +137,28 @@ module.exports = {
             shader.prepare({
                 'blurify': Math.sin(dz)
             });
+            */
 
+            box_shader.use();
+
+            rdr
+              .clear()
+              .prepare(entity.model, _buff);
+
+
+            box_shader.set_value('blurify', Math.sin(dz));
+
+            rdr.draw(geometry.getDrawType(), nbuffer.sides)
+
+
+            /*
             scene.clean();
             scene.render(entity1);
             scene.render(entity2);
-            scene.render(entity3);
+            scene.render(entity3); */
 
         };
+
 
         render();
 
