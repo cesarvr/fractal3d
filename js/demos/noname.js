@@ -3,61 +3,38 @@
 module.exports = {
 
     init: function() {
-        var tmpl = require('../template/new.html');
+        var tmpl = require('../template/simple_blur_texture.html');
         var Core = require('../vr8/core');
-        var Noise = require('./noise');
         var Polygon = require('./blinn/polygon');
         var Render = require('../vr8/v2/render');
+        var Buffer = require('../vr8/v2/buffer');
+        var Shader = require('../vr8/v2/shader');
+        var Texture = require('../vr8/v2/texture');
 
         var core = new Core({
             fullscreen: true,
             element: document.getElementById('webgl-div')
         });
 
-        var box_shader = core.createv2Shader();
-        var nbuffer = core.createv2Buffer();
+        var box_shader = new Shader(core.getWebGL());
+        var buffer = new Buffer(core.getWebGL());
+        var texture = new Texture(core.getWebGL());
 
-        var buffer = core.createBuffer();
-        var shader = core.createShader();
-        var texture = core.createTexture();
         var Vec3 = core.MLib.Vec3;
-
-        var scene = core.createScene();
         var Utils = core.getUtils();
 
         /* config */
 
         core.canvas.setResize(function(x, y) {
-            scene.setViewPort(x, y);
+          core.getWebGL().viewport(0, 0, x, y);
         });
-        scene.shader = shader;
+
         var camera = Utils.camera.MakeLookAt(Vec3.New(0, 10, 6), Vec3.New(0, 0, -80), Vec3.New(0, 1, -50));
         var perspective = Utils.camera.MakePerspective(45.0, 4.0 / 3.0, 0.1, 300.0);
 
-        scene.camera = perspective.multiply(camera).getMatrix();
-
-        var shaderCode = Utils.util.getshaderUsingTemplate(tmpl());
-
         box_shader.create(tmpl());
 
-        shaderCode.init = function(shader) {
-            shader.use();
-            shader
-                .attribute('position')
-                .attribute('texture')
-                .attribute('colors')
-                .uniform('MV')
-                .uniform('uSampler')
-                .uniform('blurify')
-                .uniform('P');
-        }
-
-
-        shader.create(shaderCode);
-
-        /*         */
-
-        var geometry = Polygon.New();
+        var geometry = new Polygon();
 
         /* Generarting XOR Texture */
         var textureSize = 128;
@@ -73,90 +50,45 @@ module.exports = {
             }
         }
 
-
         /* */
         texture.setTexture(new Uint8Array(pix), textureSize, textureSize);
-
 
         var dx = 0.1;
         var dz = 0.001;
         var t = 0.1;
 
-        buffer.update({
-          points: geometry.cube(4, dz).getModel(),
-          size: 9
-        });
-
-
-        nbuffer.save(geometry.cube(4, dz).getModel());
+        buffer.save(geometry.cube(4, dz).getModel());
+        var _buff = buffer.prepare(box_shader.vertex_info())
 
         var rdr = new Render({
-          gl: core.getWebGL(),
-          shader: box_shader,
-          camera: perspective.multiply(camera).getMatrix()
-         });
-
-         var _buff = nbuffer.prepare(box_shader.vertex_info())
-
-
+            gl: core.getWebGL(),
+            shader: box_shader,
+            camera: perspective.multiply(camera).getMatrix()
+        });
 
         function render() {
-            //Utils.getNextFrame.call(this, render);
             window.requestID = window.requestAnimationFrame(render);
 
-            dx += 0.03;
-            dz += 0.01;
+            dx += 0.3;
+            dz += 0.001;
             if (dz > 359) dz = 0.1;
             var Transform = core.MLib.Transform.New();
 
             var entity = {
-              //  buffer: nbuffer.prepare(box_shader.vertex_info()),
-                model: Transform.translate(10, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
+                model: Transform.translate(0, 10, -20).rotateX(dx).rotateY(dx).getMatrix(),
                 drawType: geometry.getDrawType(),
                 texture: texture,
             };
-
-            /*
-            var entity2 = {
-                buffer: buffer,
-                model: Transform.translate(-20, 0, -40).rotateX(dx).rotateY(dx).getMatrix(),
-                drawType: geometry.getDrawType(),
-                texture: texture,
-            };
-
-
-            var entity3 = {
-                buffer: buffer,
-                model: Transform.translate(0, 0, -80).rotateX(dx).rotateY(dx).getMatrix(),
-                drawType: geometry.getDrawType(),
-                texture: texture,
-            };
-
-
-
-            shader.prepare({
-                'blurify': Math.sin(dz)
-            });
-            */
 
             box_shader.use();
 
             rdr
-              .clear()
-              .prepare(entity.model, _buff);
-
+                .clear()
+                .prepare(entity.model, _buff);
 
             box_shader.set_value('blurify', Math.sin(dz));
 
-            rdr.draw(geometry.getDrawType(), nbuffer.sides)
-
-
-            /*
-            scene.clean();
-            scene.render(entity1);
-            scene.render(entity2);
-            scene.render(entity3); */
-
+            rdr.draw(geometry.getDrawType(), buffer.sides)
         };
 
 

@@ -28,16 +28,12 @@ var Render = function(opts) {
         return this;
     };
 
-    this.prepare = function(model, buffer) {
-      debugger;
+    this.prepare = function(model, loadBuffers) {
         shader.set_value('MV', camera);
         shader.set_value('P', model);
 
-        if (buffer) {
-            for (var batch in buffer)
-                buffer[batch]();
-
-        }
+        if (loadBuffers)
+          loadBuffers();
 
         return this;
     };
@@ -46,7 +42,7 @@ var Render = function(opts) {
       Draw the stuff...
     */
     this.draw = function(type,  sides) {
-      gl.drawArrays(type, 0, sides);
+      gl.drawArrays(gl[type], 0, sides);
     };
 
 };

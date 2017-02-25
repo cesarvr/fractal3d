@@ -81,13 +81,14 @@ var Shader = function(gl) {
 
     function vertex_info(memo, webGLActiveInfo) {
         var tmp = memo || {};
-
+        var attr = gl.getAttribLocation(program, webGLActiveInfo.name);
         tmp[webGLActiveInfo.name] = {
-            value: gl.getAttribLocation(program, webGLActiveInfo.name),
+            value: attr,
             size: VECTOR_MAP[webGLActiveInfo.type],
             length: VECTOR_MAP[webGLActiveInfo.type] * Float32Array.BYTES_PER_ELEMENT
         };
 
+        gl.enableVertexAttribArray(attr);
         return tmp;
     };
 
@@ -137,7 +138,6 @@ var Shader = function(gl) {
     };
 
     this.vertex_info = function() {
-      debugger;
         return glsl_variables(vertexInfo).reduce(vertex_info, {});
     };
 

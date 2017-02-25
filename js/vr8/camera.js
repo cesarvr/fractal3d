@@ -1,15 +1,12 @@
 'use strict'
 
-var Factory = require('../utils/factory');
 var Vec4  = require('../mathv2/vector').Vec4;
 var Matrix  = require('../mathv2/matrix4');
 var Transform = require('../mathv2/transform');
 
-
 var Camera = function(){
-};
 
-Camera.prototype.MakeOrtho = function(left, right, bottom, top, nearz, farz) {
+this.MakeOrtho = function(left, right, bottom, top, nearz, farz) {
     var m = new Float32Array(16);
     m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = 0.0;
 
@@ -22,8 +19,6 @@ Camera.prototype.MakeOrtho = function(left, right, bottom, top, nearz, farz) {
     return m;
 }
 
-
-
 /*
 
   Make a LookAt Matrix.
@@ -32,7 +27,7 @@ Camera.prototype.MakeOrtho = function(left, right, bottom, top, nearz, farz) {
   http://www.cs.virginia.edu/~gfx/Courses/1999/intro.fall99.html/lookat.html
 
 */
-Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
+this.MakeLookAt = function(v3Eye, v3Center, v3Up){
 
   var F = v3Center.sub(v3Eye).normalize();
   var U = v3Up.normalize();
@@ -52,7 +47,7 @@ Camera.prototype.MakeLookAt = function(v3Eye, v3Center, v3Up){
   Perspective
 */
 
-Camera.prototype.MakePerspective = function(fieldOfView, aspectRatio, nearZ, farZ){
+this.MakePerspective = function(fieldOfView, aspectRatio, nearZ, farZ){
   var M = Matrix.Identity();
   var cotan = 1.0 / Math.tan(fieldOfView / 2.0);
   return M.set(
@@ -63,12 +58,6 @@ Camera.prototype.MakePerspective = function(fieldOfView, aspectRatio, nearZ, far
    );
 };
 
+};
 
-
-
-
-
-
-
-
-module.exports = new Factory(Camera);
+module.exports = Camera;

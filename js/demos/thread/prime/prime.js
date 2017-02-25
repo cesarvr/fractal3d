@@ -1,6 +1,5 @@
 var Thread = require('../../../thread/thread');
 
-
 module.exports = {
     init: function() {
         console.log('hello world');
@@ -19,10 +18,5 @@ module.exports = {
 
         var wrk2 = serve.spawn();
         wrk2.execute('prime', 33900);
-
-
-
-
-
     }
 };

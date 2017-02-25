@@ -11,9 +11,16 @@ var Buffer = function(gl) {
         return attrib.size + memo;
     };
 
+    function load_attrib(attribs){
+      var len = attribs.length;
+      return function(){
+        for(var i=0; i<len; i++)
+          attribs[i]();
+      };
+    };
+
     function vaptr_wrapper(attr, size, stride, offset) {
         stride *= Float32Array.BYTES_PER_ELEMENT;
-        offset *= Float32Array.BYTES_PER_ELEMENT
 
         return function() {
 
@@ -48,24 +55,26 @@ var Buffer = function(gl) {
     //   @stride: package size
     //   @offset: position inside the package.
 
-    this.prepare = function(attributes) {
+    this.prepare = function(attributes, _padding) {
         var _stride = _.reduce(attributes, stride, 0);
         var attrs = attributes;
         var attrs_batch = [];
         var offset = 0;
+        var padding = _padding || ['position', 'colors', 'texture'];
 
-        for (var key in attrs) {
+        for (var i = 0; i < padding.length; i++) {
+            var key = padding[i];
             var _vc = vaptr_wrapper(attrs[key].value,
                 attrs[key].size,
                 _stride,
                 offset);
 
-            offset += attrs[key].size;
+            offset += attrs[key].length;
             attrs_batch.push(_vc);
         }
 
         this.sides = this.len / _stride;
-        return attrs_batch;
+        return load_attrib(attrs_batch);
     };
 
     // Cache a matrix of floating points in to opengl ARRAY

@@ -1,55 +1,19 @@
 'use strict';
 
-
 var Core = function(options) {
     var CanvasGL = require('./canvas');
+    var Camera = require('./camera');
 
-    this.Buffer = require('./buffer');
-    this.Shader = require('./shader');
-    this.Texture = require('./texture');
-    this.Camera = require('./camera');
-    this.Scene = require('./scene');
-    this.Geometry = require('./geometry');
-    var NShader = require('./v2/shader');
-    var NBuffer = require('./v2/buffer');
 
     var core = new CanvasGL(options.fullscreen, options.element);
     var webGL = core.getWebGL();
 
     this.canvas = core;
 
-    this.createBuffer = function() {
-      return this.Buffer.New(webGL);
-    };
-
-    this.createv2Shader = function(){
-      return new NShader(webGL);
-    };
-
-    this.createv2Buffer = function(){
-      return new NBuffer(webGL);
-    };
-
-    this.createShader = function() {
-      return this.Shader.New(webGL);
-    };
-
-    this.createTexture = function() {
-      return this.Texture.New(webGL);
-    };
-
-    this.createScene = function() {
-        return this.Scene.New(webGL);
-    };
-
-    this.createGeometry = function() {
-        return this.Geometry.New();
-    };
-
     this.getUtils = function() {
         return {
-            camera: this.Camera.New(),
-            util: require('../utils/util').New()
+            camera: new Camera(),
+            util: require('../utils/util')
         };
     };
 
