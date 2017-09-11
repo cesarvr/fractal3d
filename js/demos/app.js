@@ -11,6 +11,10 @@ var DemoRouter = Backbone.Router.extend({
 
     demos: [],
 
+    index: function(){
+      console.log('boom?');
+    },
+
     clear: function(){
         this.demos.forEach(function(demos){
             demos.stop();
@@ -18,6 +22,7 @@ var DemoRouter = Backbone.Router.extend({
     },
 
     noname: function(){
+      debugger;
         this.clear();
         var demo = require('./noname');
         demo.init();
